@@ -16,7 +16,8 @@ The repository has four functional layers:
 
 Today, the working implementation is split like this:
 
-- [../chpl/trace_to_csv](../chpl/trace_to_csv): primary converter implementation
+- [../apps/trace_to_csv](../apps/trace_to_csv): primary converter implementation
+- [../chpl/trace_to_csv](../chpl/trace_to_csv): temporary compatibility path for the previous converter location
 - [../chpl/_chpl](../chpl/_chpl): current reusable Chapel OTF2 modules
 - [../chpl/simple](../chpl/simple), [../chpl/read_events](../chpl/read_events), [../chpl/read_events_and_metrics](../chpl/read_events_and_metrics): additional Chapel programs
 - [../examples/c](../examples/c): C reference implementations
@@ -24,7 +25,8 @@ Today, the working implementation is split like this:
 - [../docs/tutorials](../docs/tutorials): notebook-based tutorial material
 - [../docs/benchmarks/perfnotes.md](../docs/benchmarks/perfnotes.md): current benchmark notes
 - [../container](../container): containerized development environment
-- [../scorep-traces](../scorep-traces): bundled sample traces
+- [../sample-traces](../sample-traces): canonical bundled sample traces
+- [../scorep-traces](../scorep-traces): legacy bundled trace path retained for compatibility
 
 ## Target Working Layout
 

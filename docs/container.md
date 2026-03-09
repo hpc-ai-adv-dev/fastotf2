@@ -27,9 +27,9 @@ The current build and run instructions still assume the working implementation l
 1. Read [../container/README.md](../container/README.md)
 2. Build the container from [../container](../container)
 3. Enter the environment
-4. Build the converter from [../chpl/trace_to_csv](../chpl/trace_to_csv)
-5. Run it against traces from [../scorep-traces](../scorep-traces)
+4. Build the converter from [../apps/trace_to_csv](../apps/trace_to_csv) or the legacy path [../chpl/trace_to_csv](../chpl/trace_to_csv)
+5. Run it against traces from [../sample-traces](../sample-traces)
 
 ## Migration Note
 
-The container docs will be updated again when the main converter moves into [../apps/trace_to_csv](../apps/trace_to_csv) and the library moves into [../src](../src).
+The host repository now presents `sample-traces/` as the canonical bundled trace path while preserving the legacy `scorep-traces/` name for compatibility.

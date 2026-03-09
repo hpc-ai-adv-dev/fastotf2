@@ -69,6 +69,8 @@ This target shape is intentional:
 - `docs/` becomes the stable home for quickstart, architecture, and migration guidance.
 - `sample-traces/` keeps bundled data discoverable for new users.
 
+During migration, the existing `scorep-traces/` directory name may remain as a compatibility alias to avoid unnecessary data movement.
+
 ## Classification Rules
 
 Every repository artifact should fit one of these roles:

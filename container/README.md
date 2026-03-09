@@ -77,8 +77,8 @@ docker compose run --rm chapel-dev
 
 The container mounts two important directories:
 
-- **`/traces`**: Contains OTF2 trace files from `scorep-traces/`
-- **`/workspace`**: Your Chapel source code directory (`chpl/`)
+- **`/traces`**: Contains OTF2 trace files from the repository's canonical `sample-traces/` path
+- **`/workspace`**: Your repository checkout, including the Chapel package, apps, examples, and docs
 
 Any changes you make in `/workspace` inside the container will be reflected in your host filesystem.
 

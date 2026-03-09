@@ -1,73 +1,95 @@
 # FastOTF2
 
-A high-performance Chapel-based library for reading and processing OTF2 (Open Trace Format 2) trace files at scale. FastOTF2 provides native Chapel bindings for OTF2, enabling efficient parallel and distributed analysis of large-scale HPC application traces.
+FastOTF2 is a trace conversion toolkit for turning OTF2 traces into analysis-friendly data products, starting with CSV.
+It is built on a Chapel implementation of the OTF2 API and is organized around the workflow a user actually cares about first: build the converter, run it on a trace, and start analyzing the output.
 
-## Repository Structure
+The repository is currently in the middle of a structural cleanup.
+The long-term target layout is documented in [docs/repository-organization.md](docs/repository-organization.md), but the current implementation paths remain active while the migration proceeds.
 
-### Core Implementation
-- **`chpl/`** - Main Chapel OTF2 processing library and tools
-  - Chapel `OTF2` module for OTF2 reading (see in `_chpl`)
-  - Example programs and utilities (`simple`, `read_events`, `read_events_and_metrics`, `trace_to_csv`)
-  - Multiple implementation variants (serial, parallel, distributed) for different examples
+## Start Here
 
-- **`c`** - C versions of the same benchmarks, except `trace_to_csv`
+If your goal is to convert traces, begin with:
 
-### Development Environment
-- **`container`** - How to run in containers
-  - A Dockerfile, and docker compose file
-  - Instructions to run
-  - Instructions to migrate to apptainer (for HPC systems)
-  - See the README.
+1. [docs/quickstart.md](docs/quickstart.md)
+2. [docs/container.md](docs/container.md) if you want a containerized environment
+3. [apps/trace_to_csv](apps/trace_to_csv) for the primary application
+4. [sample-traces](sample-traces) for bundled sample traces
 
-### Building from Source
+If your goal is to understand the implementation strategy or compare languages, continue with:
 
-#### Prerequisites
-- Chapel compiler (≥ 2.0.0)
-- OTF2 library (≥ 3.0.0)
-- GCC/Clang with C++14 support
-- Make
+1. [docs/architecture.md](docs/architecture.md)
+2. [docs/comparisons.md](docs/comparisons.md)
+3. [DEMO.md](DEMO.md) for the current in-depth walkthrough
 
-#### Installation Steps
+## Quickstart
 
-1. **Install Chapel**
-   ```bash
-   # Download and install Chapel from https://chapel-lang.org
-   export CHPL_HOME=/path/to/chapel
-   export PATH=$CHPL_HOME/bin:$PATH
-   ```
+Current build and run flow:
 
-2. **Install OTF2**
-   ```bash
-   # If using system package manager
-   sudo apt-get install libotf2-dev  # Ubuntu/Debian
-   # OR build from source in otf2-3.1.1/
-   ```
+```bash
+cd apps/trace_to_csv
+make
+./trace_to_csv --tracePath=../../sample-traces/frontier-hpl-run-using-2-ranks-with-craypm/traces.otf2
+```
 
-3. **Build FastOTF2**
-   ```bash
-   cd chpl
-   cd trace_to_csv # or whatever example you're trying to build
-   make
-   ```
+Parallel variant:
 
-## Usage
+```bash
+cd apps/trace_to_csv
+make parallel
+./trace_to_csv_parallel --trace=../../sample-traces/frontier-hpl-run-using-2-ranks-with-craypm/traces.otf2
+```
 
-### Basic Usage
+See [docs/quickstart.md](docs/quickstart.md) for prerequisites, options, and notes about the current directory layout.
 
-Refer to the **Makefile** in `chpl/` for comprehensive build targets and usage examples:
+## Repository Guide
 
-## Performance
+The repository is being reorganized toward a clearer structure with separate homes for the reusable Chapel package, user-facing apps, and comparison implementations.
 
-FastOTF2 is designed for high-performance analysis of large trace files:
+Today:
 
-- **Parallel Processing**: Utilizes Chapel's task parallelism for multi-core efficiency
-- TODO **Distributed Execution**: Scales across multiple nodes using Chapel's distributed arrays
-- TODO **Memory Optimization**: Efficient memory usage patterns for large traces
-- TODO **I/O Optimization**: Optimized reading patterns for OTF2 files
+- [chpl](chpl) contains the working Chapel library and applications.
+- [apps/trace_to_csv](apps/trace_to_csv) contains the primary trace conversion application.
+- [chpl/trace_to_csv](chpl/trace_to_csv) remains temporarily as a compatibility path for the pre-migration location.
+- [chpl/_chpl](chpl/_chpl) contains the current Chapel OTF2 library modules.
+- [examples/c](examples/c) contains the C reference implementations.
+- [examples/python](examples/python) contains the Python comparison scripts.
+- [docs/tutorials](docs/tutorials) contains the current notebooks.
+- [docs/benchmarks/perfnotes.md](docs/benchmarks/perfnotes.md) contains the current performance notes.
+- [container](container) contains the development container setup.
+- [sample-traces](sample-traces) is the canonical bundled trace path used in the current docs and app defaults.
+- [scorep-traces](scorep-traces) remains as the legacy directory name for compatibility.
 
-## Chapel OTF2 Module API
+Target structure:
 
-The core Chapel module aims to provides a 1:1 mapping to the C otf2
-api in most places.
-It is a work in progress.
-See the readme in `chpl/_chpl`
+- [apps](apps) will hold user-facing applications.
+- [src](src) will hold the Mason-friendly Chapel package source.
+- [examples](examples) will hold comparison and tutorial implementations.
+- [docs](docs) will hold quickstart, architecture, and migration guidance.
+
+## Why This Repository Exists
+
+The most important problem this repository solves is converting OTF2 trace data into a format that is easier to analyze with downstream tools.
+The Chapel library matters because it enables high-performance implementations of those workflows, but the repository should be judged first by how quickly it gets a user from a trace archive to useful data.
+
+## Current Documentation
+
+- [docs/quickstart.md](docs/quickstart.md): build and run the current converter
+- [docs/container.md](docs/container.md): use the container environment
+- [docs/architecture.md](docs/architecture.md): how the repository is structured and why
+- [docs/comparisons.md](docs/comparisons.md): role of the C, Python, and Chapel implementations
+- [docs/repository-organization.md](docs/repository-organization.md): target organization for the ongoing cleanup
+
+## Build Modes
+
+During the migration, both Chapel build flows are supported:
+
+- Make remains the active build path for the existing applications under [chpl](chpl).
+- Mason now exists for the reusable Chapel package rooted at [Mason.toml](Mason.toml) and [src](src).
+
+Both build paths currently assume the same default external OTF2 installation paths under `/opt/otf2`.
+
+## Status
+
+This repository is actively being reorganized.
+During the transition, some documentation will point at the target structure while commands still reference the current paths under [chpl](chpl).
+That is intentional until the implementation is moved.

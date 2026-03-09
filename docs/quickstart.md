@@ -12,14 +12,15 @@ If you do not want to install those directly on your machine, use the container 
 
 ## Current Implementation Location
 
-The converter is being promoted to a top-level app location, but today the working implementation lives in [../chpl/trace_to_csv](../chpl/trace_to_csv).
+The converter's primary home is now [../apps/trace_to_csv](../apps/trace_to_csv).
+The legacy implementation path under [../chpl/trace_to_csv](../chpl/trace_to_csv) remains available temporarily during the migration.
 
 ## Build The Converter
 
 Serial and parallel builds are both driven by the Makefile in the current implementation directory.
 
 ```bash
-cd chpl/trace_to_csv
+cd apps/trace_to_csv
 make
 ```
 
@@ -31,7 +32,7 @@ That builds:
 If you only want the parallel build:
 
 ```bash
-cd chpl/trace_to_csv
+cd apps/trace_to_csv
 make parallel
 ```
 
@@ -40,15 +41,15 @@ make parallel
 Example serial run:
 
 ```bash
-cd chpl/trace_to_csv
-./trace_to_csv --tracePath=../../scorep-traces/frontier-hpl-run-using-2-ranks-with-craypm/traces.otf2
+cd apps/trace_to_csv
+./trace_to_csv --tracePath=../../sample-traces/frontier-hpl-run-using-2-ranks-with-craypm/traces.otf2
 ```
 
 Example parallel run:
 
 ```bash
-cd chpl/trace_to_csv
-./trace_to_csv_parallel --trace=../../scorep-traces/frontier-hpl-run-using-2-ranks-with-craypm/traces.otf2
+cd apps/trace_to_csv
+./trace_to_csv_parallel --trace=../../sample-traces/frontier-hpl-run-using-2-ranks-with-craypm/traces.otf2
 ```
 
 The serial implementation uses Chapel config constants such as:
@@ -69,13 +70,14 @@ The parallel implementation currently uses argument parsing and supports options
 
 ## Sample Inputs
 
-Bundled traces are currently under [../scorep-traces](../scorep-traces).
+Bundled traces are canonically exposed under [../sample-traces](../sample-traces).
+The legacy path [../scorep-traces](../scorep-traces) remains available during the migration.
 Those traces are kept in the repository so the main conversion workflow is easy to try.
 
 ## Current Caveats
 
 - The repository is in transition, so the user-facing documentation is ahead of the implementation layout.
-- The long-term app home is [../apps/trace_to_csv](../apps/trace_to_csv), but the code has not moved there yet.
+- The legacy app path under [../chpl/trace_to_csv](../chpl/trace_to_csv) still exists for compatibility.
 - The long-term Chapel package home is [../src](../src), but the library currently lives under [../chpl/_chpl](../chpl/_chpl).
 
 ## Next Reading

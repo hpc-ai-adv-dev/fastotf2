@@ -1,0 +1,128 @@
+// Copyright Hewlett Packard Enterprise Development LP.
+
+module OTF2_ErrorCodes {
+  use CTypes;
+  require "otf2/OTF2_ErrorCodes.h";
+  extern proc OTF2_Error_GetName(errorCode : OTF2_ErrorCode) : c_ptrConst(c_char);
+
+  extern proc OTF2_Error_GetDescription(errorCode : OTF2_ErrorCode) : c_ptrConst(c_char);
+
+  // extern proc OTF2_Error_RegisterCallback(errorCallbackIn : OTF2_ErrorCallback, userData : c_ptr(void)) : OTF2_ErrorCallback;
+
+  // ==== c2chapel typedefs ====
+
+  extern type OTF2_ErrorCallback = c_fn_ptr;
+
+  // OTF2_ErrorCode enum
+  extern type OTF2_ErrorCode = c_int;
+  extern const OTF2_DEPRECATED :OTF2_ErrorCode;
+  extern const OTF2_ABORT :OTF2_ErrorCode;
+  extern const OTF2_WARNING :OTF2_ErrorCode;
+  extern const OTF2_SUCCESS :OTF2_ErrorCode;
+  extern const OTF2_ERROR_INVALID :OTF2_ErrorCode;
+  extern const OTF2_ERROR_E2BIG :OTF2_ErrorCode;
+  extern const OTF2_ERROR_EACCES :OTF2_ErrorCode;
+  extern const OTF2_ERROR_EADDRNOTAVAIL :OTF2_ErrorCode;
+  extern const OTF2_ERROR_EAFNOSUPPORT :OTF2_ErrorCode;
+  extern const OTF2_ERROR_EAGAIN :OTF2_ErrorCode;
+  extern const OTF2_ERROR_EALREADY :OTF2_ErrorCode;
+  extern const OTF2_ERROR_EBADF :OTF2_ErrorCode;
+  extern const OTF2_ERROR_EBADMSG :OTF2_ErrorCode;
+  extern const OTF2_ERROR_EBUSY :OTF2_ErrorCode;
+  extern const OTF2_ERROR_ECANCELED :OTF2_ErrorCode;
+  extern const OTF2_ERROR_ECHILD :OTF2_ErrorCode;
+  extern const OTF2_ERROR_ECONNREFUSED :OTF2_ErrorCode;
+  extern const OTF2_ERROR_ECONNRESET :OTF2_ErrorCode;
+  extern const OTF2_ERROR_EDEADLK :OTF2_ErrorCode;
+  extern const OTF2_ERROR_EDESTADDRREQ :OTF2_ErrorCode;
+  extern const OTF2_ERROR_EDOM :OTF2_ErrorCode;
+  extern const OTF2_ERROR_EDQUOT :OTF2_ErrorCode;
+  extern const OTF2_ERROR_EEXIST :OTF2_ErrorCode;
+  extern const OTF2_ERROR_EFAULT :OTF2_ErrorCode;
+  extern const OTF2_ERROR_EFBIG :OTF2_ErrorCode;
+  extern const OTF2_ERROR_EINPROGRESS :OTF2_ErrorCode;
+  extern const OTF2_ERROR_EINTR :OTF2_ErrorCode;
+  extern const OTF2_ERROR_EINVAL :OTF2_ErrorCode;
+  extern const OTF2_ERROR_EIO :OTF2_ErrorCode;
+  extern const OTF2_ERROR_EISCONN :OTF2_ErrorCode;
+  extern const OTF2_ERROR_EISDIR :OTF2_ErrorCode;
+  extern const OTF2_ERROR_ELOOP :OTF2_ErrorCode;
+  extern const OTF2_ERROR_EMFILE :OTF2_ErrorCode;
+  extern const OTF2_ERROR_EMLINK :OTF2_ErrorCode;
+  extern const OTF2_ERROR_EMSGSIZE :OTF2_ErrorCode;
+  extern const OTF2_ERROR_EMULTIHOP :OTF2_ErrorCode;
+  extern const OTF2_ERROR_ENAMETOOLONG :OTF2_ErrorCode;
+  extern const OTF2_ERROR_ENETDOWN :OTF2_ErrorCode;
+  extern const OTF2_ERROR_ENETRESET :OTF2_ErrorCode;
+  extern const OTF2_ERROR_ENETUNREACH :OTF2_ErrorCode;
+  extern const OTF2_ERROR_ENFILE :OTF2_ErrorCode;
+  extern const OTF2_ERROR_ENOBUFS :OTF2_ErrorCode;
+  extern const OTF2_ERROR_ENODATA :OTF2_ErrorCode;
+  extern const OTF2_ERROR_ENODEV :OTF2_ErrorCode;
+  extern const OTF2_ERROR_ENOENT :OTF2_ErrorCode;
+  extern const OTF2_ERROR_ENOEXEC :OTF2_ErrorCode;
+  extern const OTF2_ERROR_ENOLCK :OTF2_ErrorCode;
+  extern const OTF2_ERROR_ENOLINK :OTF2_ErrorCode;
+  extern const OTF2_ERROR_ENOMEM :OTF2_ErrorCode;
+  extern const OTF2_ERROR_ENOMSG :OTF2_ErrorCode;
+  extern const OTF2_ERROR_ENOPROTOOPT :OTF2_ErrorCode;
+  extern const OTF2_ERROR_ENOSPC :OTF2_ErrorCode;
+  extern const OTF2_ERROR_ENOSR :OTF2_ErrorCode;
+  extern const OTF2_ERROR_ENOSTR :OTF2_ErrorCode;
+  extern const OTF2_ERROR_ENOSYS :OTF2_ErrorCode;
+  extern const OTF2_ERROR_ENOTCONN :OTF2_ErrorCode;
+  extern const OTF2_ERROR_ENOTDIR :OTF2_ErrorCode;
+  extern const OTF2_ERROR_ENOTEMPTY :OTF2_ErrorCode;
+  extern const OTF2_ERROR_ENOTSOCK :OTF2_ErrorCode;
+  extern const OTF2_ERROR_ENOTSUP :OTF2_ErrorCode;
+  extern const OTF2_ERROR_ENOTTY :OTF2_ErrorCode;
+  extern const OTF2_ERROR_ENXIO :OTF2_ErrorCode;
+  extern const OTF2_ERROR_EOPNOTSUPP :OTF2_ErrorCode;
+  extern const OTF2_ERROR_EOVERFLOW :OTF2_ErrorCode;
+  extern const OTF2_ERROR_EPERM :OTF2_ErrorCode;
+  extern const OTF2_ERROR_EPIPE :OTF2_ErrorCode;
+  extern const OTF2_ERROR_EPROTO :OTF2_ErrorCode;
+  extern const OTF2_ERROR_EPROTONOSUPPORT :OTF2_ErrorCode;
+  extern const OTF2_ERROR_EPROTOTYPE :OTF2_ErrorCode;
+  extern const OTF2_ERROR_ERANGE :OTF2_ErrorCode;
+  extern const OTF2_ERROR_EROFS :OTF2_ErrorCode;
+  extern const OTF2_ERROR_ESPIPE :OTF2_ErrorCode;
+  extern const OTF2_ERROR_ESRCH :OTF2_ErrorCode;
+  extern const OTF2_ERROR_ESTALE :OTF2_ErrorCode;
+  extern const OTF2_ERROR_ETIME :OTF2_ErrorCode;
+  extern const OTF2_ERROR_ETIMEDOUT :OTF2_ErrorCode;
+  extern const OTF2_ERROR_ETXTBSY :OTF2_ErrorCode;
+  extern const OTF2_ERROR_EWOULDBLOCK :OTF2_ErrorCode;
+  extern const OTF2_ERROR_EXDEV :OTF2_ErrorCode;
+  extern const OTF2_ERROR_END_OF_FUNCTION :OTF2_ErrorCode;
+  extern const OTF2_ERROR_INVALID_CALL :OTF2_ErrorCode;
+  extern const OTF2_ERROR_INVALID_ARGUMENT :OTF2_ErrorCode;
+  extern const OTF2_ERROR_INVALID_RECORD :OTF2_ErrorCode;
+  extern const OTF2_ERROR_INVALID_DATA :OTF2_ErrorCode;
+  extern const OTF2_ERROR_INVALID_SIZE_GIVEN :OTF2_ErrorCode;
+  extern const OTF2_ERROR_UNKNOWN_TYPE :OTF2_ErrorCode;
+  extern const OTF2_ERROR_INTEGRITY_FAULT :OTF2_ErrorCode;
+  extern const OTF2_ERROR_MEM_FAULT :OTF2_ErrorCode;
+  extern const OTF2_ERROR_MEM_ALLOC_FAILED :OTF2_ErrorCode;
+  extern const OTF2_ERROR_PROCESSED_WITH_FAULTS :OTF2_ErrorCode;
+  extern const OTF2_ERROR_INDEX_OUT_OF_BOUNDS :OTF2_ErrorCode;
+  extern const OTF2_ERROR_INVALID_LINENO :OTF2_ErrorCode;
+  extern const OTF2_ERROR_END_OF_BUFFER :OTF2_ErrorCode;
+  extern const OTF2_ERROR_FILE_INTERACTION :OTF2_ErrorCode;
+  extern const OTF2_ERROR_FILE_CAN_NOT_OPEN :OTF2_ErrorCode;
+  extern const OTF2_ERROR_INTERRUPTED_BY_CALLBACK :OTF2_ErrorCode;
+  extern const OTF2_ERROR_PROPERTY_NAME_INVALID :OTF2_ErrorCode;
+  extern const OTF2_ERROR_PROPERTY_EXISTS :OTF2_ErrorCode;
+  extern const OTF2_ERROR_PROPERTY_NOT_FOUND :OTF2_ErrorCode;
+  extern const OTF2_ERROR_PROPERTY_VALUE_INVALID :OTF2_ErrorCode;
+  extern const OTF2_ERROR_FILE_COMPRESSION_NOT_SUPPORTED :OTF2_ErrorCode;
+  extern const OTF2_ERROR_DUPLICATE_MAPPING_TABLE :OTF2_ErrorCode;
+  extern const OTF2_ERROR_INVALID_FILE_MODE_TRANSITION :OTF2_ErrorCode;
+  extern const OTF2_ERROR_COLLECTIVE_CALLBACK :OTF2_ErrorCode;
+  extern const OTF2_ERROR_FILE_SUBSTRATE_NOT_SUPPORTED :OTF2_ErrorCode;
+  extern const OTF2_ERROR_INVALID_ATTRIBUTE_TYPE :OTF2_ErrorCode;
+  extern const OTF2_ERROR_LOCKING_CALLBACK :OTF2_ErrorCode;
+  extern const OTF2_ERROR_HINT_INVALID :OTF2_ErrorCode;
+  extern const OTF2_ERROR_HINT_LOCKED :OTF2_ErrorCode;
+extern const OTF2_ERROR_HINT_INVALID_VALUE :OTF2_ErrorCode;
+}

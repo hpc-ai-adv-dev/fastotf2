@@ -38,8 +38,8 @@ def read_otf2_events_only(archive_name):
     return data
 
 
-archive_name = "scorep-traces/frontier-hpl-run-using-2-ranks/traces.otf2"
-# archive_name = "scorep-traces/simple-mi300-example-run/traces.otf2"
+archive_name = "sample-traces/frontier-hpl-run-using-2-ranks/traces.otf2"
+# archive_name = "sample-traces/simple-mi300-example-run/traces.otf2"
 
 start_time = time.time()
 data = read_otf2_events_only(archive_name)
