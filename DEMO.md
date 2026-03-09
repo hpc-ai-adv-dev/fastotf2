@@ -1,5 +1,7 @@
 # OTF2 in Chapel: A Live Demo
 
+Compatibility note: some comparison assets referenced in this document have moved during the repository cleanup. Legacy paths may still exist temporarily, but the canonical homes for comparison code and notebooks are now under `examples/` and `docs/tutorials/`.
+
 This repo demonstrates the capabilities of the Open Trace Format 2 (OTF2) library within the Chapel programming language. We will explore the format, compare implementations in Python and C, and showcase the new Chapel library.
 
 This work is part of a collaboration with Oak Ridge National Laboratory (ORNL) to enable high-performance trace analysis.
@@ -39,7 +41,7 @@ In this demo, we will:
 
 OTF2 has a python module which provides a high-level interface to OTF2, making it easy to prototype and analyze traces. However, for massive traces, performance can be a bottleneck.
 
-The script `otf2readevents.py` demonstrates how to open a trace and iterate through events.
+The script `examples/python/otf2readevents.py` demonstrates how to open a trace and iterate through events.
 
 ### Key Concepts:
 - `otf2.reader.open(archive_name)`: Opens the trace.
@@ -63,7 +65,7 @@ To read events in C, you typically need to:
 -   **Verbosity**: You need to define structs and memory management logic just to store basic data, adding significant boilerplate code.
 -   **Completeness Burden**: If you want to handle "all events", you must register a handler for every single event type defined in the spec, or they are silently ignored.
 
-The file `c/otf2_read_events.c` shows this approach.
+The file `examples/c/otf2_read_events.c` shows this approach.
 
 
 ## 5. Exploring the Chapel API
