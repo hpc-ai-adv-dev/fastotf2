@@ -1,53 +1,67 @@
 # trace_to_csv
 
-This directory is the primary home for the FastOTF2 trace conversion application.
-
-It contains the promoted Chapel implementation for converting OTF2 traces into CSV-oriented analysis outputs.
-The legacy implementation path under `chpl/trace_to_csv/` remains available temporarily for compatibility during the migration.
+This directory contains the primary FastOTF2 application for converting OTF2 traces into CSV-oriented outputs.
+It is a Mason application package built on the reusable FastOTF2 Chapel library at the repository root.
 
 ## Build
 
-Serial and parallel builds are both supported:
+Build the primary converter executable with Mason:
 
 ```bash
 cd apps/trace_to_csv
-make
+mason build
 ```
 
-That builds:
+That builds the package's primary application, `trace_to_csv`.
 
-- `trace_to_csv`
-- `trace_to_csv_parallel`
-
-Parallel only:
+To build the serial example path as well:
 
 ```bash
 cd apps/trace_to_csv
-make parallel
+mason build --example
 ```
 
 ## Run
 
-Serial example:
+Primary parallel run:
 
 ```bash
 cd apps/trace_to_csv
-./trace_to_csv --tracePath=../../sample-traces/frontier-hpl-run-using-2-ranks-with-craypm/traces.otf2
+mason run -- ../../sample-traces/frontier-hpl-run-using-2-ranks-with-craypm/traces.otf2
 ```
 
-Parallel example:
+Serial example run:
 
 ```bash
 cd apps/trace_to_csv
-./trace_to_csv_parallel --trace=../../sample-traces/frontier-hpl-run-using-2-ranks-with-craypm/traces.otf2
+mason run --example TraceToCSVSerial.chpl
 ```
+
+## Package Layout
+
+- [Mason.toml](Mason.toml): application package manifest
+- [src/trace_to_csv.chpl](src/trace_to_csv.chpl): primary Mason entrypoint
+- [src/TraceToCSVParallel.chpl](src/TraceToCSVParallel.chpl): current parallel implementation used by the primary app
+- [example/TraceToCSVSerial.chpl](example/TraceToCSVSerial.chpl): Mason example entrypoint for the serial path
+- [example/TraceToCSV.chpl](example/TraceToCSV.chpl): current serial implementation backing the serial example
 
 ## Build Model
 
-This app now builds against the reusable Chapel package modules in `src/`.
-The shared Make-based build helper still comes from `chpl/Makefile.common` during the migration.
+This package builds against the reusable FastOTF2 Chapel modules at the repository root.
+The current package uses the root library source directly through Mason compiler options.
+
+The current primary CLI is the parallel implementation, which supports options such as:
+
+- positional trace path
+- `--trace`
+- `--metrics`
+- `--processes`
+- `--outputDir`
+- `--excludeMPI`
+- `--excludeHIP`
+- `--log`
 
 ## Trace Inputs
 
-The canonical bundled trace path in the repository is now `sample-traces/`.
-The legacy `scorep-traces/` name remains available during the migration for compatibility.
+The canonical bundled trace path in the repository is `sample-traces/`.
+You can also point the converter at any local `.otf2` trace archive path.
