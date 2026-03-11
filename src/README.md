@@ -1,24 +1,21 @@
 # Chapel Package Source
 
-This directory is the target Mason-friendly home for the FastOTF2 Chapel package source.
+This directory is the canonical Mason-friendly home for the FastOTF2 Chapel package source.
 
-The Mason package has now been introduced at the repository root via `Mason.toml`.
+The repository root is the FastOTF2 Mason library package via `Mason.toml`.
 
-Current state during migration:
+Current structure:
 
-- `src/` contains a mirrored copy of the reusable Chapel OTF2 modules.
+- `src/` contains the reusable Chapel OTF2 modules for the root FastOTF2 package.
 - `src/FastOTF2.chpl` is the package entry module for Mason.
 - `src/OTF2.chpl` remains the umbrella public module used by the current codebase.
-- `chpl/_chpl/` remains in place temporarily so existing Make-based workflows continue to work.
 
-This means the repository now has a package-oriented source layout without breaking the existing Chapel build paths yet.
+## Build Model
 
-## Make And Mason During Migration
+The supported build style is Mason:
 
-The repository currently supports both build styles:
-
-- Make-based builds under `chpl/` remain the existing workflow for the applications.
-- Mason now provides the package-oriented workflow for the reusable Chapel library in `src/`.
+- The root FastOTF2 package uses Mason at the repository root.
+- The trace converter application package uses Mason under `apps/trace_to_csv`.
 
 The default OTF2 dependency paths are intentionally aligned across both systems:
 
@@ -26,5 +23,4 @@ The default OTF2 dependency paths are intentionally aligned across both systems:
 - library path: `/opt/otf2/lib`
 - linked library: `-lotf2`
 
-If your OTF2 installation lives elsewhere, Make users can continue overriding `OTF2_INCLUDE` and `OTF2_LIB`.
-Mason users can override the defaults by supplying additional compiler options when invoking Mason.
+If your OTF2 installation lives elsewhere, override the defaults by supplying additional compiler options when invoking Mason.

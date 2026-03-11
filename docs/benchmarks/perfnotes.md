@@ -17,7 +17,7 @@ Simplest implementation, in python
 
 #### Small trace
 ```console
-❯ python3 examples/python/otf2readevents.py
+❯ python3 comparisons/python/otf2readevents.py
 Time taken to open OTF2 archive: 0.01 seconds
 Time taken to read and process events: 0.28 seconds
 Total time: 0.28 seconds
@@ -33,7 +33,7 @@ Total unique regions: 19
 ```
 #### Large trace
 ```console
-❯ python3 examples/python/otf2readevents.py
+❯ python3 comparisons/python/otf2readevents.py
 Time taken to open OTF2 archive: 0.02 seconds
 Time taken to read and process events: 42.18 seconds
 Total time: 42.20 seconds
@@ -61,7 +61,7 @@ Correctness matches
 
 #### Small trace:
 ```console
-❯ gcc -o otf2_read_events examples/c/otf2_read_events.c -I/opt/otf2/include -L/opt/otf2/lib -lotf2 -O3 && ./otf2_read_events
+❯ gcc -o otf2_read_events comparisons/c/otf2_read_events.c -I/opt/otf2/include -L/opt/otf2/lib -lotf2 -O3 && ./otf2_read_events
 Time taken to open OTF2 archive: 0.00 seconds
 Number of locations: 32
 Read 368 global definitions
@@ -73,7 +73,7 @@ Total time: 0.03 seconds
 
 #### Large trace
 ```console
-❯ gcc -o otf2_read_events examples/c/otf2_read_events.c -I/opt/otf2/include -L/opt/otf2/lib -lotf2 -O3 && ./otf2_read_events
+❯ gcc -o otf2_read_events comparisons/c/otf2_read_events.c -I/opt/otf2/include -L/opt/otf2/lib -lotf2 -O3 && ./otf2_read_events
 Time taken to open OTF2 archive: 0.00 seconds
 Number of locations: 201
 Read 2606 global definitions
@@ -91,7 +91,7 @@ Uses hashtables rather than arrays for definition context for O(1) lookups
 
 #### Small trace
 ```console
-❯ gcc -o otf2_read_events_hash examples/c/otf2_read_events_hash.c -I/opt/otf2/include -L/opt/otf2/lib -lotf2 -O3 && ./otf2_read_events_hash
+❯ gcc -o otf2_read_events_hash comparisons/c/otf2_read_events_hash.c -I/opt/otf2/include -L/opt/otf2/lib -lotf2 -O3 && ./otf2_read_events_hash
 Time taken to open OTF2 archive: 0.00 seconds
 Number of locations: 32
 Read 368 global definitions
@@ -103,7 +103,7 @@ Total time: 0.02 seconds
 
 #### Large trace
 ```console
-❯ gcc -o otf2_read_events_hash examples/c/otf2_read_events_hash.c -I/opt/otf2/include -L/opt/otf2/lib -lotf2 -O3 && ./otf2_read_events_hash
+❯ gcc -o otf2_read_events_hash comparisons/c/otf2_read_events_hash.c -I/opt/otf2/include -L/opt/otf2/lib -lotf2 -O3 && ./otf2_read_events_hash
 Time taken to open OTF2 archive: 0.00 seconds
 Number of locations: 201
 Read 2606 global definitions

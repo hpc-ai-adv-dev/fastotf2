@@ -1,54 +1,52 @@
 # Architecture
 
-FastOTF2 currently mixes library code, applications, examples, and tutorial material in ways that make the primary user workflow harder to see than it should be.
-The repository is being reorganized so the trace conversion path is explicit and the supporting material is clearly labeled.
+FastOTF2 is organized around two Mason packages in one repository: the root FastOTF2 library package and the trace converter application package under [../apps/trace_to_csv](../apps/trace_to_csv). Supporting comparison implementations remain in the repo, but they are not the primary product surface.
 
 ## Product Layers
 
 The repository has four functional layers:
 
-1. Primary application layer: trace conversion tools that users run directly.
-2. Library layer: reusable Chapel OTF2 modules that power the applications.
-3. Example layer: C, Python, and non-primary Chapel implementations used for comparison or exploration.
-4. Infrastructure layer: container setup, build helpers, and bundled trace inputs.
+1. Library layer: the root FastOTF2 Mason package under [..](..) and [../src](../src).
+2. Primary application layer: the trace converter Mason package under [../apps/trace_to_csv](../apps/trace_to_csv).
+3. Example layer: root Mason library examples plus C and Python comparison material.
+4. Infrastructure layer: container setup, bundled trace inputs, and tutorial material.
 
-## Current Working Layout
+## Primary Package Layout
 
-Today, the working implementation is split like this:
+The primary supported package structure is:
 
-- [../apps/trace_to_csv](../apps/trace_to_csv): primary converter implementation
-- [../chpl/trace_to_csv](../chpl/trace_to_csv): temporary compatibility path for the previous converter location
-- [../chpl/_chpl](../chpl/_chpl): current reusable Chapel OTF2 modules
-- [../chpl/simple](../chpl/simple), [../chpl/read_events](../chpl/read_events), [../chpl/read_events_and_metrics](../chpl/read_events_and_metrics): additional Chapel programs
-- [../examples/c](../examples/c): C reference implementations
-- [../examples/python](../examples/python): Python comparison scripts
+- [../Mason.toml](../Mason.toml): root FastOTF2 library package manifest
+- [../src](../src): reusable Chapel OTF2 modules for FastOTF2
+- [../example](../example): Mason examples that prove the root library package works directly
+- [../apps/trace_to_csv/Mason.toml](../apps/trace_to_csv/Mason.toml): trace converter application package manifest
+- [../apps/trace_to_csv/src](../apps/trace_to_csv/src): primary trace converter source tree
+- [../apps/trace_to_csv/example](../apps/trace_to_csv/example): converter examples, including the current serial path
+
+## Supporting Repository Layout
+
+The repository also contains:
+
+- [../comparisons/c](../comparisons/c): C reference implementations
+- [../comparisons/python](../comparisons/python): Python comparison scripts
 - [../docs/tutorials](../docs/tutorials): notebook-based tutorial material
-- [../docs/benchmarks/perfnotes.md](../docs/benchmarks/perfnotes.md): current benchmark notes
+- [../docs/benchmarks](../docs/benchmarks): benchmark notes and supporting documentation
 - [../container](../container): containerized development environment
 - [../sample-traces](../sample-traces): canonical bundled sample traces
-- [../scorep-traces](../scorep-traces): legacy bundled trace path retained for compatibility
 
-## Target Working Layout
+## Package Roles
 
-The target structure is:
+The root package is library-only.
+Users exercise it through Mason examples and tests rather than through a root application binary.
 
-- [../apps](../apps): user-facing applications
-- [../src](../src): Mason-friendly Chapel package source
-- [../examples](../examples): comparison and tutorial implementations
-- [..](..): top-level docs and onboarding
+The application package under [../apps/trace_to_csv](../apps/trace_to_csv) is the main user-facing tool.
+Its primary executable is the parallel converter, and alternate flows such as the serial path are modeled as examples or internal modes rather than separate Mason packages.
 
-This separates the product surface from the reusable package and from the comparison code.
+This separates the reusable package surface from the user-facing application and from the comparison code.
 
 ## Design Goals
 
 - A new user should find the converter first, not the internals first.
 - The Chapel package should be structured so Mason can manage it cleanly.
 - C and Python should remain available without competing with the main supported workflow.
+- The repository should expose exactly two Mason packages, not a package per converter variant.
 - Documentation should map to user intent instead of current historical layout.
-
-## Transitional Reality
-
-During migration, some docs point to the target structure while commands still reference current paths under [../chpl](../chpl).
-That is expected until the code and build systems are moved.
-
-See [repository-organization.md](repository-organization.md) for the target information architecture and migration principles.

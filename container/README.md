@@ -1,6 +1,6 @@
 # Chapel OTF2 Development Container
 
-This Docker container provides a complete development environment for working with Chapel programs that read and process OTF2 (Open Trace Format 2) trace files. The container includes Chapel 2.6.0, OTF2 3.1.1, and all necessary dependencies.
+This Docker container provides a development environment for working with the FastOTF2 Mason library package and the `trace_to_csv` Mason application package. The container includes Chapel, OTF2, and the dependencies needed to build and run the repository workflows.
 
 ## Table of Contents
 
@@ -78,145 +78,111 @@ docker compose run --rm chapel-dev
 The container mounts two important directories:
 
 - **`/traces`**: Contains OTF2 trace files from the repository's canonical `sample-traces/` path
-- **`/workspace`**: Your repository checkout, including the Chapel package, apps, examples, and docs
+- **`/workspace`**: Your repository checkout, including the Chapel package, apps, comparisons, and docs
 
 Any changes you make in `/workspace` inside the container will be reflected in your host filesystem.
 
 ---
 
-## Working with Chapel Programs
+## Working with FastOTF2
 
-Once inside the container, you'll find yourself in `/workspace` with access to several Chapel projects for OTF2 analysis.
+Once inside the container, you'll find yourself in `/workspace` with access to the FastOTF2 library package at the repository root and the trace converter application package under `apps/trace_to_csv`.
 
-### Available Projects
+### Primary Mason Workflows
 
-The workspace contains the following projects:
+The primary supported flows are:
 
-1. **`simple/`** - Basic OTF2 reading examples (3 variants: serial, parallel, parallel2)
-2. **`read_events/`** - Event reading and processing (3 variants: serial, parallel, distributed)
-3. **`read_events_and_metrics`** - Event and metric reading
-4. **`trace_to_csv/`** - Convert OTF2 traces to CSV format (2 variants: serial, parallel)
+1. **Repo root Mason package** - `mason build --example` and `mason run --example ...` for FastOTF2 proof-of-concept examples
+2. **`apps/trace_to_csv/`** - `mason build`, `mason run`, and `mason run --example TraceToCSVSerial.chpl` for trace conversion
 
 ### Build System Overview
 
-The build system supports multiple Chapel execution modes:
+The primary build system is Mason.
 
-- **Serial**: Single-threaded execution
-- **Parallel**: Multi-threaded execution using tasks
-- **Distributed**: Multi-locale distributed execution (where available)
+- The root package is a library package exercised through Mason examples.
+- The converter package is the primary user-facing application package.
 
-**Important:** The top-level Makefile does **not** build anything. You must navigate into subdirectories to build programs.
+### Building Packages
 
-### Building Programs
-
-Each project directory has its own Makefile. To build programs, navigate to the specific directory:
+From the repository root:
 
 ```bash
-# View top-level instructions
 cd /workspace
-make              # Shows instructions and available subdirectories
-make help         # Shows detailed help
-
-# Build in a specific directory
-cd simple
-make help         # View all available targets for this project
-make              # Build all available versions (same as 'make all')
-make all          # Build all available versions in this directory
-make serial       # Build only the serial version
-make parallel     # Build only the parallel version
-make clean        # Clean build artifacts
-make rebuild      # Clean and rebuild all
-
-# Other project examples
-cd /workspace/read_events
-make all          # Build serial, parallel, and distributed versions
-
-cd /workspace/trace_to_csv
-make all          # Build serial and parallel versions
+mason build --example
 ```
 
-### Running Programs
-
-After building, executables will be in their respective project directories. Version-specific builds may have suffixes:
-
-- Base name (e.g., `otf2read`, `trace_to_csv`) - Serial version
-- `*_parallel` - Parallel version
-- `*_parallel2` - Alternative parallel version (where available)
-- `*_distributed` - Distributed version (where available)
-
-#### Example: Running the Simple OTF2 Reader
+From the converter package:
 
 ```bash
-# Navigate to the project directory
-cd /workspace/simple
-
-# Build all versions (or just use 'make')
-make all
-
-# Or build just the serial version
-make serial
-
-# Run with default trace file (uses compiled-in default)
-./otf2read
-
-# Run with custom trace file via command-line argument
-./otf2read --tracePath=/traces/your-trace-file/traces.otf2
+cd /workspace/apps/trace_to_csv
+mason build
+mason build --example
 ```
 
-#### Example: Running Parallel Version
+### Running Packages
+
+Run root library examples:
 
 ```bash
-# Navigate to the project directory
-cd /workspace/simple
+cd /workspace
+mason run --example FastOtf2ReadArchive.chpl
+mason run --example FastOtf2ReadEvents.chpl
+```
 
-# Build parallel version
-make parallel
+Run the primary converter:
 
-# Run with default trace file
-./otf2read_parallel
+```bash
+cd /workspace/apps/trace_to_csv
+mason run -- /workspace/sample-traces/frontier-hpl-run-using-2-ranks-with-craypm/traces.otf2
+```
 
-# Run with custom trace file via command-line argument
-./otf2read_parallel --tracePath=/traces/your-trace-file/traces.otf2
+Run the serial example path:
+
+```bash
+cd /workspace/apps/trace_to_csv
+mason run --example TraceToCSVSerial.chpl
 ```
 
 ### Command-Line Arguments
 
-All Chapel programs now support command-line arguments using Chapel's `config const` feature. This allows you to override default values without recompiling.
+The converter package's primary executable uses argument parsing for its main workflow.
 
 #### Available Arguments
 
-**All Programs:**
-- `--tracePath=<path>` - Path to the OTF2 trace file (required for all programs)
+**Primary converter:**
+- positional trace path
+- `--trace=<path>`
+- `--metrics=<csv-list>`
+- `--processes=<csv-list>`
+- `--outputDir=<path>`
+- `--excludeMPI`
+- `--excludeHIP`
+- `--log=<NONE|ERROR|WARN|INFO|DEBUG|TRACE>`
 
-**trace_to_csv and trace_to_csv_parallel:**
-- `--tracePath=<path>` - Path to the OTF2 trace file
-- `--crayTimeOffsetArg=<float>` - Time offset for Cray metrics (default: 1.0)
-- `--metricsToTrackArg=<string>` - Comma-separated list of metrics to track
-- `--processesToTrackArg=<string>` - Comma-separated list of processes to track (empty = all)
+**Serial example:**
+- uses the older Chapel config-constant interface baked into the example-backed implementation
 
 #### Usage Examples
 
 ```bash
-# Simple OTF2 reader with custom trace
-cd /workspace/simple
-./otf2read --tracePath=/traces/my-trace/traces.otf2
+# Root library example
+cd /workspace
+mason run --example FastOtf2ReadArchive.chpl
 
-# Parallel reader with custom trace
-./otf2read_parallel --tracePath=/traces/my-trace/traces.otf2
+# Primary converter with explicit trace path
+cd /workspace/apps/trace_to_csv
+mason run -- /workspace/sample-traces/frontier-hpl-run-using-2-ranks-with-craypm/traces.otf2
 
-# Read events with custom trace
-cd /workspace/read_events
-./otf2_read_events --tracePath=/traces/my-trace/traces.otf2
+# Primary converter with additional filters
+mason run -- /workspace/sample-traces/frontier-hpl-run-using-2-ranks-with-craypm/traces.otf2 \
+  --metrics=metric1,metric2 \
+  --processes=0,1 \
+  --outputDir=./out \
+  --excludeMPI \
+  --log=DEBUG
 
-# Trace to CSV with all custom arguments
-cd /workspace/trace_to_csv
-./trace_to_csv --tracePath=/traces/my-trace/traces.otf2 \
-               --crayTimeOffsetArg=2.5 \
-               --metricsToTrackArg="metric1,metric2,metric3" \
-               --processesToTrackArg="process1,process2"
-
-# Use defaults (compiled-in values)
-./trace_to_csv
+# Serial example path
+mason run --example TraceToCSVSerial.chpl
 ```
 
 ### Common Workflow
@@ -227,50 +193,40 @@ Here's a typical development workflow:
 # 1. Enter the container
 docker compose run --rm chapel-dev
 
-# 2. Navigate to the project directory you want to work with
-cd simple
+# 2. Build and run the root examples
+cd /workspace
+mason build --example
+mason run --example FastOtf2ReadArchive.chpl
 
-# 3. View available build targets
-make help
+# 3. Build and run the converter package
+cd /workspace/apps/trace_to_csv
+mason build
+mason run -- /workspace/sample-traces/frontier-hpl-run-using-2-ranks-with-craypm/traces.otf2
 
-# 4. Build the program
-make              # Builds all available versions (default)
-# or: make serial, make parallel, etc. for specific versions
+# 4. Optionally build and run the serial example path
+mason build --example
+mason run --example TraceToCSVSerial.chpl
 
-# 5. List available trace files
-ls /traces
-
-# 6. Run your program with default trace path
-./otf2read
-
-# Or run with a custom trace file
-./otf2read --tracePath=/traces/your-trace/traces.otf2
-
-# 7. Make code changes as needed (files sync with host)
-# Edit files using your host editor or vim inside the container
-
-# 8. Rebuild (Make automatically detects changes)
-make              # or: make serial, make rebuild, etc.
-
-# 9. Test again
-./otf2read --tracePath=/traces/your-trace/traces.otf2
+# 5. Make code changes as needed and rebuild
+mason build
 ```
 
 ### Working with Multiple Projects
 
 ```bash
-# Build and test different projects
-cd /workspace/simple
-make              # Build all available versions
-./otf2read --tracePath=/traces/your-trace/traces.otf2
+# Build and test the root library package examples
+cd /workspace
+mason build --example
+mason run --example FastOtf2ReadArchive.chpl
 
-cd /workspace/read_events
-make              # Build all available versions
-./otf2_read_events --tracePath=/traces/your-trace/traces.otf2
+# Build and test the converter application package
+cd /workspace/apps/trace_to_csv
+mason build
+mason run -- /workspace/sample-traces/frontier-hpl-run-using-2-ranks-with-craypm/traces.otf2
 
-cd /workspace/trace_to_csv
-make              # Build all available versions
-./trace_to_csv --tracePath=/traces/your-trace/traces.otf2
+# Optionally exercise the serial example path
+mason build --example
+mason run --example TraceToCSVSerial.chpl
 ```
 
 ---
@@ -296,33 +252,17 @@ The following environment variables are pre-configured:
 
 ```
 /workspace/                    # Your Chapel source code (mounted from host)
-├── Makefile                   # Top-level (instructions only, does not build)
-├── Makefile.common            # Shared build rules and variables
-├── _chpl/                     # Chapel OTF2 module files
-├── simple/                    # Simple OTF2 examples
-│   ├── Makefile               # Builds serial, parallel, parallel2 versions
-│   ├── otf2read.chpl
-│   ├── otf2read_parallel.chpl
-│   ├── otf2read_parallel2.chpl
-│   └── otf2read_parallel3.chpl
-├── read_events/               # Event processing
-│   ├── Makefile               # Builds serial, parallel, distributed versions
-│   ├── otf2_read_events.chpl
-│   ├── otf2_read_events_parallel.chpl
-│   └── otf2_read_events_distributed.chpl
-├── read_events_and_metrics/  # Event and metric processing
-│   ├── Makefile              # Builds serial
-│   └── read_events_metrics.chpl
-└── trace_to_csv/              # Trace conversion
-    ├── Makefile              # Builds serial and parallel versions
-    ├── trace_to_csv.chpl
-    ├── trace_to_csv_parallel.chpl
-    └── CallGraph.chpl
-
-/traces/                       # OTF2 trace files (mounted from host)
-├── trace1/
-├── trace2/
-└── ...
+├── Mason.toml                 # Root FastOTF2 library manifest
+├── src/                       # Root FastOTF2 library source
+├── example/                   # Root Mason examples
+├── apps/
+│   └── trace_to_csv/
+│       ├── Mason.toml         # Converter application manifest
+│       ├── src/               # Primary converter source tree
+│       └── example/           # Converter examples
+├── sample-traces/             # Canonical bundled OTF2 trace inputs
+├── comparisons/               # C and Python comparison material
+└── docs/                      # Quickstart, comparisons, and tutorial material
 
 /opt/otf2/                     # OTF2 installation
 ├── bin/
@@ -453,19 +393,15 @@ apptainer exec --bind $(pwd):/workspace --pwd /workspace \
   chapel-dev.sif \
   ./simple/otf2read_parallel --tracePath=/traces/your-trace/traces.otf2
 
-# Or run trace_to_csv with multiple arguments
+# Or run the converter package with Mason inside the container
 apptainer exec --bind $(pwd):/workspace --pwd /workspace \
   chapel-dev.sif \
-  ./trace_to_csv/trace_to_csv --tracePath=/traces/your-trace/traces.otf2 \
-                               --crayTimeOffsetArg=1.5 \
-                               --metricsToTrackArg="metric1,metric2"
+  bash -lc 'cd /workspace/apps/trace_to_csv && mason run -- /workspace/sample-traces/frontier-hpl-run-using-2-ranks-with-craypm/traces.otf2 --metrics=metric1,metric2'
 
-# Note: Ensure programs are built before running the job
-# You can build them in the job script or build beforehand:
-# cd /workspace/simple && make all
+# Note: Ensure packages are built before running the job, or use Mason commands that build on demand.
 ```
 
-### Architecture Compatibility Notes
+### Architecture Migration Notes
 
 - **Same Architecture (x86_64 → x86_64)**: Direct migration works seamlessly
 - **Different Architecture (ARM → x86_64)**: You may need to:
@@ -503,17 +439,17 @@ docker info
 
 ### Programs Won't Compile
 
-**Problem**: "No rule to make target" or "No such file or directory"
+**Problem**: Mason cannot find the package or example you expected to build
 
-**Solution**: Make sure you're in the correct subdirectory, not the top-level `/workspace`:
+**Solution**: Make sure you're invoking Mason from the correct package root:
 ```bash
-# Wrong - top-level doesn't build
+# Root FastOTF2 library package
 cd /workspace
-make all          # This won't work!
+mason build --example
 
-# Correct - navigate to subdirectory
-cd /workspace/simple
-make all          # This works!
+# Converter application package
+cd /workspace/apps/trace_to_csv
+mason build
 ```
 
 **Problem**: Chapel compiler not found
@@ -527,13 +463,9 @@ chpl --version
 
 **Solution**: Check OTF2 installation:
 ```bash
-ls /opt/otf2/include
-pkg-config --cflags otf2
+ls /opt/otf2/include/otf2
+ls /opt/otf2/lib
 ```
-
-**Problem**: Make tries to build non-existent files
-
-**Solution**: This has been fixed! Each subdirectory Makefile now only builds targets that have corresponding source files. Run `make help` in the subdirectory to see available targets.
 
 ### Runtime Errors
 
@@ -549,27 +481,18 @@ ls /traces
 **Solution**: Check library path:
 ```bash
 echo $LD_LIBRARY_PATH
-ldd ./simple/otf2read
+ldd /workspace/apps/trace_to_csv/target/debug/trace_to_csv
 ```
 
 ### Build System Questions
 
-**Question**: Why doesn't the top-level `make` build anything?
+**Question**: What should I build first?
 
-**Answer**: This is by design! The new build system requires you to navigate to specific project subdirectories to build. This ensures:
-- You know exactly what you're building
-- Each project can have its own configuration
-- Builds are more manageable and predictable
+**Answer**: Start with the converter package using `cd /workspace/apps/trace_to_csv && mason build`, then use the root library examples if you want to inspect the reusable package surface directly.
 
-See `/workspace/MAKEFILE_GUIDE.md` for complete documentation.
+**Question**: How do I run the serial converter path now?
 
-**Question**: What targets are available in each subdirectory?
-
-**Answer**: Run `make help` in any subdirectory to see available targets. Each project has different variants based on available source files.
-
-**Question**: Can I just run `make` without specifying a target?
-
-**Answer**: Yes! Running `make` (without arguments) is equivalent to `make all` and will build all available versions in that directory. This is the recommended approach for most builds.
+**Answer**: Use the converter package example: `cd /workspace/apps/trace_to_csv && mason run --example TraceToCSVSerial.chpl`.
 
 ### Permission Issues
 

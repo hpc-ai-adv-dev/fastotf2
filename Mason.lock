@@ -1,4 +1,5 @@
-[brick]
+
+[root]
 chplVersion = "2.8.0..2.8.0"
 compopts = ["--fast", "-I/opt/otf2/include", "-L/opt/otf2/lib", "-lotf2"]
 license = "None"
@@ -6,8 +7,4 @@ name = "FastOTF2"
 type = "library"
 version = "0.1.0"
 
-[examples]
-examples = [
-	"FastOtf2ReadArchive.chpl",
-	"FastOtf2ReadEvents.chpl",
-]
+

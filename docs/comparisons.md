@@ -4,16 +4,15 @@ FastOTF2 keeps multiple implementation styles in one repository, but they do not
 
 ## Primary Supported Workflow
 
-The main supported workflow is the Chapel-based trace conversion path centered on [../chpl/trace_to_csv](../chpl/trace_to_csv).
-
-That is the implementation the repository should optimize for in its structure, onboarding, and future packaging.
+The main supported workflow is the Chapel-based trace conversion path centered on [../apps/trace_to_csv](../apps/trace_to_csv).
+That is the implementation the repository optimizes for in its structure, onboarding, and future packaging.
 
 ## Chapel
 
 The Chapel code serves two roles:
 
-- the reusable OTF2 package currently located in [../chpl/_chpl](../chpl/_chpl)
-- the applications and examples located in [../chpl](../chpl)
+- the reusable OTF2 package located in [../src](../src)
+- the application and Mason examples located in [../apps](../apps) and [../example](../example)
 
 Chapel is the main implementation language for FastOTF2.
 

@@ -1,0 +1,5 @@
+.DS_Store
+.otf2venv/
+.venv*/
+target/
+apps/*/target/

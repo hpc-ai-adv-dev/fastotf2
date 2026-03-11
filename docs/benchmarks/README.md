@@ -1,7 +1,5 @@
 # Benchmarks
 
-This directory holds benchmark and performance notes for comparison implementations and Chapel prototypes.
+This directory holds benchmark-oriented notes and supporting material for FastOTF2.
 
-Current contents:
-
-- `perfnotes.md`: collected performance notes across Python, C, and Chapel implementations
+The benchmark documentation is intentionally lightweight while the Mason-native workflows stabilize.
