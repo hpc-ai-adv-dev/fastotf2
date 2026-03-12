@@ -4,7 +4,7 @@ These are instructions for creating and using a FastOTF2 container on a desktop 
 
 The document assumes you do not already have Chapel, Mason, and OTF2 installed locally and would like to use containers for this workflow instead.
 
-The instructions are written around `docker compose` because that is what this repository ships today. If you prefer `docker` or `podman`, you can adapt the image build and run commands, but the supported commands in this repository use the files in this directory.
+The instructions are based on `podman`. Docker is still supported as an alternative, and the Docker commands are preserved below in expandable sections.
 
 The first section shows a complete working example of building and running FastOTF2 in a container on a desktop. The later sections provide more details about each step, dependency checks, and HPC migration.
 
@@ -33,11 +33,13 @@ More details about the process, including setting up prerequisite software and t
 
 Ensure you have the following:
 
-- `docker compose` installed and working
+- `podman` installed and working
 - this `fastotf2` repository cloned locally
 - the OTF2 source tarball `otf2-3.1.1.tar.gz` downloaded into this `container/` directory
 
-The Dockerfile expects the OTF2 tarball to be present locally before the build starts.
+If you prefer Docker, the alternative commands below assume `docker` plus the Compose plugin are installed and working.
+
+The checked-in `Containerfile` expects the OTF2 tarball to be present locally before the build starts.
 
 ### Step 0: Prepare the Environment
 
@@ -45,14 +47,14 @@ This step assumes access to the internet. Skip it if the necessary files are alr
 
 1. Clone the repository if you have not already done so.
 2. Download `otf2-3.1.1.tar.gz` from the OTF2 release site.
-3. Place that tarball in this `container/` directory so the Docker build can copy it into the image.
+3. Place that tarball in this `container/` directory so the container build can copy it into the image.
 
 At this point, your `container/` directory should contain at least:
 
 ```text
 container/
-├── Dockerfile
-├── docker-compose.yml
+├── Containerfile
+├── compose.yaml
 ├── README.md
 └── otf2-3.1.1.tar.gz
 ```
@@ -65,17 +67,42 @@ Now build the FastOTF2 container:
 
 ```bash
 cd container
-docker compose build
+podman build \
+  -f Containerfile \
+  -t localhost/fastotf2:latest \
+  .
 ```
 
 This command:
 
-- builds from the repository Dockerfile in this directory
+- builds from the `Containerfile`
 - installs Chapel and system build tools into the image
 - builds and installs OTF2 into `/opt/otf2`
-- prepares the container to mount the repository at `/workspace`
+- prepares the image to mount the repository at `/workspace`
 
 This build can take several minutes depending on your system and network connection.
+
+<details>
+<summary>Docker alternative</summary>
+
+Use the checked-in Compose file:
+
+```bash
+cd container
+docker compose -f compose.yaml build
+```
+
+Or build the image directly from the same `Containerfile`:
+
+```bash
+cd container
+docker build \
+  -f Containerfile \
+  -t fastotf2:latest \
+  .
+```
+
+</details>
 
 ### Step 2: Run the FastOTF2 Container
 
@@ -83,17 +110,42 @@ Launch the container and enter an interactive shell:
 
 ```bash
 cd container
-docker compose run --rm chapel-dev
+podman run -it --rm \
+  --volume "$(cd .. && pwd -P):/workspace" \
+  --workdir /workspace \
+  localhost/fastotf2:latest
 ```
 
 This command:
 
-- starts the `chapel-dev` service defined in `docker-compose.yml`
+- starts an interactive shell in the image you just built
 - mounts the repository checkout into `/workspace` inside the container
-- starts an interactive shell in that mounted workspace
+- sets `/workspace` as the working directory
 - removes the container after you exit
 
 Once inside the container, you should be in `/workspace` with the full repository available.
+
+<details>
+<summary>Docker alternative</summary>
+
+Use the checked-in Compose file:
+
+```bash
+cd container
+docker compose -f compose.yaml run --rm chapel-dev
+```
+
+Or run the image directly:
+
+```bash
+cd container
+docker run -it --rm \
+  --volume "$(cd .. && pwd -P):/workspace" \
+  --workdir /workspace \
+  fastotf2:latest
+```
+
+</details>
 
 ### Step 3: Build TraceToCSV Inside the Container
 
@@ -154,19 +206,43 @@ When finished, exit the container:
 exit
 ```
 
-Because the recommended command uses `docker compose run --rm`, the container will be removed automatically after exit.
+Because the recommended command uses `podman run --rm`, the container will be removed automatically after exit. The Docker alternatives above also remove the transient run container automatically.
 
 ### Optional: Migrate the Container to HPC Systems
 
 After building and testing the container on a desktop or laptop, you can migrate that environment to an HPC system for further runs. This involves saving the image as an OCI archive and then converting it to an Apptainer SIF file.
 
-1. On the desktop, build an OCI archive from the same Dockerfile:
+1. On the desktop, save the Podman image as an OCI archive:
+
+```bash
+cd container
+podman save --format oci-archive -o fastotf2-container.tar localhost/fastotf2:latest
+```
+
+On an ARM-based Mac targeting x86_64 Linux systems, you will usually want to build an x86_64 image first and then save that image:
+
+```bash
+cd container
+podman build \
+  --platform linux/amd64 \
+  -f Containerfile \
+  -t localhost/fastotf2:amd64 \
+  .
+
+podman save --format oci-archive -o fastotf2-container-amd64.tar localhost/fastotf2:amd64
+```
+
+<details>
+<summary>Docker alternative</summary>
+
+For Docker, use `buildx` to emit an OCI archive directly from the same `Containerfile`:
 
 ```bash
 cd container
 docker buildx build \
   --output type=oci,dest=fastotf2-container.tar \
   -t fastotf2:latest \
+  -f Containerfile \
   .
 ```
 
@@ -176,18 +252,28 @@ On an ARM-based Mac targeting x86_64 Linux systems, you will usually want:
 cd container
 docker buildx build \
   --platform linux/amd64 \
-  --output type=oci,dest=fastotf2-container.tar \
-  -t fastotf2:latest \
+  --output type=oci,dest=fastotf2-container-amd64.tar \
+  -t fastotf2:amd64 \
+  -f Containerfile \
   .
 ```
 
-2. Transfer `fastotf2-container.tar` to the HPC system.
+</details>
+
+2. Transfer `fastotf2-container.tar` or `fastotf2-container-amd64.tar` to the HPC system.
 
 3. On the HPC system, convert the OCI archive to a SIF file:
 
 ```bash
 module load apptainer
 apptainer build fastotf2.sif oci-archive://fastotf2-container.tar
+```
+
+If you exported the x86_64 image instead, use:
+
+```bash
+module load apptainer
+apptainer build fastotf2-amd64.sif oci-archive://fastotf2-container-amd64.tar
 ```
 
 4. Run the container on the HPC system with your workspace bound in:
@@ -212,44 +298,87 @@ This section covers the software requirements for building and running the FastO
 Use the following commands to check whether the required tools are already installed:
 
 ```bash
+which podman
+podman --version
+which apptainer
+```
+
+If you plan to use the Docker alternatives instead, also check:
+
+```bash
 which docker
 docker compose version
-which apptainer
 ```
 
 `apptainer` is only needed if you intend to move the built image to an HPC system.
 
 ### Mac Installation and Setup
 
-We recommend using Docker Desktop on macOS for this repository because the checked-in workflow uses `docker compose` directly.
+We recommend using Podman on macOS for this repository.
 
-Install Docker Desktop and verify that it is running.
+Install Podman with Homebrew:
 
-Then check:
-
-```bash
-docker --version
-docker compose version
+```zsh
+brew install podman
 ```
 
-If the container build is killed due to memory pressure, increase Docker Desktop's memory allocation before retrying the build.
+Initialize and start the Podman virtual machine:
+
+```zsh
+podman machine init
+podman machine start
+```
+
+Then verify:
+
+```zsh
+podman --version
+podman info
+```
+
+If the container build is killed due to memory pressure inside the Podman VM, recreate the machine with more memory before retrying the build:
+
+```zsh
+podman machine stop
+podman machine rm
+podman machine init --memory=4096
+podman machine start
+```
 
 ### Linux Installation and Setup
 
-Install Docker Engine and the Docker Compose plugin using your distribution's package manager or the official Docker installation instructions.
+Install Podman and Apptainer using your distribution's package manager or the official installation instructions.
 
 Then verify:
 
 ```bash
-docker --version
-docker compose version
+podman --version
+podman info
+apptainer --version
 ```
 
-Ensure your user account has permission to run Docker commands.
+On some Linux systems, rootless container tools also require `/etc/subuid` and `/etc/subgid` entries for your user.
+
+### Verifying Podman Installation
+
+To verify that Podman is properly installed and working, run:
+
+```bash
+podman --version
+podman info
+podman images
+podman run --rm hello-world
+```
+
+On macOS, it is also worth confirming that the virtual machine is running:
+
+```bash
+podman machine list
+```
 
 ### Verifying Docker Installation
 
-To verify that Docker is properly installed and working, run:
+If you intend to use the Docker alternatives, verify that Docker is properly installed and working:
 
 ```bash
 docker --version
@@ -270,7 +399,7 @@ The second command requires access to a container registry.
 
 ## Container Layout and Mounted Paths
 
-When you launch the container with `docker compose run --rm chapel-dev`, the repository root is mounted into `/workspace`.
+When you launch the container with the `podman run` command above, the repository root is mounted into `/workspace`.
 
 That means the paths you will use inside the container look like this:
 
@@ -294,7 +423,8 @@ The OTF2 installation built into the image is available under `/opt/otf2`.
 
 - Ensure you have internet connectivity.
 - Ensure `otf2-3.1.1.tar.gz` is present in `container/`.
-- Check Docker itself with `docker info`.
+- Check Podman itself with `podman info`.
+- If you are using the Docker alternative instead, check `docker info` and `docker compose version`.
 
 ### If Mason Cannot Build What You Expect
 
@@ -331,7 +461,7 @@ ls /workspace/sample-traces
 ### If You Encounter HPC Migration Issues
 
 - Make sure you used an OCI archive when exporting the container image.
-- If you are moving from ARM macOS to x86_64 Linux, build with `--platform linux/amd64`.
+- If you are moving from ARM macOS to x86_64 Linux, build with `--platform linux/amd64` and export that image.
 - If the image works locally but not on the HPC system, test the SIF file directly with `apptainer inspect fastotf2.sif` and `apptainer exec fastotf2.sif chpl --version`.
 
 ## Additional Resources
