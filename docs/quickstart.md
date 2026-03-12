@@ -1,18 +1,42 @@
-# Quickstart
+# Local Build and Run Quickstart
 
-This quickstart covers the two primary Mason workflows in the repository: running the trace converter application and using the FastOTF2 library through root examples.
+This guide is for users who want to build and run FastOTF2 directly on their own machine without using the repository container workflow.
+
+If you do not already have Chapel, Mason, and OTF2 installed locally, start with [../container/README.md](../container/README.md) instead. That is the recommended path for most users.
+
+## Overview
+
+This quickstart covers the two primary Mason workflows in the repository:
+
+1. building and running the `TraceToCSV` application
+2. building and running the root FastOTF2 library examples
 
 ## What You Need
 
-- Chapel compiler
-- OTF2 development headers and libraries
+Before using this workflow, ensure you already have:
+
+- Chapel 2.8.0 or higher
 - Mason, which ships with Chapel
+- OTF2 headers and libraries available locally
 
-If you do not want to install those directly on your machine, use the container workflow in [container.md](container.md).
+The manifests in this repository currently assume an OTF2 installation rooted at `/opt/otf2`.
 
-## Build The Converter
+## Step 1: Verify Your Local Toolchain
 
-Build the primary parallel converter with Mason:
+Check the expected tools first:
+
+```bash
+chpl --version
+mason --version
+ls /opt/otf2/include/otf2
+ls /opt/otf2/lib
+```
+
+If those paths do not exist in your environment, you will need to either adjust your local installation to match or modify the manifest compiler options for your system.
+
+## Step 2: Build TraceToCSV
+
+Build the primary converter with Mason:
 
 ```bash
 cd apps/TraceToCSV
@@ -21,32 +45,30 @@ mason build --release
 
 Use `--release` for normal builds and runs. Mason adds Chapel's `--fast` automatically for release builds, so `--fast` is not included in the package `compopts` by default.
 
-That builds the package's primary executable, `TraceToCSV`.
-
-To build the serial proof-of-concept example as well:
+To build the serial example path as well:
 
 ```bash
 cd apps/TraceToCSV
 mason build --release --example
 ```
 
-## Run The Converter
+## Step 3: Run TraceToCSV
 
-Example primary run:
+Run the primary converter against one of the bundled traces:
 
 ```bash
 cd apps/TraceToCSV
 mason run --release -- ../../sample-traces/frontier-hpl-run-using-2-ranks-with-craypm/traces.otf2
 ```
 
-Example serial run through the package example:
+Run the serial example path:
 
 ```bash
 cd apps/TraceToCSV
 mason run --release --example TraceToCSVSerial.chpl
 ```
 
-The primary parallel implementation currently accepts arguments such as:
+The primary parallel implementation accepts options such as:
 
 - positional trace path
 - `--trace`
@@ -57,12 +79,11 @@ The primary parallel implementation currently accepts arguments such as:
 - `--excludeHIP`
 - `--log`
 
-The serial example remains an example path and still uses the older Chapel config-constant interface.
+The serial path remains an example-backed flow and still uses the older Chapel config-constant interface.
 
-## Root Library Package
+## Step 4: Run the Root Library Examples
 
-The repository root is a Mason library package for FastOTF2.
-You can build and run the proof-of-concept Chapel examples from the repository root:
+The repository root is a Mason library package for FastOTF2. You can build and run the examples from the repository root:
 
 ```bash
 cd /path/to/fastotf2
@@ -82,11 +103,12 @@ You can substitute any local OTF2 trace archive when you move beyond the sample 
 
 - The supported build flow is Mason.
 - The serial converter is an example path, not a second application package.
-- The default external OTF2 installation path is `/opt/otf2`.
+- The root package is a library package and is primarily exercised through examples.
 
 ## Next Reading
 
+- [../README.md](../README.md)
 - [architecture.md](architecture.md)
-- [container.md](container.md)
 - [comparisons.md](comparisons.md)
+- [../container/README.md](../container/README.md)
 - [../DEMO.md](../DEMO.md)

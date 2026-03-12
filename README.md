@@ -1,11 +1,43 @@
 # FastOTF2
 
-FastOTF2 converts OTF2 traces into analysis-friendly outputs, starting with CSV.
-The main entrypoint is the Mason application in [apps/TraceToCSV](apps/TraceToCSV), built on top of the reusable Chapel library at the repository root.
+FastOTF2 is a Chapel-based toolkit for reading OTF2 traces and converting them into analysis-friendly outputs.
+The primary end-to-end workflow in this repository is the `TraceToCSV` Mason application in [apps/TraceToCSV](apps/TraceToCSV), built on top of the reusable FastOTF2 library at the repository root.
 
-## Quickstart
+The recommended path for most users is the container workflow. It assumes you do not already have Chapel, Mason, and OTF2 installed locally and gives you a ready-made environment for building and running the repository.
 
-Build and run the trace converter:
+## Using FastOTF2 to convert your OTF2 traces
+
+Depending on your use case, you may want to pick one of the following options:
+
+- **Container-first workflow (recommended):** [container/README.md](container/README.md)
+- **Local/native workflow with your own Chapel and OTF2 install:** [docs/quickstart.md](docs/quickstart.md)
+- **Developer and repository documentation:** [docs/README.md](docs/README.md)
+
+## Recommended Workflow
+
+If you want the shortest path to a working FastOTF2 environment, use the container guide.
+It walks through the full process in order:
+
+1. Prepare the required container inputs.
+2. Build the container.
+3. Launch the container.
+4. Build `TraceToCSV` inside the container.
+5. Run it against one of the bundled traces.
+
+The bundled traces used throughout the documentation live under [sample-traces](sample-traces).
+
+## Repository Layout
+
+- [apps/TraceToCSV](apps/TraceToCSV): primary user-facing trace conversion application
+- [src](src) and [Mason.toml](Mason.toml): reusable FastOTF2 Chapel library
+- [example](example): root Mason examples for the library package
+- [comparisons](comparisons): comparison material in C and Python
+- [container](container): container build and runtime workflow
+- [docs](docs): native-build guidance, architecture notes, benchmarks, tutorials, and other developer-focused material
+
+## Primary Commands
+
+Inside the container or any local environment where Chapel and OTF2 are already available:
 
 ```bash
 cd apps/TraceToCSV
@@ -15,46 +47,9 @@ mason run --release -- ../../sample-traces/frontier-hpl-run-using-2-ranks-with-c
 
 Use `--release` for normal builds and runs. Mason adds Chapel's `--fast` automatically for release builds, so `--fast` is not included in the package `compopts` by default.
 
-Run the serial example:
+## Additional Reading
 
-```bash
-cd apps/TraceToCSV
-mason run --release --example TraceToCSVSerial.chpl
-```
-
-Use [docs/quickstart.md](docs/quickstart.md) for prerequisites, CLI notes, and alternate workflows.
-Use [docs/container.md](docs/container.md) if you want a prebuilt Chapel and OTF2 environment.
-
-## Repository Layout
-
-- [apps/TraceToCSV](apps/TraceToCSV) is the primary trace conversion application.
-- [sample-traces](sample-traces) contains bundled trace inputs used by the docs and examples.
-- [src](src) and [Mason.toml](Mason.toml) define the reusable FastOTF2 Chapel library.
-- [example](example) contains Mason examples for the root library package, including the restored simple, read-events, and metrics-focused Chapel utilities.
-- [comparisons](comparisons) contains C and Python comparison material.
-- [docs](docs) contains quickstart, architecture, container, benchmark, and tutorial documentation.
-- [container](container) contains the containerized development environment.
-
-## Documentation
-
-- [docs/quickstart.md](docs/quickstart.md): build and run the converter
-- [apps/TraceToCSV/README.md](apps/TraceToCSV/README.md): application-specific usage and layout
-- [docs/container.md](docs/container.md): container workflow
-- [docs/architecture.md](docs/architecture.md): repository structure and package roles
-- [docs/comparisons.md](docs/comparisons.md): how the Chapel, Python, and C implementations relate
-- [DEMO.md](DEMO.md): walkthrough of the OTF2 model and the project implementation
-
-## Library Workflow
-
-If you want to use the reusable Chapel package directly:
-
-```bash
-mason build --release --example
-mason run --release --example FastOtf2ReadArchive.chpl
-mason run --release --example FastOtf2ReadEvents.chpl
-```
-
-## Why This Repository Exists
-
-FastOTF2 exists to make OTF2 trace data easier to explore, export, and analyze at scale.
-The converter application is the first user-facing product; the root library exists to support that workflow and to enable additional OTF2 tooling.
+- [container/README.md](container/README.md): full container walkthrough for users
+- [docs/quickstart.md](docs/quickstart.md): native/local build and run workflow
+- [docs/README.md](docs/README.md): developer docs index
+- [DEMO.md](DEMO.md): OTF2 walkthrough and project background
