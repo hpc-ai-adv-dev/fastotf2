@@ -10,4 +10,12 @@ version = "0.1.0"
 examples = [
 	"FastOtf2ReadArchive.chpl",
 	"FastOtf2ReadEvents.chpl",
+	"SimpleRead.chpl",
+	"SimpleReadParallel.chpl",
+	"SimpleReadParallelChplLocks.chpl",
+	"SimpleReadParallelLocalEvents.chpl",
+	"ReadEventsSerial.chpl",
+	"ReadEventsParallel.chpl",
+	"ReadEventsDistributed.chpl",
+	"ReadEventsAndMetrics.chpl",
 ]
