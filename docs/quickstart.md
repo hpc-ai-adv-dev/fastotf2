@@ -16,8 +16,10 @@ Build the primary parallel converter with Mason:
 
 ```bash
 cd apps/TraceToCSV
-mason build
+mason build --release
 ```
+
+Use `--release` for normal builds and runs. Mason adds Chapel's `--fast` automatically for release builds, so `--fast` is not included in the package `compopts` by default.
 
 That builds the package's primary executable, `TraceToCSV`.
 
@@ -25,7 +27,7 @@ To build the serial proof-of-concept example as well:
 
 ```bash
 cd apps/TraceToCSV
-mason build --example
+mason build --release --example
 ```
 
 ## Run The Converter
@@ -34,14 +36,14 @@ Example primary run:
 
 ```bash
 cd apps/TraceToCSV
-mason run -- ../../sample-traces/frontier-hpl-run-using-2-ranks-with-craypm/traces.otf2
+mason run --release -- ../../sample-traces/frontier-hpl-run-using-2-ranks-with-craypm/traces.otf2
 ```
 
 Example serial run through the package example:
 
 ```bash
 cd apps/TraceToCSV
-mason run --example TraceToCSVSerial.chpl
+mason run --release --example TraceToCSVSerial.chpl
 ```
 
 The primary parallel implementation currently accepts arguments such as:
@@ -64,9 +66,9 @@ You can build and run the proof-of-concept Chapel examples from the repository r
 
 ```bash
 cd /path/to/fastotf2
-mason build --example
-mason run --example FastOtf2ReadArchive.chpl
-mason run --example FastOtf2ReadEvents.chpl
+mason build --release --example
+mason run --release --example FastOtf2ReadArchive.chpl
+mason run --release --example FastOtf2ReadEvents.chpl
 ```
 
 The examples default to bundled inputs under [../sample-traces](../sample-traces).

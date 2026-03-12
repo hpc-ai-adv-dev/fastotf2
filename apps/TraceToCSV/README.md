@@ -9,8 +9,10 @@ Build the primary converter executable with Mason:
 
 ```bash
 cd apps/TraceToCSV
-mason build
+mason build --release
 ```
+
+Use `--release` for normal builds. Mason adds Chapel's `--fast` automatically for release builds, so the package manifest does not include `--fast` in `compopts` by default.
 
 That builds the package's primary application, `TraceToCSV`.
 
@@ -18,7 +20,7 @@ To build the serial example path as well:
 
 ```bash
 cd apps/TraceToCSV
-mason build --example
+mason build --release --example
 ```
 
 ## Run
@@ -27,14 +29,14 @@ Primary parallel run:
 
 ```bash
 cd apps/TraceToCSV
-mason run -- ../../sample-traces/frontier-hpl-run-using-2-ranks-with-craypm/traces.otf2
+mason run --release -- ../../sample-traces/frontier-hpl-run-using-2-ranks-with-craypm/traces.otf2
 ```
 
 Serial example run:
 
 ```bash
 cd apps/TraceToCSV
-mason run --example TraceToCSVSerial.chpl
+mason run --release --example TraceToCSVSerial.chpl
 ```
 
 ## Package Layout

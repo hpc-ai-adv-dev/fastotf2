@@ -9,15 +9,17 @@ Build and run the trace converter:
 
 ```bash
 cd apps/TraceToCSV
-mason build
-mason run -- ../../sample-traces/frontier-hpl-run-using-2-ranks-with-craypm/traces.otf2
+mason build --release
+mason run --release -- ../../sample-traces/frontier-hpl-run-using-2-ranks-with-craypm/traces.otf2
 ```
+
+Use `--release` for normal builds and runs. Mason adds Chapel's `--fast` automatically for release builds, so `--fast` is not included in the package `compopts` by default.
 
 Run the serial example:
 
 ```bash
 cd apps/TraceToCSV
-mason run --example TraceToCSVSerial.chpl
+mason run --release --example TraceToCSVSerial.chpl
 ```
 
 Use [docs/quickstart.md](docs/quickstart.md) for prerequisites, CLI notes, and alternate workflows.
@@ -47,9 +49,9 @@ Use [docs/container.md](docs/container.md) if you want a prebuilt Chapel and OTF
 If you want to use the reusable Chapel package directly:
 
 ```bash
-mason build --example
-mason run --example FastOtf2ReadArchive.chpl
-mason run --example FastOtf2ReadEvents.chpl
+mason build --release --example
+mason run --release --example FastOtf2ReadArchive.chpl
+mason run --release --example FastOtf2ReadEvents.chpl
 ```
 
 ## Why This Repository Exists
