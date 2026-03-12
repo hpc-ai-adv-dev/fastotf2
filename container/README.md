@@ -34,12 +34,15 @@ More details about the process, including setting up prerequisite software and t
 Ensure you have the following:
 
 - `podman` installed and working
+- `podman compose` available on your system
 - this `fastotf2` repository cloned locally
 - the OTF2 source tarball `otf2-3.1.1.tar.gz` downloaded into this `container/` directory
 
 If you prefer Docker, the alternative commands below assume `docker` plus the Compose plugin are installed and working.
 
-The checked-in `Containerfile` expects the OTF2 tarball to be present locally before the build starts.
+On some systems, `podman compose` is provided by a separate compose provider. If `podman compose version` fails, install the provider your platform recommends before using the compose-based commands below, or use the `podman run` alternative commands instead.
+
+The checked-in build expects the OTF2 tarball to be present locally before the build starts. `Containerfile` is the single maintained build file in this directory. For compose compatibility, `Dockerfile` is just a symlink to `Containerfile`.
 
 ### Step 0: Prepare the Environment
 
@@ -54,6 +57,7 @@ At this point, your `container/` directory should contain at least:
 ```text
 container/
 ├── Containerfile
+├── Dockerfile -> Containerfile
 ├── compose.yaml
 ├── README.md
 └── otf2-3.1.1.tar.gz
@@ -67,20 +71,24 @@ Now build the FastOTF2 container:
 
 ```bash
 cd container
+podman compose -f compose.yaml build
+```
+
+This command:
+
+- builds the `fastotf2-dev` service from the checked-in `compose.yaml`
+- uses the default `Dockerfile` path, which resolves to the same `Containerfile`
+- produces the `localhost/fastotf2:latest` image used by the run step
+
+If you prefer to avoid compose, the equivalent direct build is:
+
+```bash
+cd container
 podman build \
   -f Containerfile \
   -t localhost/fastotf2:latest \
   .
 ```
-
-This command:
-
-- builds from the `Containerfile`
-- installs Chapel and system build tools into the image
-- builds and installs OTF2 into `/opt/otf2`
-- prepares the image to mount the repository at `/workspace`
-
-This build can take several minutes depending on your system and network connection.
 
 <details>
 <summary>Docker alternative</summary>
@@ -110,18 +118,26 @@ Launch the container and enter an interactive shell:
 
 ```bash
 cd container
+podman compose -f compose.yaml run --rm fastotf2-dev
+```
+
+This command:
+
+- starts the `fastotf2-dev` service defined in `compose.yaml`
+- mounts the repository checkout into `/workspace` inside the container
+- starts an interactive shell in that mounted workspace
+- removes the transient run container after you exit
+
+If you prefer to avoid compose, the equivalent direct run is:
+
+```bash
+cd container
 podman run -it --rm \
   --volume "$(cd .. && pwd -P):/workspace" \
   --workdir /workspace \
   localhost/fastotf2:latest
 ```
 
-This command:
-
-- starts an interactive shell in the image you just built
-- mounts the repository checkout into `/workspace` inside the container
-- sets `/workspace` as the working directory
-- removes the container after you exit
 
 Once inside the container, you should be in `/workspace` with the full repository available.
 
@@ -132,7 +148,7 @@ Use the checked-in Compose file:
 
 ```bash
 cd container
-docker compose -f compose.yaml run --rm chapel-dev
+docker compose -f compose.yaml run --rm fastotf2-dev
 ```
 
 Or run the image directly:
@@ -206,7 +222,7 @@ When finished, exit the container:
 exit
 ```
 
-Because the recommended command uses `podman run --rm`, the container will be removed automatically after exit. The Docker alternatives above also remove the transient run container automatically.
+Because the compose and direct-run commands both use `--rm`, the transient run container will be removed automatically after exit. The Docker alternatives above behave the same way.
 
 ### Optional: Migrate the Container to HPC Systems
 
@@ -300,6 +316,7 @@ Use the following commands to check whether the required tools are already insta
 ```bash
 which podman
 podman --version
+podman compose version
 which apptainer
 ```
 
@@ -334,6 +351,7 @@ Then verify:
 ```zsh
 podman --version
 podman info
+podman compose version
 ```
 
 If the container build is killed due to memory pressure inside the Podman VM, recreate the machine with more memory before retrying the build:
@@ -357,6 +375,12 @@ podman info
 apptainer --version
 ```
 
+If you plan to use `podman compose`, also verify:
+
+```bash
+podman compose version
+```
+
 On some Linux systems, rootless container tools also require `/etc/subuid` and `/etc/subgid` entries for your user.
 
 ### Verifying Podman Installation
@@ -366,6 +390,7 @@ To verify that Podman is properly installed and working, run:
 ```bash
 podman --version
 podman info
+podman compose version
 podman images
 podman run --rm hello-world
 ```
@@ -399,7 +424,7 @@ The second command requires access to a container registry.
 
 ## Container Layout and Mounted Paths
 
-When you launch the container with the `podman run` command above, the repository root is mounted into `/workspace`.
+When you launch the container with either the `podman compose` or direct `podman run` command above, the repository root is mounted into `/workspace`.
 
 That means the paths you will use inside the container look like this:
 
@@ -424,6 +449,7 @@ The OTF2 installation built into the image is available under `/opt/otf2`.
 - Ensure you have internet connectivity.
 - Ensure `otf2-3.1.1.tar.gz` is present in `container/`.
 - Check Podman itself with `podman info`.
+- If you are using the compose path, also check `podman compose version`.
 - If you are using the Docker alternative instead, check `docker info` and `docker compose version`.
 
 ### If Mason Cannot Build What You Expect

@@ -1,11 +1,11 @@
 # Copyright Hewlett Packard Enterprise Development LP.
 
 services:
-  chapel-dev:
+  fastotf2-dev:
+    image: localhost/fastotf2:latest
     build:
       context: .
-      dockerfile: Containerfile
-    container_name: chapel-dev
+    container_name: fastotf2-dev
     stdin_open: true
     tty: true
     volumes:
