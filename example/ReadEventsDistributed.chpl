@@ -158,7 +158,7 @@ module ReadEventsDistributed {
 
   // Config constant for command-line argument
   // Usage: ./ReadEventsDistributed --tracePath=/path/to/traces.otf2
-  config const tracePath: string = "sample-traces/frontier-hpl-run-using-2-ranks-with-craypm/traces.otf2";
+  config const tracePath: string = "sample-traces/simple-mi300-example-run/traces.otf2";
 
   proc main() {
     //writeln("Debug: Starting main");

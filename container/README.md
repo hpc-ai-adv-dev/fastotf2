@@ -182,20 +182,22 @@ Run the converter against one of the bundled traces:
 
 ```bash
 cd /workspace/apps/TraceToCSV
-mason run --release -- /workspace/sample-traces/frontier-hpl-run-using-2-ranks-with-craypm/traces.otf2
+mason run --release -- /workspace/sample-traces/simple-mi300-example-run/traces.otf2
 ```
 
 You can also pass additional filters and output controls:
 
 ```bash
 cd /workspace/apps/TraceToCSV
-mason run --release -- /workspace/sample-traces/frontier-hpl-run-using-2-ranks-with-craypm/traces.otf2 \
+mason run --release -- /workspace/sample-traces/simple-mi300-example-run/traces.otf2 \
   --metrics=metric1,metric2 \
   --processes=0,1 \
   --outputDir=./out \
   --excludeMPI \
   --log=DEBUG
 ```
+
+To run a different archive, replace the trace path after `--` with your own OTF2 archive.
 
 #### Expected Output
 
@@ -302,7 +304,7 @@ apptainer shell --bind $(pwd):/workspace --pwd /workspace fastotf2.sif
 
 ```bash
 cd /workspace/apps/TraceToCSV
-mason run --release -- /workspace/sample-traces/frontier-hpl-run-using-2-ranks-with-craypm/traces.otf2
+mason run --release -- /workspace/sample-traces/simple-mi300-example-run/traces.otf2
 ```
 
 ## Install and Verify Required Dependencies

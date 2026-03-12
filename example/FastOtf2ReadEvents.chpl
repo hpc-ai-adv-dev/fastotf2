@@ -142,7 +142,7 @@ module FastOtf2ReadEvents {
     }
   }
 
-  config const tracePath = "sample-traces/frontier-hpl-run-using-2-ranks-with-craypm/traces.otf2";
+  config const tracePath = "sample-traces/simple-mi300-example-run/traces.otf2";
   config const verbose = false;
 
   proc main() {

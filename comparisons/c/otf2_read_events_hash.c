@@ -415,8 +415,8 @@ Leave_store_and_count(OTF2_LocationRef location,
 int main(int argc, char** argv) {
     clock_t start_time = clock();
 
-    // OTF2_Reader* reader = OTF2_Reader_Open("/workspace/scorep-traces/frontier-hpl-run-using-2-ranks-with-craypm/traces.otf2" );
-    OTF2_Reader* reader = OTF2_Reader_Open("/workspace/scorep-traces/simple-mi300-example-run/traces.otf2" );
+    // OTF2_Reader* reader = OTF2_Reader_Open("/path/to/traces.otf2" );
+    OTF2_Reader* reader = OTF2_Reader_Open("/workspace/sample-traces/simple-mi300-example-run/traces.otf2" );
     if (!reader) {
         fprintf(stderr, "Failed to open OTF2 archive\n");
         return EXIT_FAILURE;

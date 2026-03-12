@@ -20,8 +20,10 @@ For end-to-end user instructions, start with one of these instead of using this 
 ```bash
 cd apps/TraceToCSV
 mason build --release
-mason run --release -- ../../sample-traces/frontier-hpl-run-using-2-ranks-with-craypm/traces.otf2
+mason run --release -- ../../sample-traces/simple-mi300-example-run/traces.otf2
 ```
+
+To use a different trace, replace the final positional path when invoking `mason run`.
 
 To build and run the serial example path:
 

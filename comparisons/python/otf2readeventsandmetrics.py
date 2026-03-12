@@ -47,7 +47,7 @@ def read_otf2_events_only(archive_name):
     return data
 
 
-# archive_name = "/workspace/sample-traces/frontier-hpl-run-using-2-ranks-with-craypm/traces.otf2"
+# archive_name = "/path/to/traces.otf2"
 archive_name = "/workspace/sample-traces/simple-mi300-example-run/traces.otf2"
 
 start_time = time.time()

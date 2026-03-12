@@ -42,8 +42,10 @@ Inside the container or any local environment where Chapel and OTF2 are already 
 ```bash
 cd apps/TraceToCSV
 mason build --release
-mason run --release -- ../../sample-traces/frontier-hpl-run-using-2-ranks-with-craypm/traces.otf2
+mason run --release -- ../../sample-traces/simple-mi300-example-run/traces.otf2
 ```
+
+To run against a different trace, replace the final positional path with your own OTF2 archive.
 
 Use `--release` for normal builds and runs. Mason adds Chapel's `--fast` automatically for release builds, so `--fast` is not included in the package `compopts` by default.
 

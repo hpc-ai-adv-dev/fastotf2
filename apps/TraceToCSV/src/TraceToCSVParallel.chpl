@@ -21,7 +21,7 @@ module TraceToCSVParallel {
     TRACE
   }
 
-  var trace: string = "../../sample-traces/frontier-hpl-run-using-2-ranks-with-craypm/traces.otf2";
+  var trace: string = "../../sample-traces/simple-mi300-example-run/traces.otf2";
   var metrics: string = ""; // Empty string means track all metrics
   var processes: string = ""; // Empty string means track all processes
   var excludeMPI: bool = false;
@@ -678,7 +678,7 @@ module TraceToCSVParallel {
 
       var traceArg = parser.addArgument(
         name="trace",
-        defaultValue="../../sample-traces/frontier-hpl-run-using-2-ranks-with-craypm/traces.otf2",
+        defaultValue="../../sample-traces/simple-mi300-example-run/traces.otf2",
         help="Path to the OTF2 trace file"
       );
 

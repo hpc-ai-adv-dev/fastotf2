@@ -58,8 +58,10 @@ Run the primary converter against one of the bundled traces:
 
 ```bash
 cd apps/TraceToCSV
-mason run --release -- ../../sample-traces/frontier-hpl-run-using-2-ranks-with-craypm/traces.otf2
+mason run --release -- ../../sample-traces/simple-mi300-example-run/traces.otf2
 ```
+
+To run a different archive, replace the final positional path with your own `traces.otf2` path.
 
 Run the serial example path:
 
@@ -93,6 +95,7 @@ mason run --release --example FastOtf2ReadEvents.chpl
 ```
 
 The examples default to bundled inputs under [../sample-traces](../sample-traces).
+To point any of the Chapel examples at a different trace, pass `--tracePath=/path/to/traces.otf2`.
 
 ## Sample Inputs
 
