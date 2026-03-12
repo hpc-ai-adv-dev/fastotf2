@@ -1,8 +1,11 @@
 [brick]
+authors = ["Shreyas Khandekar"]
 chplVersion = "2.8.0..2.8.0"
 compopts = ["-Msrc", "-Mexample", "-M../../src", "-I/opt/otf2/include", "-L/opt/otf2/lib", "-lotf2"]
-license = "None"
+copyrightYear = "2026"
+license = "Apache-2.0"
 name = "TraceToCSV"
+source = "https://github.com/hpc-ai-adv-dev/fastotf2"
 type = "application"
 version = "0.1.0"
 
