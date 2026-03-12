@@ -2,7 +2,7 @@
 
 module SimpleRead {
   // Mason example: mason run --example SimpleRead.chpl
-  use OTF2;
+  use FastOTF2;
 
   var enterCount: atomic int;
   var leaveCount: atomic int;

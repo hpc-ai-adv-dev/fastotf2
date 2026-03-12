@@ -1,4 +1,4 @@
-module trace_to_csv {
+module TraceToCSV {
   use TraceToCSVParallel;
 
   proc main(args: [] string) {

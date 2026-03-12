@@ -5,7 +5,7 @@
 
 module SimpleReadParallelChplLocks {
   // Mason example: mason run --example SimpleReadParallelChplLocks.chpl
-  use OTF2;
+  use FastOTF2;
 
   var enterCount: atomic int;
   var leaveCount: atomic int;

@@ -20,12 +20,12 @@ Today the container mounts:
 - `/workspace` for the Chapel source tree
 - `/traces` for the bundled OTF2 traces
 
-The primary build and run instructions now use Mason at the repo root and in [../apps/trace_to_csv](../apps/trace_to_csv).
+The primary build and run instructions now use Mason at the repo root and in [../apps/TraceToCSV](../apps/TraceToCSV).
 
 ## Recommended Starting Point
 
 1. Read [../container/README.md](../container/README.md)
 2. Build the container from [../container](../container)
 3. Enter the environment
-4. Run Mason examples from the repo root or build the converter from [../apps/trace_to_csv](../apps/trace_to_csv)
+4. Run Mason examples from the repo root or build the converter from [../apps/TraceToCSV](../apps/TraceToCSV)
 5. Run it against traces from [../sample-traces](../sample-traces)

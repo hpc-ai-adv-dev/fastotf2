@@ -15,7 +15,7 @@ Current structure:
 The supported build style is Mason:
 
 - The root FastOTF2 package uses Mason at the repository root.
-- The trace converter application package uses Mason under `apps/trace_to_csv`.
+- The trace converter application package uses Mason under `apps/TraceToCSV`.
 
 The default OTF2 dependency paths are intentionally aligned across both systems:
 

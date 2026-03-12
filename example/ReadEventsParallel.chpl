@@ -2,7 +2,7 @@
 
 module ReadEventsParallel {
   // Mason example: mason run --example ReadEventsParallel.chpl
-  use OTF2;
+  use FastOTF2;
   use Time;
   use List;
   use Sort;

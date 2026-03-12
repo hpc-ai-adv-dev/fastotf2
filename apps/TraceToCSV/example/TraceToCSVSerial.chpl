@@ -1,7 +1,7 @@
 // Copyright Hewlett Packard Enterprise Development LP.
 
-module TraceToCSV {
-  use OTF2;
+module TraceToCSVSerial {
+  use FastOTF2;
   use Time;
   use List;
   use Map;
@@ -543,18 +543,18 @@ module TraceToCSV {
 
   // Config constants for command-line arguments
   // Usage examples:
-  //   ./trace_to_csv --tracePath=/path/to/traces.otf2
-  //   ./trace_to_csv --crayTimeOffsetArg=2.5
-  //   ./trace_to_csv --metricsToTrackArg="metric1,metric2,metric3"
-  //   ./trace_to_csv --processesToTrackArg="process1,process2"
-  //   ./trace_to_csv --tracePath=/path/to/traces.otf2 --crayTimeOffsetArg=1.5 --metricsToTrackArg="metric1,metric2"
+  //   ./TraceToCSVSerial --tracePath=/path/to/traces.otf2
+  //   ./TraceToCSVSerial --crayTimeOffsetArg=2.5
+  //   ./TraceToCSVSerial --metricsToTrackArg="metric1,metric2,metric3"
+  //   ./TraceToCSVSerial --processesToTrackArg="process1,process2"
+  //   ./TraceToCSVSerial --tracePath=/path/to/traces.otf2 --crayTimeOffsetArg=1.5 --metricsToTrackArg="metric1,metric2"
 
   config const tracePath: string = "../../sample-traces/frontier-hpl-run-using-2-ranks-with-craypm/traces.otf2";
   config const crayTimeOffsetArg: real(64) = 1.0;
   config const metricsToTrackArg: string = "A2rocm_smi:::energy_count:device=0,A2rocm_smi:::energy_count:device=2,A2rocm_smi:::energy_count:device=4,A2rocm_smi:::energy_count:device=6,A2coretemp:::craypm:accel0_energy,A2coretemp:::craypm:accel1_energy,A2coretemp:::craypm:accel2_energy,A2coretemp:::craypm:accel3_energy";
   config const processesToTrackArg: string = ""; // Empty string means track all processes
 
-  proc main() {
+  proc main(args: [] string) {
 
     var sw: stopwatch;
     sw.start();

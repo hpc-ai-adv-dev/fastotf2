@@ -1,6 +1,6 @@
 # OTF2 in Chapel: A Live Demo
 
-This repo demonstrates the capabilities of the Open Trace Format 2 (OTF2) library within the Chapel programming language. The primary user-facing workflow is the Mason-based trace converter in `apps/trace_to_csv`, backed by the reusable FastOTF2 Chapel library. We will explore the format, compare implementations in Python and C, and showcase the Chapel implementation.
+This repo demonstrates the capabilities of the Open Trace Format 2 (OTF2) library within the Chapel programming language. The primary user-facing workflow is the Mason-based trace converter in `apps/TraceToCSV`, backed by the reusable FastOTF2 Chapel library. We will explore the format, compare implementations in Python and C, and showcase the Chapel implementation.
 
 This work is part of a collaboration with Oak Ridge National Laboratory (ORNL) to enable high-performance trace analysis.
 The bottleneck in these trace analysis workflows has been converting OTF2 traces into a data format that can be ingested
@@ -92,4 +92,4 @@ We will compile and run the root Mason example `example/FastOtf2ReadEvents.chpl`
 
 This example is more complex. It reads definitions to understand regions and metrics, and then iterates over events to produce a CSV file.
 
-We will compile and run the `trace_to_csv` application package through Mason.
+We will compile and run the `TraceToCSV` application package through Mason.

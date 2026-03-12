@@ -2,7 +2,7 @@
 
 module SimpleReadParallelLocalEvents {
   // Mason example: mason run --example SimpleReadParallelLocalEvents.chpl
-  use OTF2;
+  use FastOTF2;
 
   // Callback: print on enter
   proc EnterPrint(location: OTF2_LocationRef,

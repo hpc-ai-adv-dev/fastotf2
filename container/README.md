@@ -1,6 +1,6 @@
 # Chapel OTF2 Development Container
 
-This Docker container provides a development environment for working with the FastOTF2 Mason library package and the `trace_to_csv` Mason application package. The container includes Chapel, OTF2, and the dependencies needed to build and run the repository workflows.
+This Docker container provides a development environment for working with the FastOTF2 Mason library package and the `TraceToCSV` Mason application package. The container includes Chapel, OTF2, and the dependencies needed to build and run the repository workflows.
 
 ## Table of Contents
 
@@ -86,14 +86,14 @@ Any changes you make in `/workspace` inside the container will be reflected in y
 
 ## Working with FastOTF2
 
-Once inside the container, you'll find yourself in `/workspace` with access to the FastOTF2 library package at the repository root and the trace converter application package under `apps/trace_to_csv`.
+Once inside the container, you'll find yourself in `/workspace` with access to the FastOTF2 library package at the repository root and the trace converter application package under `apps/TraceToCSV`.
 
 ### Primary Mason Workflows
 
 The primary supported flows are:
 
 1. **Repo root Mason package** - `mason build --example` and `mason run --example ...` for FastOTF2 proof-of-concept examples
-2. **`apps/trace_to_csv/`** - `mason build`, `mason run`, and `mason run --example TraceToCSVSerial.chpl` for trace conversion
+2. **`apps/TraceToCSV/`** - `mason build`, `mason run`, and `mason run --example TraceToCSVSerial.chpl` for trace conversion
 
 ### Build System Overview
 
@@ -114,7 +114,7 @@ mason build --example
 From the converter package:
 
 ```bash
-cd /workspace/apps/trace_to_csv
+cd /workspace/apps/TraceToCSV
 mason build
 mason build --example
 ```
@@ -132,14 +132,14 @@ mason run --example FastOtf2ReadEvents.chpl
 Run the primary converter:
 
 ```bash
-cd /workspace/apps/trace_to_csv
+cd /workspace/apps/TraceToCSV
 mason run -- /workspace/sample-traces/frontier-hpl-run-using-2-ranks-with-craypm/traces.otf2
 ```
 
 Run the serial example path:
 
 ```bash
-cd /workspace/apps/trace_to_csv
+cd /workspace/apps/TraceToCSV
 mason run --example TraceToCSVSerial.chpl
 ```
 
@@ -170,7 +170,7 @@ cd /workspace
 mason run --example FastOtf2ReadArchive.chpl
 
 # Primary converter with explicit trace path
-cd /workspace/apps/trace_to_csv
+cd /workspace/apps/TraceToCSV
 mason run -- /workspace/sample-traces/frontier-hpl-run-using-2-ranks-with-craypm/traces.otf2
 
 # Primary converter with additional filters
@@ -199,7 +199,7 @@ mason build --example
 mason run --example FastOtf2ReadArchive.chpl
 
 # 3. Build and run the converter package
-cd /workspace/apps/trace_to_csv
+cd /workspace/apps/TraceToCSV
 mason build
 mason run -- /workspace/sample-traces/frontier-hpl-run-using-2-ranks-with-craypm/traces.otf2
 
@@ -220,7 +220,7 @@ mason build --example
 mason run --example FastOtf2ReadArchive.chpl
 
 # Build and test the converter application package
-cd /workspace/apps/trace_to_csv
+cd /workspace/apps/TraceToCSV
 mason build
 mason run -- /workspace/sample-traces/frontier-hpl-run-using-2-ranks-with-craypm/traces.otf2
 
@@ -256,7 +256,7 @@ The following environment variables are pre-configured:
 ├── src/                       # Root FastOTF2 library source
 ├── example/                   # Root Mason examples
 ├── apps/
-│   └── trace_to_csv/
+│   └── TraceToCSV/
 │       ├── Mason.toml         # Converter application manifest
 │       ├── src/               # Primary converter source tree
 │       └── example/           # Converter examples
@@ -396,7 +396,7 @@ apptainer exec --bind $(pwd):/workspace --pwd /workspace \
 # Or run the converter package with Mason inside the container
 apptainer exec --bind $(pwd):/workspace --pwd /workspace \
   chapel-dev.sif \
-  bash -lc 'cd /workspace/apps/trace_to_csv && mason run -- /workspace/sample-traces/frontier-hpl-run-using-2-ranks-with-craypm/traces.otf2 --metrics=metric1,metric2'
+  bash -lc 'cd /workspace/apps/TraceToCSV && mason run -- /workspace/sample-traces/frontier-hpl-run-using-2-ranks-with-craypm/traces.otf2 --metrics=metric1,metric2'
 
 # Note: Ensure packages are built before running the job, or use Mason commands that build on demand.
 ```
@@ -448,7 +448,7 @@ cd /workspace
 mason build --example
 
 # Converter application package
-cd /workspace/apps/trace_to_csv
+cd /workspace/apps/TraceToCSV
 mason build
 ```
 
@@ -481,18 +481,18 @@ ls /traces
 **Solution**: Check library path:
 ```bash
 echo $LD_LIBRARY_PATH
-ldd /workspace/apps/trace_to_csv/target/debug/trace_to_csv
+ldd /workspace/apps/TraceToCSV/target/debug/TraceToCSV
 ```
 
 ### Build System Questions
 
 **Question**: What should I build first?
 
-**Answer**: Start with the converter package using `cd /workspace/apps/trace_to_csv && mason build`, then use the root library examples if you want to inspect the reusable package surface directly.
+**Answer**: Start with the converter package using `cd /workspace/apps/TraceToCSV && mason build`, then use the root library examples if you want to inspect the reusable package surface directly.
 
 **Question**: How do I run the serial converter path now?
 
-**Answer**: Use the converter package example: `cd /workspace/apps/trace_to_csv && mason run --example TraceToCSVSerial.chpl`.
+**Answer**: Use the converter package example: `cd /workspace/apps/TraceToCSV && mason run --example TraceToCSVSerial.chpl`.
 
 ### Permission Issues
 

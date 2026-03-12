@@ -2,7 +2,7 @@
 chplVersion = "2.8.0..2.8.0"
 compopts = ["--fast", "-Msrc", "-Mexample", "-M../../src", "-I/opt/otf2/include", "-L/opt/otf2/lib", "-lotf2"]
 license = "None"
-name = "trace_to_csv"
+name = "TraceToCSV"
 type = "application"
 version = "0.1.0"
 

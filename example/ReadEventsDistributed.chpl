@@ -2,7 +2,7 @@
 
 module ReadEventsDistributed {
   // Mason example: mason run --example ReadEventsDistributed.chpl
-  use OTF2;
+  use FastOTF2;
   use Time;
   use List;
   use Sort;

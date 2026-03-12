@@ -15,16 +15,16 @@ If you do not want to install those directly on your machine, use the container 
 Build the primary parallel converter with Mason:
 
 ```bash
-cd apps/trace_to_csv
+cd apps/TraceToCSV
 mason build
 ```
 
-That builds the package's primary executable, `trace_to_csv`.
+That builds the package's primary executable, `TraceToCSV`.
 
 To build the serial proof-of-concept example as well:
 
 ```bash
-cd apps/trace_to_csv
+cd apps/TraceToCSV
 mason build --example
 ```
 
@@ -33,14 +33,14 @@ mason build --example
 Example primary run:
 
 ```bash
-cd apps/trace_to_csv
+cd apps/TraceToCSV
 mason run -- ../../sample-traces/frontier-hpl-run-using-2-ranks-with-craypm/traces.otf2
 ```
 
 Example serial run through the package example:
 
 ```bash
-cd apps/trace_to_csv
+cd apps/TraceToCSV
 mason run --example TraceToCSVSerial.chpl
 ```
 

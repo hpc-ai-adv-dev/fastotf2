@@ -1,4 +1,4 @@
-# trace_to_csv
+# TraceToCSV
 
 This directory contains the primary FastOTF2 application for converting OTF2 traces into CSV-oriented outputs.
 It is a Mason application package built on the reusable FastOTF2 Chapel library at the repository root.
@@ -8,16 +8,16 @@ It is a Mason application package built on the reusable FastOTF2 Chapel library 
 Build the primary converter executable with Mason:
 
 ```bash
-cd apps/trace_to_csv
+cd apps/TraceToCSV
 mason build
 ```
 
-That builds the package's primary application, `trace_to_csv`.
+That builds the package's primary application, `TraceToCSV`.
 
 To build the serial example path as well:
 
 ```bash
-cd apps/trace_to_csv
+cd apps/TraceToCSV
 mason build --example
 ```
 
@@ -26,24 +26,23 @@ mason build --example
 Primary parallel run:
 
 ```bash
-cd apps/trace_to_csv
+cd apps/TraceToCSV
 mason run -- ../../sample-traces/frontier-hpl-run-using-2-ranks-with-craypm/traces.otf2
 ```
 
 Serial example run:
 
 ```bash
-cd apps/trace_to_csv
+cd apps/TraceToCSV
 mason run --example TraceToCSVSerial.chpl
 ```
 
 ## Package Layout
 
 - [Mason.toml](Mason.toml): application package manifest
-- [src/trace_to_csv.chpl](src/trace_to_csv.chpl): primary Mason entrypoint
+- [src/TraceToCSV.chpl](src/TraceToCSV.chpl): primary Mason entrypoint
 - [src/TraceToCSVParallel.chpl](src/TraceToCSVParallel.chpl): current parallel implementation used by the primary app
-- [example/TraceToCSVSerial.chpl](example/TraceToCSVSerial.chpl): Mason example entrypoint for the serial path
-- [example/TraceToCSV.chpl](example/TraceToCSV.chpl): current serial implementation backing the serial example
+- [example/TraceToCSVSerial.chpl](example/TraceToCSVSerial.chpl): Mason example entrypoint and serial implementation
 
 ## Build Model
 

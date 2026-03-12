@@ -1,6 +1,6 @@
 // Copyright Hewlett Packard Enterprise Development LP.
 module TraceToCSVParallel {
-  use OTF2;
+  use FastOTF2;
   use Time;
   use List;
   use Map;

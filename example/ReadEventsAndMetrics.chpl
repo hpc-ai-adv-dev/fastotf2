@@ -2,7 +2,7 @@
 
 module ReadEventsAndMetrics {
   // Mason example: mason run --example ReadEventsAndMetrics.chpl
-  use OTF2;
+  use FastOTF2;
   use Time;
   use List;
 

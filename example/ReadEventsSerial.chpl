@@ -2,7 +2,7 @@
 
 module ReadEventsSerial {
   // Mason example: mason run --example ReadEventsSerial.chpl
-  use OTF2;
+  use FastOTF2;
   use Time;
   use List;
 
