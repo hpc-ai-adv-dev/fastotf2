@@ -837,12 +837,11 @@ module TraceToCSVParallel {
                                       metricsToTrack=metricsToTrack);
 
     // Parallel Reading Setup
-    const numberOfReaders = here.maxTaskPar;
-    logTrace("Number of readers: ", numberOfReaders);
-
     // Convert locationIds to array for partitioning
     const locationArray : [0..<numberOfLocations] OTF2_LocationRef = for l in defCtx.locationIds do l;
     const totalLocs = locationArray.size;
+    const numberOfReaders = min(here.maxTaskPar, totalLocs);
+    logTrace("Number of readers: ", numberOfReaders);
 
     // Prepare contexts array
     var evtContexts =  [0..<numberOfReaders] new EvtCallbackContext(evtArgs, defCtx);
@@ -859,10 +858,10 @@ module TraceToCSVParallel {
          OTF2_Reader_SetSerialCollectiveCallbacks(reader);
 
          // Partition locations
-         var numLocationsToReadForThisTask = totalLocs / numberOfReaders;
-         const low = i * numLocationsToReadForThisTask;
-         const high = if i == numberOfReaders - 1 then totalLocs
-                      else (i + 1) * numLocationsToReadForThisTask;
+         const locationsPerReader = totalLocs / numberOfReaders;
+         const remainder = totalLocs % numberOfReaders;
+         const low = i * locationsPerReader + min(i, remainder);
+         const high = low + locationsPerReader + (if i < remainder then 1 else 0);
 
          // Select locations
          for locIdx in low..<high {
@@ -871,32 +870,44 @@ module TraceToCSVParallel {
          }
 
          OTF2_Reader_OpenEvtFiles(reader);
+         var evtReaders: list(c_ptr(OTF2_EvtReader));
 
          // Mark files
          for locIdx in low..<high {
            const loc = locationArray[locIdx];
-           var _evtReader = OTF2_Reader_GetEvtReader(reader, loc);
+           const evtReader = OTF2_Reader_GetEvtReader(reader, loc);
+           if evtReader != nil {
+             evtReaders.pushBack(evtReader);
+           }
          }
 
          // Setup callbacks
          var globalEvtReader = OTF2_Reader_GetGlobalEvtReader(reader);
-         var evtCallbacks = OTF2_GlobalEvtReaderCallbacks_New();
+         if globalEvtReader != nil {
+           var evtCallbacks = OTF2_GlobalEvtReaderCallbacks_New();
 
-         // Use local context
-         ref localCtx = evtContexts[i];
+           // Use local context
+           ref localCtx = evtContexts[i];
 
-         OTF2_GlobalEvtReaderCallbacks_SetEnterCallback(evtCallbacks, c_ptrTo(Enter_callback): c_fn_ptr);
-         OTF2_GlobalEvtReaderCallbacks_SetLeaveCallback(evtCallbacks, c_ptrTo(Leave_callback): c_fn_ptr);
-         OTF2_GlobalEvtReaderCallbacks_SetMetricCallback(evtCallbacks, c_ptrTo(Metric_callback): c_fn_ptr);
+           OTF2_GlobalEvtReaderCallbacks_SetEnterCallback(evtCallbacks, c_ptrTo(Enter_callback): c_fn_ptr);
+           OTF2_GlobalEvtReaderCallbacks_SetLeaveCallback(evtCallbacks, c_ptrTo(Leave_callback): c_fn_ptr);
+           OTF2_GlobalEvtReaderCallbacks_SetMetricCallback(evtCallbacks, c_ptrTo(Metric_callback): c_fn_ptr);
 
-         OTF2_Reader_RegisterGlobalEvtCallbacks(reader, globalEvtReader, evtCallbacks, c_ptrTo(localCtx): c_ptr(void));
-         OTF2_GlobalEvtReaderCallbacks_Delete(evtCallbacks);
+           OTF2_Reader_RegisterGlobalEvtCallbacks(reader, globalEvtReader, evtCallbacks, c_ptrTo(localCtx): c_ptr(void));
+           OTF2_GlobalEvtReaderCallbacks_Delete(evtCallbacks);
 
-         var totalEventsRead: c_uint64 = 0;
-         OTF2_Reader_ReadAllGlobalEvents(reader, globalEvtReader, c_ptrTo(totalEventsRead));
-         totalEventsReadAcrossReaders += totalEventsRead;
+           var totalEventsRead: c_uint64 = 0;
+           OTF2_Reader_ReadAllGlobalEvents(reader, globalEvtReader, c_ptrTo(totalEventsRead));
+           totalEventsReadAcrossReaders += totalEventsRead;
 
-         OTF2_Reader_CloseGlobalEvtReader(reader, globalEvtReader);
+           OTF2_Reader_CloseGlobalEvtReader(reader, globalEvtReader);
+         } else {
+           logError("Failed to create global event reader in task ", i);
+         }
+
+         for evtReader in evtReaders {
+           OTF2_Reader_CloseEvtReader(reader, evtReader);
+         }
          OTF2_Reader_CloseEvtFiles(reader);
          OTF2_Reader_Close(reader);
        } else {
