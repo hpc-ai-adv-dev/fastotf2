@@ -870,15 +870,11 @@ module TraceToCSVParallel {
          }
 
          OTF2_Reader_OpenEvtFiles(reader);
-         var evtReaders: list(c_ptr(OTF2_EvtReader));
 
          // Mark files
          for locIdx in low..<high {
            const loc = locationArray[locIdx];
-           const evtReader = OTF2_Reader_GetEvtReader(reader, loc);
-           if evtReader != nil {
-             evtReaders.pushBack(evtReader);
-           }
+           var _evtReader = OTF2_Reader_GetEvtReader(reader, loc);
          }
 
          // Setup callbacks
@@ -905,9 +901,6 @@ module TraceToCSVParallel {
            logError("Failed to create global event reader in task ", i);
          }
 
-         for evtReader in evtReaders {
-           OTF2_Reader_CloseEvtReader(reader, evtReader);
-         }
          OTF2_Reader_CloseEvtFiles(reader);
          OTF2_Reader_Close(reader);
        } else {
