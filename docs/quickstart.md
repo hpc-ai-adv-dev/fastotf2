@@ -8,7 +8,7 @@ If you do not already have Chapel, Mason, and OTF2 installed locally, start with
 
 This quickstart covers the two primary Mason workflows in the repository:
 
-1. building and running the `TraceToCSV` application
+1. building and running the `OTF2ToTable` application
 2. building and running the root FastOTF2 library examples
 
 ## What You Need
@@ -34,12 +34,12 @@ ls /opt/otf2/lib
 
 If those paths do not exist in your environment, you will need to either adjust your local installation to match or modify the manifest compiler options for your system.
 
-## Step 2: Build TraceToCSV
+## Step 2: Build OTF2ToTable
 
 Build the primary converter with Mason:
 
 ```bash
-cd apps/TraceToCSV
+cd apps/OTF2ToTable
 mason build --release
 ```
 
@@ -48,16 +48,16 @@ Use `--release` for normal builds and runs. Mason adds Chapel's `--fast` automat
 To build the serial example path as well:
 
 ```bash
-cd apps/TraceToCSV
+cd apps/OTF2ToTable
 mason build --release --example
 ```
 
-## Step 3: Run TraceToCSV
+## Step 3: Run OTF2ToTable
 
 Run the primary converter against one of the bundled traces:
 
 ```bash
-cd apps/TraceToCSV
+cd apps/OTF2ToTable
 mason run --release -- ../../sample-traces/simple-mi300-example-run/traces.otf2
 ```
 
@@ -66,22 +66,24 @@ To run a different archive, replace the final positional path with your own `tra
 Run the serial example path:
 
 ```bash
-cd apps/TraceToCSV
-mason run --release --example TraceToCSVSerial.chpl
+cd apps/OTF2ToTable
+mason run --release --example OTF2ToTableSerial.chpl
 ```
 
 The primary parallel implementation accepts options such as:
 
 - positional trace path
-- `--trace`
 - `--metrics`
 - `--processes`
 - `--outputDir`
+- `--format`
 - `--excludeMPI`
 - `--excludeHIP`
 - `--log`
 
-The serial path remains an example-backed flow and still uses the older Chapel config-constant interface.
+`--format=CSV` is the default. `--format=PARQUET` is accepted today but exits with an explicit unimplemented message while the backend is still a stub.
+
+The serial path remains an example-backed flow and uses Chapel config constants, including `--outputFormatArg=CSV` or `--outputFormatArg=PARQUET`.
 
 ## Step 4: Run the Root Library Examples
 

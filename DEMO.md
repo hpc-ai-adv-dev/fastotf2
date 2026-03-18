@@ -1,6 +1,6 @@
 # OTF2 in Chapel: A Live Demo
 
-This repo demonstrates the capabilities of the Open Trace Format 2 (OTF2) library within the Chapel programming language. The primary user-facing workflow is the Mason-based trace converter in `apps/TraceToCSV`, backed by the reusable FastOTF2 Chapel library. We will explore the format, compare implementations in Python and C, and showcase the Chapel implementation.
+This repo demonstrates the capabilities of the Open Trace Format 2 (OTF2) library within the Chapel programming language. The primary user-facing workflow is the Mason-based trace-to-table converter in `apps/OTF2ToTable`, backed by the reusable FastOTF2 Chapel library. We will explore the format, compare implementations in Python and C, and showcase the Chapel implementation.
 
 This work is part of a collaboration with Oak Ridge National Laboratory (ORNL) to enable high-performance trace analysis.
 The bottleneck in these trace analysis workflows has been converting OTF2 traces into a data format that can be ingested
@@ -32,7 +32,7 @@ In this demo, we will:
 3.  Introduce the **Chapel API** for OTF2.
 4.  Walk through two key examples in Chapel:
     -   **Reading Events**: Basic traversal of a trace.
-    -   **Trace to CSV**: Converting binary trace data to a human-readable format.
+    -   **OTF2 to Table Output**: Converting binary trace data to tabular outputs such as CSV, with Parquet wiring prepared for later work.
 
 
 ## 3. High-Level Python Implementation
@@ -88,8 +88,8 @@ This example demonstrates a simple event reader in Chapel. It mimics the functio
 We will compile and run the root Mason example `example/FastOtf2ReadEvents.chpl`.
 
 
-## 7. Example: Trace to CSV Conversion
+## 7. Example: OTF2 to Table Conversion
 
-This example is more complex. It reads definitions to understand regions and metrics, and then iterates over events to produce a CSV file.
+This example is more complex. It reads definitions to understand regions and metrics, and then iterates over events to produce table-oriented output files.
 
-We will compile and run the `TraceToCSV` application package through Mason.
+We will compile and run the `OTF2ToTable` application package through Mason.

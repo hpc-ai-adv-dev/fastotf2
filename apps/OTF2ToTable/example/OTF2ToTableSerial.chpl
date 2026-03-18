@@ -1,71 +1,14 @@
 // Copyright Hewlett Packard Enterprise Development LP.
-module TraceToCSVParallel {
+
+module OTF2ToTableSerial {
   use FastOTF2;
+  use OTF2ToTableWriters;
   use Time;
   use List;
   use Map;
   use CallGraphModule;
   use IO;
-  use Path;
-  use FileSystem;
-  use ArgumentParser;
-
   import Math.inf;
-
-  enum LogLevel {
-    NONE,
-    ERROR,
-    WARN,
-    INFO,
-    DEBUG,
-    TRACE
-  }
-
-  var trace: string = "../../sample-traces/simple-mi300-example-run/traces.otf2";
-  var metrics: string = ""; // Empty string means track all metrics
-  var processes: string = ""; // Empty string means track all processes
-  var excludeMPI: bool = false;
-  var excludeHIP: bool = false;
-  var outputDir: string = ".";
-  var log: LogLevel = LogLevel.INFO;
-
-
-  const BLUE = "\x1b[94m";
-  const GREEN = "\x1b[92m";
-  const YELLOW = "\x1b[93m";
-  const RED = "\x1b[91m";
-  const ENDC = "\x1b[0m";
-
-  proc logError(args ...?n) {
-    if log >= LogLevel.ERROR {
-      writeln(RED, "[ERROR] ", ENDC, (...args));
-    }
-  }
-
-  proc logWarn(args ...?n) {
-    if log >= LogLevel.WARN {
-      writeln(YELLOW, "[WARN] ", ENDC, (...args));
-    }
-  }
-  
-  proc logInfo(args ...?n) {
-    if log >= LogLevel.INFO {
-      writeln(GREEN, "[INFO] ", ENDC, (...args));
-    }
-  }
-
-  proc logDebug(args ...?n) {
-    if log >= LogLevel.DEBUG {
-      writeln(BLUE, "[DEBUG] ", ENDC, (...args));
-    }
-  }
-
-  proc logTrace(args ...?n) {
-    if log >= LogLevel.TRACE {
-      writeln(RED, "[TRACE] ", ENDC, (...args));
-    }
-  }
-
 
   // This record should be in a Chapel OTF2 module since it is common for all readers
   // but for simplicity, we keep it here for now.
@@ -90,11 +33,11 @@ module TraceToCSVParallel {
     clockProps.globalOffset = globalOffset;
     clockProps.traceLength = traceLength;
     clockProps.realtimeTimestamp = realtimeTimestamp;
-    logTrace("Trace Clock Properties:");
-    logTrace(" Timer Resolution. : ", clockProps.timerResolution);
-    logTrace(" Global Offset     : ", clockProps.globalOffset);
-    logTrace(" Trace Length      : ", clockProps.traceLength);
-    logTrace(" Realtime Timestamp: ", clockProps.realtimeTimestamp);
+    writeln("Trace Clock Properties:");
+    writeln(" Timer Resolution. : ", clockProps.timerResolution);
+    writeln(" Global Offset     : ", clockProps.globalOffset);
+    writeln(" Trace Length      : ", clockProps.traceLength);
+    writeln(" Realtime Timestamp: ", clockProps.realtimeTimestamp);
     return OTF2_CALLBACK_SUCCESS;
   }
 
@@ -165,7 +108,7 @@ module TraceToCSVParallel {
     } else {
       ctx.stringTable[strRef] = "UnknownString";
     }
-    logTrace("Registered string: ", ctx.stringTable[strRef]);
+    // writeln("Registered string: ", ctx.stringTable[str]);
     return OTF2_CALLBACK_SUCCESS;
   }
 
@@ -182,15 +125,15 @@ module TraceToCSVParallel {
     // Lookup name in string table
     const groupName = if ctx.stringIds.contains(name) && ctx.stringTable[name] != "" then ctx.stringTable[name] else "UnknownGroup";
     // Check if this location has a creating group
-    if creatingLocationGroup != 0 then
-      logTrace("Location group ", groupName, " created by group ID ", creatingLocationGroup);
-    else
-      logTrace("Location group ", groupName, " has no creating group");
+    // if creatingLocationGroup != 0 then
+    //   writeln("Location group ", groupName, " created by group ID ", creatingLocationGroup);
+    // else
+    //   writeln("Location group ", groupName, " has no creating group");
     const creatingGroupName = if ctx.locationGroupIds.contains(creatingLocationGroup) then ctx.locationGroupTable[creatingLocationGroup].name else "None";
     // Add location group to the lookup table
     ctx.locationGroupIds += self;
     ctx.locationGroupTable[self] = new LocationGroup(name=groupName, creatingLocationGroup=creatingGroupName);
-    logTrace("Registered location group: ", ctx.locationGroupTable[self]);
+    // writeln("Registered location group: ", ctx.locationGroupTable[self]);
     return OTF2_CALLBACK_SUCCESS;
   }
 
@@ -210,7 +153,7 @@ module TraceToCSVParallel {
     ctx.locationIds += location;
     var loc = new Location(name=locName, group=locationGroup);
     ctx.locationTable[location] = loc;
-    logTrace("Registered location ID=", location, ": ", ctx.locationTable[location], " in group ID ", locationGroup, " (", if ctx.locationGroupIds.contains(locationGroup) then ctx.locationGroupTable[locationGroup].name else "UnknownGroup", ")");
+    writeln("Registered location ID=", location, ": ", ctx.locationTable[location], " in group ID ", locationGroup, " (", if ctx.locationGroupIds.contains(locationGroup) then ctx.locationGroupTable[locationGroup].name else "UnknownGroup", ")");
     return OTF2_CALLBACK_SUCCESS;
   }
 
@@ -235,7 +178,7 @@ module TraceToCSVParallel {
     // Add region to the lookup table
     ctx.regionIds += region;
     ctx.regionTable[region] = regionName;
-    logTrace("Registered region: ", regionName);
+    // writeln("Registered region: ", regionName);
     return OTF2_CALLBACK_SUCCESS;
   }
 
@@ -257,7 +200,7 @@ module TraceToCSVParallel {
     const memberName = if ctx.stringIds.contains(name) && ctx.stringTable[name] != "" then ctx.stringTable[name] else "UnknownMetricMember";
     const unitName = if ctx.stringIds.contains(unit) && ctx.stringTable[unit] != "" then ctx.stringTable[unit] else "UnknownUnit";
     mctx.metricMemberTable[self] = new MetricMember(name=memberName, unit=unitName);
-    logTrace("Registered metric member: ", mctx.metricMemberTable[self]);
+    // writeln("Registered metric member: ", mctx.metricMemberTable[self]);
     return OTF2_CALLBACK_SUCCESS;
   }
 
@@ -289,7 +232,7 @@ module TraceToCSVParallel {
     ref mctx = ctx.metricDefContext;
     mctx.metricInstanceIds += self;
     mctx.metricInstanceTable[self] = new MetricInstance(metricClass=metricClass, recorder=recorder);
-    logTrace("Registered metric instance ID=", self, " with class=", metricClass, " recorder=", recorder);
+    // writeln("Registered metric instance ID=", self, " with class=", metricClass, " recorder=", recorder);
     return OTF2_CALLBACK_SUCCESS;
   }
 
@@ -302,13 +245,14 @@ module TraceToCSVParallel {
     ref mctx = ctx.metricDefContext;
     mctx.metricClassRecorderIds += metric;
     mctx.metricClassRecorderTable[metric] = recorder;
-    logTrace("Registered metric class recorder: metric=", metric, " recorder=", recorder);
+    // writeln("Registered metric class recorder: metric=", metric, " recorder=", recorder);
     return OTF2_CALLBACK_SUCCESS;
   }
 
   record EvtCallbackArgs {
     const processesToTrack: domain(string);
     const metricsToTrack: domain(string);
+    const crayTimeOffset: real(64);
   }
 
   record EvtCallbackContext {
@@ -365,25 +309,25 @@ module TraceToCSVParallel {
   proc updateMaps(ref ctx: EvtCallbackContext, locGroup: string, location: string) {
     // Update seen groups
     try! {
-      ref seenGroups = ctx.seenGroups;
-      if !seenGroups.contains(locGroup) {
-        seenGroups[locGroup] = {location};
-        logDebug("New group and thread: ", location, " in group ", locGroup);
-      } else if !seenGroups[locGroup].contains(location) {
-        seenGroups[locGroup] += location;
-        logDebug("New thread: ", location, " in existing group ", locGroup);
-      }
+    ref seenGroups = ctx.seenGroups;
+    if !seenGroups.contains(locGroup) {
+      seenGroups[locGroup] = {location};
+      writeln("New group and thread: ", location, " in group ", locGroup);
+    } else if !seenGroups[locGroup].contains(location) {
+      seenGroups[locGroup] += location;
+      writeln("New thread: ", location, " in existing group ", locGroup);
+    }
     }
 
     try! {
     // Update call graphs
     ref callGraphs = ctx.callGraphs;
     if !callGraphs.contains(locGroup) {
-      logDebug("New call graph group: ", locGroup);
+      writeln("New call graph group: ", locGroup);
       callGraphs[locGroup] = new map(string, shared CallGraph);
     }
     if !callGraphs[locGroup].contains(location) {
-      logDebug("New call graph for thread: ", location, " in group ", locGroup);
+      writeln("New call graph for thread: ", location, " in group ", locGroup);
       callGraphs[locGroup].add(location, new shared CallGraph());
       // For whatever reason
       // callGraphs[locGroup][location] = new shared CallGraph();
@@ -398,7 +342,7 @@ module TraceToCSVParallel {
       metrics[locGroup] = new map(string, list((real(64), OTF2_Type, OTF2_MetricValue)));
       for metric in ctx.evtArgs.metricsToTrack {
         metrics[locGroup][metric] = new list((real(64), OTF2_Type, OTF2_MetricValue));
-        logDebug("New metric list for metric: ", metric, " in group ", locGroup);
+        writeln("New metric list for metric: ", metric, " in group ", locGroup);
       }
     }
   }
@@ -412,23 +356,11 @@ module TraceToCSVParallel {
     //   return true; // Skip this event
 
     // Check for other skip conditions
-    if (ctx.evtArgs.processesToTrack.size > 0) &&
-      (!ctx.evtArgs.processesToTrack.contains(locGroup)) {
-      return true; // Skip this event
-    }
-    if (!excludeHIP && !excludeMPI) {
-      return false; // Do not skip
-    }
     const regionNameLower = regionName.toLower();
     if regionNameLower.size >= 3 {
       const prefix = regionNameLower[0..2];
-      if prefix == "mpi" && excludeMPI {
-        logTrace("Skipping MPI region: ", regionName, " in group ", locGroup);
-        return true; // Skip this event if MPI exclusion is enabled and region starts with "mpi"
-      }
-      if prefix == "hip" && excludeHIP {
-        logTrace("Skipping HIP region: ", regionName, " in group ", locGroup);
-        return true; // Skip this event if HIP exclusion is enabled and region starts with "hip"
+      if prefix == "mpi" || prefix == "hip" {
+        return true; // Skip this event
       }
     }
     return false; // Do not skip
@@ -440,6 +372,7 @@ module TraceToCSVParallel {
                       userData: c_ptr(void),
                       attributes: c_ptr(OTF2_AttributeList),
                       region: OTF2_RegionRef): OTF2_CallbackCode {
+    //writeln("Debug: Entering Enter_store_and_count with location=", location, ", region=", region);
     // Get pointers to the context and event data
     var ctxPtr = userData: c_ptr(EvtCallbackContext);
     if ctxPtr == nil then return OTF2_CALLBACK_ERROR;
@@ -467,7 +400,7 @@ module TraceToCSVParallel {
                       userData: c_ptr(void),
                       attributes: c_ptr(OTF2_AttributeList),
                       region: OTF2_RegionRef): OTF2_CallbackCode {
-    logTrace("Debug: Entering Leave_callback with location=", location, ", region=", region);
+    //writeln("Debug: Entering Leave_callback with location=", location, ", region=", region);
     // Get pointers to the context and event data
     var ctxPtr = userData: c_ptr(EvtCallbackContext);
     if ctxPtr == nil then return OTF2_CALLBACK_ERROR;
@@ -524,7 +457,7 @@ module TraceToCSVParallel {
           metricUnit = "UnknownUnit";
         }
       } else {
-        logWarn("Metric class with ", metricClass.numberOfMetrics, " members - only processing first member");
+        writeln("WARNING: Metric class with ", metricClass.numberOfMetrics, " members - only processing first member");
         // Instead of halting, just process the first member
         const metricMemberRef = metricClass.firstMemberID;
         if metricCtx.metricMemberIds.contains(metricMemberRef) {
@@ -560,10 +493,8 @@ module TraceToCSVParallel {
     // Get metric info like name, unit, value, recorder location
     const (locName, locGroup, _) = getLocationAndRegionInfo(defCtx, location, 0);
     // We only handle single metric members for now
-    if numberOfMetrics != 1 then {
-      logError("Metric event with multiple metrics not supported yet");
-      exit(1);
-    }
+    if numberOfMetrics != 1 then
+      halt("Metric event with multiple metrics not supported yet");
 
     // Question: Should we check if this metric is one we want to track? Python version does not do that
 
@@ -571,8 +502,7 @@ module TraceToCSVParallel {
     const (metricName, metricUnit, metricRecorder) = getMetricInfo(defCtx, location, metric);
 
     // If we are not tracking this metric, skip it
-    if !ctx.evtArgs.metricsToTrack.contains(metricName) && ctx.evtArgs.metricsToTrack.isEmpty() {
-      logTrace("Skipping metric: ", metricName, " in group ", locGroup);
+    if !ctx.evtArgs.metricsToTrack.contains(metricName) {
       return OTF2_CALLBACK_SUCCESS;
     }
 
@@ -581,6 +511,10 @@ module TraceToCSVParallel {
 
     // Get the time for this metric in seconds
     var currentTime = timestampToSeconds(time, defCtx.clockProps);
+    // Adjust for craypm metrics, as they are reported with a delay
+    if metricName.toLower().find("cray") >= 0 && ctx.evtArgs.crayTimeOffset != 0.0 {
+      currentTime -= ctx.evtArgs.crayTimeOffset;
+    }
     // Update the seen groups, call graphs, and metrics maps
     updateMaps(ctx, locGroup, locName);
 
@@ -590,198 +524,67 @@ module TraceToCSVParallel {
     // If either the value has changed or if this is the first value for this metric
     // We append it to the list for this metric
     try {
-      // First confirm the metric list exists
-      if !metrics[locGroup].contains(metricName) && (ctx.evtArgs.metricsToTrack.contains(metricName) || ctx.evtArgs.metricsToTrack.isEmpty()) {
-        metrics[locGroup][metricName] = new list((real(64), OTF2_Type, OTF2_MetricValue));
-      }
-
       if metrics[locGroup][metricName].isEmpty() ||
-        metrics[locGroup][metricName].last[2] != metricValue {
+         metrics[locGroup][metricName].last[2] != metricValue {
         metrics[locGroup][metricName].pushBack((currentTime, metricType, metricValue));
+        // writeln("Stored metric value: ", metricValue, " for metric ", metricName, " in location ", locName, " of group ", locGroup, " at time ", currentTime);
       }
     } catch e {
-      logError("Error storing metric: ", e);
-      logError("  locGroup: ", locGroup);
-      logError("  metricName: ", metricName);
-      logError("  metrics.contains(locGroup): ", metrics.contains(locGroup));
+      writeln("Error storing metric: ", e);
+      writeln("  locGroup: ", locGroup);
+      writeln("  metricName: ", metricName);
+      writeln("  metrics.contains(locGroup): ", metrics.contains(locGroup));
       if metrics.contains(locGroup) {
-        try! logError("  metrics[locGroup].contains(metricName): ", metrics[locGroup].contains(metricName));
+        try! writeln("  metrics[locGroup].contains(metricName): ", metrics[locGroup].contains(metricName));
       }
     }
 
     return OTF2_CALLBACK_SUCCESS;
   }
 
-  proc mergeEvtContexts(const ref contexts: [] EvtCallbackContext): EvtCallbackContext throws{
-    if contexts.size == 0 {
-      logError("No contexts to merge");
-      exit(1);
-    }
+  // Config constants for command-line arguments
+  // Usage examples:
+  //   ./OTF2ToTableSerial --tracePath=/path/to/traces.otf2
+  //   ./OTF2ToTableSerial --crayTimeOffsetArg=2.5
+  //   ./OTF2ToTableSerial --metricsToTrackArg="metric1,metric2,metric3"
+  //   ./OTF2ToTableSerial --processesToTrackArg="process1,process2"
+  //   ./OTF2ToTableSerial --outputFormatArg=CSV
+  //   ./OTF2ToTableSerial --tracePath=/path/to/traces.otf2 --crayTimeOffsetArg=1.5 --metricsToTrackArg="metric1,metric2"
 
-    // Start with the first context
-    // We assume all contexts have the same evtArgs and defContext
-    var mergedCtx = new EvtCallbackContext(contexts[0].evtArgs, contexts[0].defContext);
+  config const tracePath: string = "../../sample-traces/simple-mi300-example-run/traces.otf2";
+  config const crayTimeOffsetArg: real(64) = 1.0;
+  config const metricsToTrackArg: string = "A2rocm_smi:::energy_count:device=0,A2rocm_smi:::energy_count:device=2,A2rocm_smi:::energy_count:device=4,A2rocm_smi:::energy_count:device=6,A2coretemp:::craypm:accel0_energy,A2coretemp:::craypm:accel1_energy,A2coretemp:::craypm:accel2_energy,A2coretemp:::craypm:accel3_energy";
+  config const processesToTrackArg: string = ""; // Empty string means track all processes
+  config const outputFormatArg: string = "CSV";
 
-    // Merge the rest
-    for i in 0..<contexts.size {
-      ref ctx = contexts[i];
-
-      // Merge seenGroups
-      for (group, threads) in ctx.seenGroups.items() {
-        if !mergedCtx.seenGroups.contains(group) {
-          mergedCtx.seenGroups[group] = threads;
-        } else {
-          mergedCtx.seenGroups[group] += threads;
-        }
-      }
-
-      // Merge callGraphs
-      for (group, threadMap) in ctx.callGraphs.items() {
-        if !mergedCtx.callGraphs.contains(group) {
-          mergedCtx.callGraphs[group] = threadMap;
-        } else {
-          for (thread, callGraph) in threadMap.items() {
-            if mergedCtx.callGraphs[group].contains(thread) {
-              logWarn("Duplicate thread ", thread, " in group ", group, " during merge.");
-            }
-             mergedCtx.callGraphs[group].add(thread, callGraph);
-          }
-        }
-      }
-
-      // Merge metrics
-      for (group, threadMap) in ctx.metrics.items() {
-        if !mergedCtx.metrics.contains(group) {
-          mergedCtx.metrics[group] = threadMap;
-        } else {
-          for (metric, metricList) in threadMap.items() {
-            if mergedCtx.metrics[group].contains(metric) {
-              for entry in metricList {
-                mergedCtx.metrics[group][metric].pushBack(entry);
-              }
-            } else {
-              mergedCtx.metrics[group].add(metric, metricList);
-            }
-          }
-        }
-      }
-    }
-
-    return mergedCtx;
-  }
-
-  proc main(programArgs: [] string) {
+  proc main(args: [] string) {
+    var outputFormat: OutputFormat;
     try {
-      var parser = new argumentParser(
-        addHelp=true // Automatically add --help flag
-      );
-
-      var traceArg = parser.addArgument(
-        name="trace",
-        defaultValue="../../sample-traces/simple-mi300-example-run/traces.otf2",
-        help="Path to the OTF2 trace file"
-      );
-
-      var metricsArg = parser.addOption(
-        name="metrics",
-        defaultValue="",
-        numArgs=1,
-        help="Metrics to track (comma-separated, empty = all)"
-      );
-
-      var processesArg = parser.addOption(
-        name="processes",
-        defaultValue="",
-        numArgs=1,
-        help="Processes to track (comma-separated, empty = all)"
-      );
-
-      var outputDirArg = parser.addOption(
-        name="outputDir",
-        defaultValue="./",
-        numArgs=1,
-        help="Directory to write output CSV files to"
-      );
-
-      var excludeMPIArg = parser.addFlag(
-        name="excludeMPI",
-        defaultValue=false,
-        numArgs=0,
-        help="Exclude MPI functions from the callgraph output"
-      );
-
-      var excludeHIPArg = parser.addFlag(
-        name="excludeHIP",
-        defaultValue=false,
-        numArgs=0,
-        help="Exclude HIP functions from the callgraph output"
-      );
-
-      var logArg = parser.addOption(
-        name="log",
-        defaultValue="INFO",
-        numArgs=1,
-        help="Logging level (NONE, ERROR, WARN, INFO, DEBUG, TRACE)"
-      );
-
-      parser.parseArgs(programArgs);
-      trace = traceArg.value();
-      metrics = metricsArg.value();
-      processes = processesArg.value();
-      outputDir = outputDirArg.value();
-
-      excludeMPI = excludeMPIArg.valueAsBool();
-      excludeHIP = excludeHIPArg.valueAsBool();
-
-      try {
-        log = logArg.value(): LogLevel;
-      } catch e {
-        logError("Invalid log level: ", logArg.value(), ". Use one of: NONE, ERROR, WARN, INFO, DEBUG, or TRACE.");
-        exit(1);
-      }
-      if excludeMPI {
-        logInfo("Excluding MPI functions from callgraph output");
-      }
-      if excludeHIP {
-        logInfo("Excluding HIP functions from callgraph output");
-      }
+      outputFormat = parseOutputFormat(outputFormatArg);
     } catch e {
-      logError("Error parsing arguments: ", e);
-      exit(1);
+      writeln(e.message());
+      return;
     }
-
-    try {
-      if !exists(trace) { logError("Trace file does not exist: ", trace); exit(1); }
-    } catch e { logError("Error checking trace file existence: ", e); exit(1); }
-
-    try {
-      if !exists(outputDir) {
-        logInfo("Output directory does not exist, creating: ", outputDir);
-        mkdir(outputDir);
-      }
-    } catch e { logError("Error checking/creating output directory: ", e); exit(1); }
 
     var sw: stopwatch;
-    var global_sw: stopwatch;
     sw.start();
-    global_sw.start();
 
-    var reader = OTF2_Reader_Open(trace.c_str());
+    var reader = OTF2_Reader_Open(tracePath.c_str());
     if reader == nil {
-      logError("Failed to open trace");
-      exit(1);
+      writeln("Failed to open trace");
+      return;
     }
 
     const openTime = sw.elapsed();
-    logTrace("Time taken to open OTF2 archive: %.2dr seconds\n", openTime);
+    writef("Time taken to open OTF2 archive: %.2dr seconds\n", openTime);
     sw.clear(); // Restart stopwatch for next timing
 
     OTF2_Reader_SetSerialCollectiveCallbacks(reader);
 
     var numberOfLocations: c_uint64 = 0;
     OTF2_Reader_GetNumberOfLocations(reader, c_ptrTo(numberOfLocations));
-    logTrace("Number of locations: ", numberOfLocations);
-    logInfo("Reading OTF2 trace ", trace, " with ", min(here.maxTaskPar, numberOfLocations), " threads.");
+    writeln("Number of locations: ", numberOfLocations);
+
 
     var defCtx = new DefCallbackContext();
     var globalDefReader = OTF2_Reader_GetGlobalDefReader(reader);
@@ -805,19 +608,50 @@ module TraceToCSVParallel {
 
     var definitionsRead: c_uint64 = 0;
     OTF2_Reader_ReadAllGlobalDefinitions(reader, globalDefReader, c_ptrTo(definitionsRead));
-    logTrace("Global definitions read: ", definitionsRead);
+    writeln("Global definitions read: ", definitionsRead);
 
     const defReadTime = sw.elapsed();
-    logTrace("Time taken to read global definitions: %.2dr seconds\n", defReadTime);
+    writef("Time taken to read global definitions: %.2dr seconds\n", defReadTime);
     sw.clear(); // Restart stopwatch for next timing
 
-    // Close the initial reader
-    OTF2_Reader_Close(reader);
+    // Select all locations
+    for loc in defCtx.locationIds {
+      // writeln("Selecting location ", loc);
+      OTF2_Reader_SelectLocation(reader, loc);
+    }
+
+    // Open files, read local defs per location
+    const successfulOpenDefFiles =
+                        OTF2_Reader_OpenDefFiles(reader) == OTF2_SUCCESS;
+
+    OTF2_Reader_OpenEvtFiles(reader);
+
+    for loc in defCtx.locationIds {
+      if successfulOpenDefFiles {
+        var defReader = OTF2_Reader_GetDefReader(reader, loc);
+        if defReader != nil {
+          var defReads: c_uint64 = 0;
+          OTF2_Reader_ReadAllLocalDefinitions(reader,
+                                              defReader,
+                                              c_ptrTo(defReads));
+
+          OTF2_Reader_CloseDefReader(reader, defReader);
+        }
+      }
+      // Mark file to be read by Global Reader later
+      var _evtReader = OTF2_Reader_GetEvtReader(reader, loc);
+    }
+    const markTime = sw.elapsed();
+    writeln("Time taken to read local definition files and mark all local event files for reading: ", markTime, " seconds");
+    sw.clear();
+    if successfulOpenDefFiles then OTF2_Reader_CloseDefFiles(reader);
+
+    // Event reading setup with new event context
 
     // Parse metrics to track from config argument
     var metricsToTrack: domain(string);
-    if metrics != "" {
-      var metricsArray = metrics.split(",");
+    if metricsToTrackArg != "" {
+      var metricsArray = metricsToTrackArg.split(",");
       for metric in metricsArray {
         metricsToTrack += metric.strip();
       }
@@ -825,217 +659,154 @@ module TraceToCSVParallel {
 
     // Parse processes to track from config argument
     var processesToTrack: domain(string);
-    if processes != "" {
-      var processesArray = processes.split(",");
+    if processesToTrackArg != "" {
+      var processesArray = processesToTrackArg.split(",");
       for process in processesArray {
         processesToTrack += process.strip();
       }
     }
 
     // Use the config const for crayTimeOffset
+    var crayPmOffset: real(64) = crayTimeOffsetArg;
     var evtArgs = new EvtCallbackArgs(processesToTrack=processesToTrack,
-                                      metricsToTrack=metricsToTrack);
+                                      metricsToTrack=metricsToTrack,
+                                      crayTimeOffset=crayPmOffset);
 
-    // Parallel Reading Setup
-    // Convert locationIds to array for partitioning
-    const locationArray : [0..<numberOfLocations] OTF2_LocationRef = for l in defCtx.locationIds do l;
-    const totalLocs = locationArray.size;
-    const numberOfReaders = min(here.maxTaskPar, totalLocs);
-    logTrace("Number of readers: ", numberOfReaders);
+    // Create event callaback context
+    var evtCtx = new EvtCallbackContext(evtArgs, defCtx);
 
-    // Prepare contexts array
-    var evtContexts =  [0..<numberOfReaders] new EvtCallbackContext(evtArgs, defCtx);
-    // for i in 0..<numberOfReaders {
-    //    evtContexts[i] = new EvtCallbackContext(evtArgs, defCtx);
-    // }
 
-    var totalEventsReadAcrossReaders: c_uint64 = 0;
+    var globalEvtReader = OTF2_Reader_GetGlobalEvtReader(reader);
+    var evtCallbacks = OTF2_GlobalEvtReaderCallbacks_New();
+    OTF2_GlobalEvtReaderCallbacks_SetEnterCallback(evtCallbacks,
+                                                   c_ptrTo(Enter_callback): c_fn_ptr);
+    OTF2_GlobalEvtReaderCallbacks_SetLeaveCallback(evtCallbacks,
+                                                   c_ptrTo(Leave_callback): c_fn_ptr);
+    OTF2_GlobalEvtReaderCallbacks_SetMetricCallback(evtCallbacks,
+                                                    c_ptrTo(Metric_callback): c_fn_ptr);
 
-    coforall i in 0..<numberOfReaders with (+ reduce totalEventsReadAcrossReaders, ref evtContexts) {
-       // Open reader
-       var reader = OTF2_Reader_Open(trace.c_str());
-       if reader != nil {
-         OTF2_Reader_SetSerialCollectiveCallbacks(reader);
+    OTF2_Reader_RegisterGlobalEvtCallbacks(reader,
+                                           globalEvtReader,
+                                           evtCallbacks,
+                                           c_ptrTo(evtCtx): c_ptr(void));
+    OTF2_GlobalEvtReaderCallbacks_Delete(evtCallbacks);
 
-         // Partition locations
-         const locationsPerReader = totalLocs / numberOfReaders;
-         const remainder = totalLocs % numberOfReaders;
-         const low = i * locationsPerReader + min(i, remainder);
-         const high = low + locationsPerReader + (if i < remainder then 1 else 0);
-
-         // Select locations
-         for locIdx in low..<high {
-           const loc = locationArray[locIdx];
-           OTF2_Reader_SelectLocation(reader, loc);
-         }
-
-         OTF2_Reader_OpenEvtFiles(reader);
-
-         // Mark files
-         for locIdx in low..<high {
-           const loc = locationArray[locIdx];
-           var _evtReader = OTF2_Reader_GetEvtReader(reader, loc);
-         }
-
-         // Setup callbacks
-         var globalEvtReader = OTF2_Reader_GetGlobalEvtReader(reader);
-         if globalEvtReader != nil {
-           var evtCallbacks = OTF2_GlobalEvtReaderCallbacks_New();
-
-           // Use local context
-           ref localCtx = evtContexts[i];
-
-           OTF2_GlobalEvtReaderCallbacks_SetEnterCallback(evtCallbacks, c_ptrTo(Enter_callback): c_fn_ptr);
-           OTF2_GlobalEvtReaderCallbacks_SetLeaveCallback(evtCallbacks, c_ptrTo(Leave_callback): c_fn_ptr);
-           OTF2_GlobalEvtReaderCallbacks_SetMetricCallback(evtCallbacks, c_ptrTo(Metric_callback): c_fn_ptr);
-
-           OTF2_Reader_RegisterGlobalEvtCallbacks(reader, globalEvtReader, evtCallbacks, c_ptrTo(localCtx): c_ptr(void));
-           OTF2_GlobalEvtReaderCallbacks_Delete(evtCallbacks);
-
-           var totalEventsRead: c_uint64 = 0;
-           OTF2_Reader_ReadAllGlobalEvents(reader, globalEvtReader, c_ptrTo(totalEventsRead));
-           totalEventsReadAcrossReaders += totalEventsRead;
-
-           OTF2_Reader_CloseGlobalEvtReader(reader, globalEvtReader);
-         } else {
-           logError("Failed to create global event reader in task ", i);
-         }
-
-         OTF2_Reader_CloseEvtFiles(reader);
-         OTF2_Reader_Close(reader);
-       } else {
-         logError("Failed to open trace file in task ", i);
-       }
-    }
+    var totalEventsRead: c_uint64 = 0;
+    OTF2_Reader_ReadAllGlobalEvents(reader,
+                                    globalEvtReader,
+                                    c_ptrTo(totalEventsRead));
 
     const evtReadTime = sw.elapsed();
-    logDebug("Time taken to read events: ", evtReadTime, " seconds");
+    writeln("Time taken to read events: ", evtReadTime, " seconds");
     sw.clear();
 
-    logDebug("Total events read: ", totalEventsReadAcrossReaders);
-
-    // Merge contexts
-    logDebug("Merging contexts...");
-    var mergedCtx = try! mergeEvtContexts(evtContexts);
-    const mergeTime = sw.elapsed();
-    logDebug("Time taken to merge contexts: ", mergeTime, " seconds");
-    sw.clear();
-
-    logInfo("Trace loaded in ", global_sw.elapsed(), " seconds");
-    logInfo("Writing CSV files to directory: ", outputDir);
-    // Write CSVs
-    writeCallGraphsAndMetricsToCSV(mergedCtx);
-    logInfo("Finished writing to ", outputDir, " in ", sw.elapsed(), " seconds");
-    logInfo("Finished converting trace in ", global_sw.elapsed(), " seconds");
+    OTF2_Reader_CloseGlobalEvtReader(reader, globalEvtReader);
+    OTF2_Reader_CloseEvtFiles(reader);
+    OTF2_Reader_Close(reader);
+    const closeTime = sw.elapsed();
+    sw.stop();
+    writeln("Total time: ", openTime + defReadTime + markTime + evtReadTime + closeTime, " seconds");
+    writeCallGraphsAndMetrics(evtCtx, outputFormat);
   }
 
-  proc callgraphToCSV(callGraph: shared CallGraph, group: string, thread: string, filename: string) {
-    // Convert a CallGraph to a CSV file
-    try {
-      var outfile = open(joinPath(outputDir, filename), ioMode.cw);
-      var writer = outfile.writer(locking=false);
-
-      writer.writeln("Thread,Group,Depth,Name,Start Time,End Time,Duration");
-
-      const intervals = callGraph.getIntervalsBetween(-inf, inf);
-
-      for iv in intervals {
-        const start = iv.start;
-        const end = if iv.hasEnd then iv.end else inf;
-        const duration = end - start;
-        const name = if iv.name != "" then iv.name else "Unknown";
-        const depth = iv.depth;
-
-        writer.writef("%s,%s,%i,\"%s\",%.15dr,%.15dr,%.15dr\n",
-                      thread, group, depth, name, start, end, duration);
-      }
-
-      writer.close();
-      outfile.close();
-    } catch e {
-      logError("Error writing callgraph to CSV: ", e);
-    }
+  proc failUnimplementedFormat(format: OutputFormat) {
+    writeln(unimplementedFormatMessage(format));
+    exit(1);
   }
 
-  proc metricsToCSV(group: string, threadMetrics: map(string, list((real(64), OTF2_Type, OTF2_MetricValue))), filename: string) {
-    // Convert metrics to a CSV file
-    // Note: In the Python version, metrics are stored as List[Tuple[float, float]] (time, value)
-    try {
-      var outfile = open(joinPath(outputDir, filename), ioMode.cw);
-      var writer = outfile.writer(locking=false);
+  proc writeCallgraph(callGraph: shared CallGraph, group: string, thread: string, format: OutputFormat) {
+    const filename = callgraphFilename(group, thread, format);
+    writeln("Writing to file: ", filename);
 
-      writer.writeln("Group,Metric Name,Time,Value");
-
-      for (metricName, values) in threadMetrics.items() {
-        for (time, valueType, value) in values {
-          if valueType == OTF2_TYPE_INT64 then
-            writer.writef("%s,%s,%.15dr,%i\n", group, metricName, time, value.signed_int);
-          else if valueType == OTF2_TYPE_UINT64 then
-            writer.writef("%s,%s,%.15dr,%u\n", group, metricName, time, value.unsigned_int);
-          else if valueType == OTF2_TYPE_DOUBLE then
-            writer.writef("%s,%s,%.15dr,%.15dr\n", group, metricName, time, value.floating_point);
+    select format {
+      when OutputFormat.CSV {
+        try {
+          OTF2ToTableWriters.writeCallgraphCSV(callGraph, group, thread, filename);
+        } catch e {
+          writeln("Error writing callgraph to CSV: ", e);
         }
       }
-
-      writer.close();
-      outfile.close();
-    } catch e {
-      logError("Error writing metrics to CSV: ", e);
-    }
-  }
-
-  proc writeCallGraphsAndMetricsToCSV(evtCtx: EvtCallbackContext) {
-    // Write call graphs to CSV files
-
-    // cobegin {
-    coforall (group, threads) in evtCtx.callGraphs.toArray() {
-      if !evtCtx.evtArgs.processesToTrack.isEmpty() && !evtCtx.evtArgs.processesToTrack.contains(group) {
-        logInfo("Skipping group ", group, " as it is not in the processes to track.");
-      } else {
-        coforall thread in threads.keysToArray() {
-          const callGraph = try! threads[thread];
-          const filename = group + "_" + thread.replace(" ", "_") + "_callgraph.csv";
-          logInfo("Writing to file: ", filename);
-          callgraphToCSV(callGraph, group, thread, filename);
+      when OutputFormat.PARQUET {
+        try {
+          OTF2ToTableWriters.writeCallgraphParquet(callGraph, filename);
+        } catch e {
+          writeln("Error writing callgraph to PARQUET: ", e);
+          exit(1);
         }
       }
     }
+  }
 
-    // Write metrics to CSV files
-    coforall (group, threadMetrics) in evtCtx.metrics.toArray() {
-      if !evtCtx.evtArgs.processesToTrack.isEmpty() && !evtCtx.evtArgs.processesToTrack.contains(group) {
-        logInfo("Skipping group ", group, " as it is not in the processes to track.");
-      } else {
-        const filename = group + "_metrics.csv";
-        logInfo("Writing to file: ", filename);
-        metricsToCSV(group, threadMetrics, filename);
+  proc writeMetrics(group: string, threadMetrics: map(string, list((real(64), OTF2_Type, OTF2_MetricValue))), format: OutputFormat) {
+    const filename = metricsFilename(group, format);
+    writeln("Writing to file: ", filename);
+
+    select format {
+      when OutputFormat.CSV {
+        try {
+          OTF2ToTableWriters.writeMetricsCSV(group, threadMetrics, filename);
+        } catch e {
+          writeln("Error writing metrics to CSV: ", e);
+        }
       }
+      when OutputFormat.PARQUET {
+        try {
+          OTF2ToTableWriters.writeMetricsParquet(threadMetrics, filename);
+        } catch e {
+          writeln("Error writing metrics to PARQUET: ", e);
+          exit(1);
+        }
+      }
+    }
+  }
+
+  proc writeCallGraphsAndMetrics(evtCtx: EvtCallbackContext, format: OutputFormat) {
+    forall (group, threads) in evtCtx.callGraphs.toArray() {
+      if !evtCtx.evtArgs.processesToTrack.isEmpty() && !evtCtx.evtArgs.processesToTrack.contains(group) {
+        writeln("Skipping group ", group, " as it is not in the processes to track.");
+        continue;
+      }
+      forall thread in threads.keysToArray() {
+        const callGraph = try! threads[thread];
+        writeCallgraph(callGraph, group, thread, format);
+      }
+    }
+
+    forall (group, threadMetrics) in evtCtx.metrics.toArray() {
+      if !evtCtx.evtArgs.processesToTrack.isEmpty() && !evtCtx.evtArgs.processesToTrack.contains(group) {
+        writeln("Skipping group ", group, " as it is not in the processes to track.");
+        continue;
+      }
+      writeMetrics(group, threadMetrics, format);
     }
   }
 
   proc printCallGraphAndMetrics(evtCtx: EvtCallbackContext, verbose: bool = false) {
     // Output call graphs and metrics summary to console
-    logDebug("\n--- Call Graphs ---");
-    logDebug("Total location groups with call graphs: ", evtCtx.callGraphs.size);
+    writeln("\n--- Call Graphs ---");
+    writeln("Total location groups with call graphs: ", evtCtx.callGraphs.size);
     for (locGroup, locMap) in evtCtx.callGraphs.items() {
-      logDebug("Location Group: ", locGroup);
+      writeln("Location Group: ", locGroup);
       for (locName, callGraph) in locMap.items() {
-        logDebug("  Thread: ", locName);
+        writeln("  Thread: ", locName);
       }
     }
 
-    logDebug("\n--- Metrics Summary ---");
+    writeln("\n--- Metrics Summary ---");
     var totalMetricsStored: int = 0;
     for (locGroup, metricMap) in evtCtx.metrics.items() {
-      logDebug("Location Group: ", locGroup);
+      writeln("Location Group: ", locGroup);
       for (metricName, values) in metricMap.items() {
-        logDebug("  Metric: ", metricName, ", Count: ", values.size);
+        write("  Metric: ", metricName, ", Count: ", values.size);
         if values.size > 0 {
-          logDebug("First Value: ", values[0]);
+          writeln(", First Value: ", values[0]);
+        } else {
+          writeln();
         }
         totalMetricsStored += values.size;
       }
     }
-    logDebug("Total metrics stored: ", totalMetricsStored);
+    writeln("Total metrics stored: ", totalMetricsStored);
+
   }
 }
