@@ -50,6 +50,10 @@ This step assumes access to the internet. Skip it if the necessary files are alr
 
 1. Clone the repository if you have not already done so.
 2. Download `otf2-3.1.1.tar.gz` from the OTF2 release site: https://perftools.pages.jsc.fz-juelich.de/cicd/otf2/
+   ```bash
+   cd container/
+   wget https://perftools.pages.jsc.fz-juelich.de/cicd/otf2/tags/otf2-3.1.1/otf2-3.1.1.tar.gz
+   ```
 3. Place that tarball in this `container/` directory so the container build can copy it into the image.
 
 At this point, your `container/` directory should contain at least:
