@@ -1,73 +1,57 @@
 # FastOTF2
 
-A high-performance Chapel-based library for reading and processing OTF2 (Open Trace Format 2) trace files at scale. FastOTF2 provides native Chapel bindings for OTF2, enabling efficient parallel and distributed analysis of large-scale HPC application traces.
+FastOTF2 is a Chapel-based toolkit for reading OTF2 traces and converting them into analysis-friendly outputs.
+The primary end-to-end workflow in this repository is the `TraceToCSV` Mason application in [apps/TraceToCSV](apps/TraceToCSV), built on top of the reusable FastOTF2 library at the repository root.
 
-## Repository Structure
+The recommended path for most users is the container workflow. It assumes you do not already have Chapel, Mason, and OTF2 installed locally and gives you a ready-made environment for building and running the repository.
 
-### Core Implementation
-- **`chpl/`** - Main Chapel OTF2 processing library and tools
-  - Chapel `OTF2` module for OTF2 reading (see in `_chpl`)
-  - Example programs and utilities (`simple`, `read_events`, `read_events_and_metrics`, `trace_to_csv`)
-  - Multiple implementation variants (serial, parallel, distributed) for different examples
+## Using FastOTF2 to convert your OTF2 traces
 
-- **`c`** - C versions of the same benchmarks, except `trace_to_csv`
+Depending on your use case, you may want to pick one of the following options:
 
-### Development Environment
-- **`container`** - How to run in containers
-  - A Dockerfile, and docker compose file
-  - Instructions to run
-  - Instructions to migrate to apptainer (for HPC systems)
-  - See the README.
+- **Container-first workflow (recommended):** [container/README.md](container/README.md)
+- **Local/native workflow with your own Chapel and OTF2 install:** [docs/quickstart.md](docs/quickstart.md)
+- **Developer and repository documentation:** [docs/README.md](docs/README.md)
 
-### Building from Source
+## Recommended Workflow
 
-#### Prerequisites
-- Chapel compiler (≥ 2.0.0)
-- OTF2 library (≥ 3.0.0)
-- GCC/Clang with C++14 support
-- Make
+If you want the shortest path to a working FastOTF2 environment, use the container guide.
+It walks through the full process in order:
 
-#### Installation Steps
+1. Prepare the required container inputs.
+2. Build the container.
+3. Launch the container.
+4. Build `TraceToCSV` inside the container.
+5. Run it against one of the bundled traces.
 
-1. **Install Chapel**
-   ```bash
-   # Download and install Chapel from https://chapel-lang.org
-   export CHPL_HOME=/path/to/chapel
-   export PATH=$CHPL_HOME/bin:$PATH
-   ```
+The bundled traces used throughout the documentation live under [sample-traces](sample-traces).
 
-2. **Install OTF2**
-   ```bash
-   # If using system package manager
-   sudo apt-get install libotf2-dev  # Ubuntu/Debian
-   # OR build from source in otf2-3.1.1/
-   ```
+## Repository Layout
 
-3. **Build FastOTF2**
-   ```bash
-   cd chpl
-   cd trace_to_csv # or whatever example you're trying to build
-   make
-   ```
+- [apps/TraceToCSV](apps/TraceToCSV): primary user-facing trace conversion application
+- [src](src) and [Mason.toml](Mason.toml): reusable FastOTF2 Chapel library
+- [example](example): root Mason examples for the library package
+- [comparisons](comparisons): comparison material in C and Python
+- [container](container): container build and runtime workflow
+- [docs](docs): native-build guidance, architecture notes, benchmarks, tutorials, and other developer-focused material
 
-## Usage
+## Primary Commands
 
-### Basic Usage
+Inside the container or any local environment where Chapel and OTF2 are already available:
 
-Refer to the **Makefile** in `chpl/` for comprehensive build targets and usage examples:
+```bash
+cd apps/TraceToCSV
+mason build --release
+mason run --release -- ../../sample-traces/simple-mi300-example-run/traces.otf2
+```
 
-## Performance
+To run against a different trace, replace the final positional path with your own OTF2 archive.
 
-FastOTF2 is designed for high-performance analysis of large trace files:
+Use `--release` for normal builds and runs. Mason adds Chapel's `--fast` automatically for release builds, so `--fast` is not included in the package `compopts` by default.
 
-- **Parallel Processing**: Utilizes Chapel's task parallelism for multi-core efficiency
-- TODO **Distributed Execution**: Scales across multiple nodes using Chapel's distributed arrays
-- TODO **Memory Optimization**: Efficient memory usage patterns for large traces
-- TODO **I/O Optimization**: Optimized reading patterns for OTF2 files
+## Additional Reading
 
-## Chapel OTF2 Module API
-
-The core Chapel module aims to provides a 1:1 mapping to the C otf2
-api in most places.
-It is a work in progress.
-See the readme in `chpl/_chpl`
+- [container/README.md](container/README.md): full container walkthrough for users
+- [docs/quickstart.md](docs/quickstart.md): native/local build and run workflow
+- [docs/README.md](docs/README.md): developer docs index
+- [DEMO.md](DEMO.md): OTF2 walkthrough and project background

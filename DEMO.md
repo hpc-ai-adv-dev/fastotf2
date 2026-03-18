@@ -1,6 +1,6 @@
 # OTF2 in Chapel: A Live Demo
 
-This repo demonstrates the capabilities of the Open Trace Format 2 (OTF2) library within the Chapel programming language. We will explore the format, compare implementations in Python and C, and showcase the new Chapel library.
+This repo demonstrates the capabilities of the Open Trace Format 2 (OTF2) library within the Chapel programming language. The primary user-facing workflow is the Mason-based trace converter in `apps/TraceToCSV`, backed by the reusable FastOTF2 Chapel library. We will explore the format, compare implementations in Python and C, and showcase the Chapel implementation.
 
 This work is part of a collaboration with Oak Ridge National Laboratory (ORNL) to enable high-performance trace analysis.
 The bottleneck in these trace analysis workflows has been converting OTF2 traces into a data format that can be ingested
@@ -39,7 +39,7 @@ In this demo, we will:
 
 OTF2 has a python module which provides a high-level interface to OTF2, making it easy to prototype and analyze traces. However, for massive traces, performance can be a bottleneck.
 
-The script `otf2readevents.py` demonstrates how to open a trace and iterate through events.
+The script `comparisons/python/otf2readevents.py` demonstrates how to open a trace and iterate through events.
 
 ### Key Concepts:
 - `otf2.reader.open(archive_name)`: Opens the trace.
@@ -63,12 +63,12 @@ To read events in C, you typically need to:
 -   **Verbosity**: You need to define structs and memory management logic just to store basic data, adding significant boilerplate code.
 -   **Completeness Burden**: If you want to handle "all events", you must register a handler for every single event type defined in the spec, or they are silently ignored.
 
-The file `c/otf2_read_events.c` shows this approach.
+The file `comparisons/c/otf2_read_events.c` shows this approach.
 
 
 ## 5. Exploring the Chapel API
 
-The bindings are located in `chpl/_chpl/` and provide a bridge between the raw speed of C and the usability of high-level languages.
+The reusable Chapel modules are located in `src/` and provide a bridge between the raw speed of C and the usability of high-level languages.
 
 **Why Chapel?**
 -   **Better Data Structures**: Chapel's rich standard library (Maps, Lists, Records) replaces the manual memory management required in C.
@@ -85,11 +85,11 @@ Key modules:
 
 This example demonstrates a simple event reader in Chapel. It mimics the functionality of the C example but with cleaner syntax.
 
-We will compile and run `chpl/read_events/otf2_read_events.chpl`.
+We will compile and run the root Mason example `example/FastOtf2ReadEvents.chpl`.
 
 
 ## 7. Example: Trace to CSV Conversion
 
 This example is more complex. It reads definitions to understand regions and metrics, and then iterates over events to produce a CSV file.
 
-We will compile and run `chpl/trace_to_csv/trace_to_csv.chpl`.
+We will compile and run the `TraceToCSV` application package through Mason.
