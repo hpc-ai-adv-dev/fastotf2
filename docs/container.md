@@ -7,7 +7,7 @@ That document is the supported end-to-end walkthrough for:
 - preparing the container build inputs
 - building the image
 - launching the container
-- building and running `TraceToCSV`
+- building and running `OTF2ToTable`
 - optionally migrating the image to an HPC system with Apptainer
 
 This page remains in `docs/` only so the developer documentation index can point to the container workflow without duplicating the instructions.
