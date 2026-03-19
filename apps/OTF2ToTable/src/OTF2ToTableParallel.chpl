@@ -714,7 +714,7 @@ module OTF2ToTableParallel {
         name="format",
         defaultValue="CSV",
         numArgs=1,
-        help="Output format (CSV or PARQUET; PARQUET is currently unimplemented)"
+        help="Output format (CSV or PARQUET; PARQUET writes single-column int64 files due to library limitations)"
       );
 
       var excludeMPIArg = parser.addFlag(
