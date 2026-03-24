@@ -28,10 +28,6 @@ module OTF2ToTableWriters {
       return ".parquet";
   }
 
-  proc unimplementedFormatMessage(format: OutputFormat): string {
-    return "Output format " + format:string + " is wired through the CLI, but writing " + format:string + " files is not implemented yet.";
-  }
-
   inline proc secondsToNanoseconds(value: real): int(64) {
     return (value * 1_000_000_000.0): int(64);
   }
@@ -45,15 +41,6 @@ module OTF2ToTableWriters {
       return value.floating_point: int(64);
     else
       return 0:int(64);
-  }
-
-  proc writeInt64ColumnParquet(outputPath: string, datasetName: string, values: [] int(64)) throws {
-    if values.size == 0 {
-        createEmptyParquetFile(outputPath, datasetName, ARROWINT64, CompressionType.NONE:int);
-      return;
-    }
-
-    writeColumn(filename=outputPath, colName=datasetName, Arr=values);
   }
 
   proc callgraphFilename(group: string, thread: string, format: OutputFormat): string {
@@ -108,33 +95,75 @@ module OTF2ToTableWriters {
     outfile.close();
   }
 
-  proc writeCallgraphParquet(callGraph: shared CallGraph, outputPath: string) throws {
+  // Writes all callgraph intervals to a Parquet file with the same columns as
+  // the CSV output: thread, group, depth, name, start_ns, end_ns, duration_ns.
+  // Times are stored as int64 nanoseconds (multiply CSV seconds columns by 1e9).
+  // end_ns is -1 for intervals with no recorded end event.
+  proc writeCallgraphParquet(callGraph: shared CallGraph, group: string, thread: string, outputPath: string) throws {
     const intervals = callGraph.getIntervalsBetween(-inf, inf);
-    var durationNs: [0..#intervals.size] int(64);
+    const n = intervals.size;
 
-    for (idx, iv) in zip(durationNs.domain, intervals) {
-      const end = if iv.hasEnd then iv.end else inf;
-      durationNs[idx] = secondsToNanoseconds(end - iv.start);
+    // [PARQUET-PKG-GUARD] writeTable() crashes on empty arrays.
+    // Remove this guard when the Parquet package handles n=0 gracefully.
+    if n == 0 then return;
+
+    var threadCol:   [0..<n] string;
+    var groupCol:    [0..<n] string;
+    var depthCol:    [0..<n] int(64);
+    var nameCol:     [0..<n] string;
+    var startNsCol:  [0..<n] int(64);
+    var endNsCol:    [0..<n] int(64);
+    var durationCol: [0..<n] int(64);
+
+    for (idx, iv) in zip(0..<n, intervals) {
+      const endSec = if iv.hasEnd then iv.end else inf;
+      threadCol[idx]   = thread;
+      groupCol[idx]    = group;
+      depthCol[idx]    = iv.depth: int(64);
+      nameCol[idx]     = if iv.name != "" then iv.name else "Unknown";
+      startNsCol[idx]  = secondsToNanoseconds(iv.start);
+      endNsCol[idx]    = if iv.hasEnd then secondsToNanoseconds(iv.end) else -1:int(64);
+      durationCol[idx] = secondsToNanoseconds(endSec - iv.start);
     }
 
-    writeInt64ColumnParquet(outputPath, "duration_ns", durationNs);
+    writeTable(outputPath,
+               colNames=("thread", "group", "depth", "name",
+                         "start_ns", "end_ns", "duration_ns"),
+               threadCol, groupCol, depthCol, nameCol,
+               startNsCol, endNsCol, durationCol);
   }
 
-  proc writeMetricsParquet(threadMetrics: map(string, list((real(64), OTF2_Type, OTF2_MetricValue))), outputPath: string) throws {
+  // Writes all recorded metric samples to a Parquet file with the same columns
+  // as the CSV output: group, metric_name, time_ns, value_i64.
+  // time_ns is the sample timestamp in nanoseconds (multiply CSV Time by 1e9).
+  // Metric values are cast to int64 (DOUBLE metrics lose fractional precision).
+  proc writeMetricsParquet(group: string, threadMetrics: map(string, list((real(64), OTF2_Type, OTF2_MetricValue))), outputPath: string) throws {
     var totalValues = 0;
     for values in threadMetrics.values() do
       totalValues += values.size;
 
-    var metricValues: [0..#totalValues] int(64);
-    var idx = 0;
+    // [PARQUET-PKG-GUARD] writeTable() crashes on empty arrays.
+    // Remove this guard when the Parquet package handles n=0 gracefully.
+    if totalValues == 0 then return;
 
-    for values in threadMetrics.values() {
-      for (_, valueType, value) in values {
-        metricValues[idx] = metricValueToInt64(valueType, value);
+    var groupCol:      [0..<totalValues] string;
+    var metricNameCol: [0..<totalValues] string;
+    var timeNsCol:     [0..<totalValues] int(64);
+    var valueCol:      [0..<totalValues] int(64);
+
+    var idx = 0;
+    for (metricName, values) in threadMetrics.items() {
+      for (time, valueType, value) in values {
+        groupCol[idx]      = group;
+        metricNameCol[idx] = metricName;
+        timeNsCol[idx]     = secondsToNanoseconds(time);
+        valueCol[idx]      = metricValueToInt64(valueType, value);
         idx += 1;
       }
     }
 
-    writeInt64ColumnParquet(outputPath, "value_i64", metricValues);
+    writeTable(outputPath,
+               colNames=("group", "metric_name", "time_ns", "value_i64"),
+               groupCol, metricNameCol, timeNsCol, valueCol);
   }
 }

@@ -10,7 +10,11 @@ type = "application"
 version = "0.1.0"
 
 [dependencies]
-Parquet = { git = "https://github.com/ShreyasKhandekar/Parquet" }
+Parquet = { git = "https://github.com/benharsh/Parquet", branch = "write-strings" }
+# FastOTF2 = { git = "../../" }
 
 [examples]
 examples = ["OTF2ToTableSerial.chpl"]
+
+[tests]
+tests = ["ReadParquetTest.chpl"]

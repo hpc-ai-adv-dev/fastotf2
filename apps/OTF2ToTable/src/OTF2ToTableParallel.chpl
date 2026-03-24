@@ -68,11 +68,6 @@ module OTF2ToTableParallel {
     }
   }
 
-  proc failUnimplementedFormat(format: OutputFormat) {
-    logError(unimplementedFormatMessage(format));
-    exit(1);
-  }
-
 
   // This record should be in a Chapel OTF2 module since it is common for all readers
   // but for simplicity, we keep it here for now.
@@ -964,7 +959,7 @@ module OTF2ToTableParallel {
       }
       when OutputFormat.PARQUET {
         try {
-          OTF2ToTableWriters.writeCallgraphParquet(callGraph, joinPath(outputDir, filename));
+          OTF2ToTableWriters.writeCallgraphParquet(callGraph, group, thread, joinPath(outputDir, filename));
         } catch e {
           logError("Error writing callgraph to PARQUET: ", e);
           exit(1);
@@ -987,7 +982,7 @@ module OTF2ToTableParallel {
       }
       when OutputFormat.PARQUET {
         try {
-          OTF2ToTableWriters.writeMetricsParquet(threadMetrics, joinPath(outputDir, filename));
+          OTF2ToTableWriters.writeMetricsParquet(group, threadMetrics, joinPath(outputDir, filename));
         } catch e {
           logError("Error writing metrics to PARQUET: ", e);
           exit(1);

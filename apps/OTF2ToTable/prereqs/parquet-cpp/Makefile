@@ -6,7 +6,7 @@
 # the C++ interop code, then emits the right flags via printchplflags.
 
 MASON_HOME ?= $(HOME)/.mason
-PARQUET_PKG_DIR = $(MASON_HOME)/git/Parquet-HEAD
+PARQUET_PKG_DIR = $(MASON_HOME)/git/Parquet-write-strings
 PARQUET_PREREQS_DIR = $(PARQUET_PKG_DIR)/prereqs/cpp
 
 .PHONY: all clean printchplflags
