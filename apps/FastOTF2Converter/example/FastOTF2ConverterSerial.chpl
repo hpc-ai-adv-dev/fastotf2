@@ -10,8 +10,7 @@ module FastOTF2ConverterSerial {
   use IO;
   import Math.inf;
 
-  // This record should be in a Chapel OTF2 module since it is common for all readers
-  // but for simplicity, we keep it here for now.
+  // TODO(refactor): Move ClockProperties into the FastOTF2 library package.
   record ClockProperties {
     // See https://perftools.pages.jsc.fz-juelich.de/cicd/otf2/tags/latest/html/group__records__definition.html#ClockProperties
     var timerResolution: uint(64);
@@ -41,9 +40,7 @@ module FastOTF2ConverterSerial {
     return OTF2_CALLBACK_SUCCESS;
   }
 
-  // These records should be classes and moved into a proper Chapel OTF2 module
-  // but for simplicity, we keep them here for now.
-  // They are also not feature complete but sufficient for the current needs.
+  // TODO(refactor): Move definition records into the FastOTF2 library package.
   record LocationGroup {
     var name: string;
     var creatingLocationGroup: string;
@@ -58,7 +55,7 @@ module FastOTF2ConverterSerial {
     var unit: string;
   }
 
-  // Metric class and instance should inherit from a common Metric base class
+  // TODO(refactor): Unify MetricClass and MetricInstance under a common base.
   record MetricClass {
     var numberOfMetrics: c_uint8;
     var firstMemberID: OTF2_MetricMemberRef;  // Store just the first member ID directly
@@ -328,11 +325,9 @@ module FastOTF2ConverterSerial {
     }
     if !callGraphs[locGroup].contains(location) {
       writeln("New call graph for thread: ", location, " in group ", locGroup);
+      // TODO(chapel-bug): map[key] = new shared CallGraph() triggers an
+      // ownership issue in the Chapel compiler. Using add() works around it.
       callGraphs[locGroup].add(location, new shared CallGraph());
-      // For whatever reason
-      // callGraphs[locGroup][location] = new shared CallGraph();
-      // causes issues, so we use add() instead
-
     }
     }
 
@@ -496,9 +491,6 @@ module FastOTF2ConverterSerial {
     if numberOfMetrics != 1 then
       halt("Metric event with multiple metrics not supported yet");
 
-    // Question: Should we check if this metric is one we want to track? Python version does not do that
-
-
     const (metricName, metricUnit, metricRecorder) = getMetricInfo(defCtx, location, metric);
 
     // If we are not tracking this metric, skip it
@@ -511,7 +503,9 @@ module FastOTF2ConverterSerial {
 
     // Get the time for this metric in seconds
     var currentTime = timestampToSeconds(time, defCtx.clockProps);
-    // Adjust for craypm metrics, as they are reported with a delay
+    // TODO(cleanup): crayTimeOffset adjusts CrayPM metric timestamps.
+    // The parallel converter dropped this feature. Remove from serial too
+    // once confirmed unnecessary, or promote to the parallel path if needed.
     if metricName.toLower().find("cray") >= 0 && ctx.evtArgs.crayTimeOffset != 0.0 {
       currentTime -= ctx.evtArgs.crayTimeOffset;
     }
@@ -709,11 +703,6 @@ module FastOTF2ConverterSerial {
     writeCallGraphsAndMetrics(evtCtx, outputFormat);
   }
 
-  proc failUnimplementedFormat(format: OutputFormat) {
-    writeln(unimplementedFormatMessage(format));
-    exit(1);
-  }
-
   proc writeCallgraph(callGraph: shared CallGraph, group: string, thread: string, format: OutputFormat) {
     const filename = callgraphFilename(group, thread, format);
     writeln("Writing to file: ", filename);
@@ -728,7 +717,7 @@ module FastOTF2ConverterSerial {
       }
       when OutputFormat.PARQUET {
         try {
-          FastOTF2ConverterWriters.writeCallgraphParquet(callGraph, filename);
+          FastOTF2ConverterWriters.writeCallgraphParquet(callGraph, group, thread, filename);
         } catch e {
           writeln("Error writing callgraph to PARQUET: ", e);
           exit(1);
@@ -751,7 +740,7 @@ module FastOTF2ConverterSerial {
       }
       when OutputFormat.PARQUET {
         try {
-          FastOTF2ConverterWriters.writeMetricsParquet(threadMetrics, filename);
+          FastOTF2ConverterWriters.writeMetricsParquet(group, threadMetrics, filename);
         } catch e {
           writeln("Error writing metrics to PARQUET: ", e);
           exit(1);

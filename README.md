@@ -46,7 +46,8 @@ mason run --release -- ../../sample-traces/simple-mi300-example-run/traces.otf2
 ```
 
 To run against a different trace, replace the final positional path with your own OTF2 archive.
-Use `--format=CSV` explicitly if you want to pin the default behavior, or `--format=PARQUET` to exercise the current unimplemented stub path.
+
+The converter supports `--format=CSV` (default) and `--format=PARQUET`. Parquet output requires Apache Arrow C++ libraries (see [apps/FastOTF2Converter/README.md](apps/FastOTF2Converter/README.md) for setup).
 
 Use `--release` for normal builds and runs. Mason adds Chapel's `--fast` automatically for release builds, so `--fast` is not included in the package `compopts` by default.
 

@@ -20,7 +20,8 @@ The primary supported package structure is:
 - [../example](../example): Mason examples for the root library package, including restored simple/read-events Chapel utilities
 - [../apps/FastOTF2Converter/Mason.toml](../apps/FastOTF2Converter/Mason.toml): trace-to-table application package manifest
 - [../apps/FastOTF2Converter/src](../apps/FastOTF2Converter/src): primary trace-to-table source tree
-- [../apps/FastOTF2Converter/example](../apps/FastOTF2Converter/example): converter examples, including the current serial path
+- [../apps/FastOTF2Converter/example](../apps/FastOTF2Converter/example): converter examples, including the serial reference path
+- [../apps/FastOTF2Converter/test](../apps/FastOTF2Converter/test): CSV↔Parquet parity tests
 
 ## Supporting Repository Layout
 
