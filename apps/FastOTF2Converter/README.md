@@ -1,4 +1,4 @@
-# OTF2ToTable
+# FastOTF2Converter
 
 This directory contains the primary FastOTF2 application package.
 It is a Mason application built on the reusable FastOTF2 Chapel library at the repository root.
@@ -11,14 +11,14 @@ For end-to-end user instructions, start with one of these instead of using this 
 ## Package Layout
 
 - [Mason.toml](Mason.toml): application package manifest
-- [src/OTF2ToTable.chpl](src/OTF2ToTable.chpl): Mason application entrypoint
-- [src/OTF2ToTableParallel.chpl](src/OTF2ToTableParallel.chpl): current primary parallel implementation
-- [example/OTF2ToTableSerial.chpl](example/OTF2ToTableSerial.chpl): serial example path
+- [src/FastOTF2Converter.chpl](src/FastOTF2Converter.chpl): Mason application entrypoint
+- [src/FastOTF2ConverterParallel.chpl](src/FastOTF2ConverterParallel.chpl): current primary parallel implementation
+- [example/FastOTF2ConverterSerial.chpl](example/FastOTF2ConverterSerial.chpl): serial example path
 
 ## Common Commands
 
 ```bash
-cd apps/OTF2ToTable
+cd apps/FastOTF2Converter
 mason build --release
 mason run --release -- ../../sample-traces/simple-mi300-example-run/traces.otf2
 ```
@@ -29,9 +29,9 @@ The primary app also accepts `--format=CSV` or `--format=PARQUET`; the Parquet p
 To build and run the serial example path:
 
 ```bash
-cd apps/OTF2ToTable
+cd apps/FastOTF2Converter
 mason build --release --example
-mason run --release --example OTF2ToTableSerial.chpl
+mason run --release --example FastOTF2ConverterSerial.chpl
 ```
 
 ## Notes

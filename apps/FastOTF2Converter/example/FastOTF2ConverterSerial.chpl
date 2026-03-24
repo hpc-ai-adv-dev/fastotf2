@@ -1,8 +1,8 @@
 // Copyright Hewlett Packard Enterprise Development LP.
 
-module OTF2ToTableSerial {
+module FastOTF2ConverterSerial {
   use FastOTF2;
-  use OTF2ToTableWriters;
+  use FastOTF2ConverterWriters;
   use Time;
   use List;
   use Map;
@@ -544,12 +544,12 @@ module OTF2ToTableSerial {
 
   // Config constants for command-line arguments
   // Usage examples:
-  //   ./OTF2ToTableSerial --tracePath=/path/to/traces.otf2
-  //   ./OTF2ToTableSerial --crayTimeOffsetArg=2.5
-  //   ./OTF2ToTableSerial --metricsToTrackArg="metric1,metric2,metric3"
-  //   ./OTF2ToTableSerial --processesToTrackArg="process1,process2"
-  //   ./OTF2ToTableSerial --outputFormatArg=CSV
-  //   ./OTF2ToTableSerial --tracePath=/path/to/traces.otf2 --crayTimeOffsetArg=1.5 --metricsToTrackArg="metric1,metric2"
+  //   ./FastOTF2ConverterSerial --tracePath=/path/to/traces.otf2
+  //   ./FastOTF2ConverterSerial --crayTimeOffsetArg=2.5
+  //   ./FastOTF2ConverterSerial --metricsToTrackArg="metric1,metric2,metric3"
+  //   ./FastOTF2ConverterSerial --processesToTrackArg="process1,process2"
+  //   ./FastOTF2ConverterSerial --outputFormatArg=CSV
+  //   ./FastOTF2ConverterSerial --tracePath=/path/to/traces.otf2 --crayTimeOffsetArg=1.5 --metricsToTrackArg="metric1,metric2"
 
   config const tracePath: string = "../../sample-traces/simple-mi300-example-run/traces.otf2";
   config const crayTimeOffsetArg: real(64) = 1.0;
@@ -721,14 +721,14 @@ module OTF2ToTableSerial {
     select format {
       when OutputFormat.CSV {
         try {
-          OTF2ToTableWriters.writeCallgraphCSV(callGraph, group, thread, filename);
+          FastOTF2ConverterWriters.writeCallgraphCSV(callGraph, group, thread, filename);
         } catch e {
           writeln("Error writing callgraph to CSV: ", e);
         }
       }
       when OutputFormat.PARQUET {
         try {
-          OTF2ToTableWriters.writeCallgraphParquet(callGraph, filename);
+          FastOTF2ConverterWriters.writeCallgraphParquet(callGraph, filename);
         } catch e {
           writeln("Error writing callgraph to PARQUET: ", e);
           exit(1);
@@ -744,14 +744,14 @@ module OTF2ToTableSerial {
     select format {
       when OutputFormat.CSV {
         try {
-          OTF2ToTableWriters.writeMetricsCSV(group, threadMetrics, filename);
+          FastOTF2ConverterWriters.writeMetricsCSV(group, threadMetrics, filename);
         } catch e {
           writeln("Error writing metrics to CSV: ", e);
         }
       }
       when OutputFormat.PARQUET {
         try {
-          OTF2ToTableWriters.writeMetricsParquet(threadMetrics, filename);
+          FastOTF2ConverterWriters.writeMetricsParquet(threadMetrics, filename);
         } catch e {
           writeln("Error writing metrics to PARQUET: ", e);
           exit(1);

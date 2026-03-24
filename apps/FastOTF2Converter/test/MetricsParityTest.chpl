@@ -1,6 +1,6 @@
 // MetricsParityTest.chpl
 //
-// Verifies that OTF2ToTable's Parquet metrics output matches CSV output.
+// Verifies that FastOTF2Converter's Parquet metrics output matches CSV output.
 //
 // When the trace has no metric samples the CSV file contains only the header
 // and no Parquet file is created (writeTable requires >=1 row).  The tests

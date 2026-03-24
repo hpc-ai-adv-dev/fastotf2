@@ -1,4 +1,4 @@
-module OTF2ToTableWriters {
+module FastOTF2ConverterWriters {
   use FastOTF2;
   use List;
   use Map;

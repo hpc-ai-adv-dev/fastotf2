@@ -1,7 +1,7 @@
 // Copyright Hewlett Packard Enterprise Development LP.
-module OTF2ToTableParallel {
+module FastOTF2ConverterParallel {
   use FastOTF2;
-  use OTF2ToTableWriters;
+  use FastOTF2ConverterWriters;
   use Time;
   use List;
   use Map;
@@ -952,14 +952,14 @@ module OTF2ToTableParallel {
     select format {
       when OutputFormat.CSV {
         try {
-          OTF2ToTableWriters.writeCallgraphCSV(callGraph, group, thread, joinPath(outputDir, filename));
+          FastOTF2ConverterWriters.writeCallgraphCSV(callGraph, group, thread, joinPath(outputDir, filename));
         } catch e {
           logError("Error writing callgraph to CSV: ", e);
         }
       }
       when OutputFormat.PARQUET {
         try {
-          OTF2ToTableWriters.writeCallgraphParquet(callGraph, group, thread, joinPath(outputDir, filename));
+          FastOTF2ConverterWriters.writeCallgraphParquet(callGraph, group, thread, joinPath(outputDir, filename));
         } catch e {
           logError("Error writing callgraph to PARQUET: ", e);
           exit(1);
@@ -975,14 +975,14 @@ module OTF2ToTableParallel {
     select format {
       when OutputFormat.CSV {
         try {
-          OTF2ToTableWriters.writeMetricsCSV(group, threadMetrics, joinPath(outputDir, filename));
+          FastOTF2ConverterWriters.writeMetricsCSV(group, threadMetrics, joinPath(outputDir, filename));
         } catch e {
           logError("Error writing metrics to CSV: ", e);
         }
       }
       when OutputFormat.PARQUET {
         try {
-          OTF2ToTableWriters.writeMetricsParquet(group, threadMetrics, joinPath(outputDir, filename));
+          FastOTF2ConverterWriters.writeMetricsParquet(group, threadMetrics, joinPath(outputDir, filename));
         } catch e {
           logError("Error writing metrics to PARQUET: ", e);
           exit(1);

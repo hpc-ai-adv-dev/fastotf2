@@ -1,6 +1,6 @@
 // CallgraphParityTest.chpl
 //
-// Verifies that OTF2ToTable's Parquet callgraph output matches CSV output.
+// Verifies that FastOTF2Converter's Parquet callgraph output matches CSV output.
 //
 // Prerequisites:
 //   mason run --release -- <trace> --format CSV    --outputDir /tmp/csv_out
