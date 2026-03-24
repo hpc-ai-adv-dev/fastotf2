@@ -621,7 +621,8 @@ module FastOTF2ConverterParallel {
       ref ctx = contexts[i];
 
       // Merge seenGroups
-      for (group, threads) in ctx.seenGroups.items() {
+      for group in ctx.seenGroups.keys() {
+        const threads = ctx.seenGroups[group];
         if !mergedCtx.seenGroups.contains(group) {
           mergedCtx.seenGroups[group] = threads;
         } else {
@@ -630,25 +631,29 @@ module FastOTF2ConverterParallel {
       }
 
       // Merge callGraphs
-      for (group, threadMap) in ctx.callGraphs.items() {
+      for group in ctx.callGraphs.keys() {
+        const threadMap = ctx.callGraphs[group];
         if !mergedCtx.callGraphs.contains(group) {
           mergedCtx.callGraphs[group] = threadMap;
         } else {
-          for (thread, callGraph) in threadMap.items() {
+          for thread in threadMap.keys() {
+            const callGraph = threadMap[thread];
             if mergedCtx.callGraphs[group].contains(thread) {
               logWarn("Duplicate thread ", thread, " in group ", group, " during merge.");
             }
-             mergedCtx.callGraphs[group].add(thread, callGraph);
+            mergedCtx.callGraphs[group].add(thread, callGraph);
           }
         }
       }
 
       // Merge metrics
-      for (group, threadMap) in ctx.metrics.items() {
+      for group in ctx.metrics.keys() {
+        const threadMap = ctx.metrics[group];
         if !mergedCtx.metrics.contains(group) {
           mergedCtx.metrics[group] = threadMap;
         } else {
-          for (metric, metricList) in threadMap.items() {
+          for metric in threadMap.keys() {
+            const metricList = threadMap[metric];
             if mergedCtx.metrics[group].contains(metric) {
               for entry in metricList {
                 mergedCtx.metrics[group][metric].pushBack(entry);
@@ -1008,18 +1013,21 @@ module FastOTF2ConverterParallel {
     // Output call graphs and metrics summary to console
     logDebug("\n--- Call Graphs ---");
     logDebug("Total location groups with call graphs: ", evtCtx.callGraphs.size);
-    for (locGroup, locMap) in evtCtx.callGraphs.items() {
+    for locGroup in evtCtx.callGraphs.keys() {
       logDebug("Location Group: ", locGroup);
-      for (locName, callGraph) in locMap.items() {
+      const locMap = evtCtx.callGraphs[locGroup];
+      for locName in locMap.keys() {
         logDebug("  Thread: ", locName);
       }
     }
 
     logDebug("\n--- Metrics Summary ---");
     var totalMetricsStored: int = 0;
-    for (locGroup, metricMap) in evtCtx.metrics.items() {
+    for locGroup in evtCtx.metrics.keys() {
       logDebug("Location Group: ", locGroup);
-      for (metricName, values) in metricMap.items() {
+      const metricMap = evtCtx.metrics[locGroup];
+      for metricName in metricMap.keys() {
+        const values = metricMap[metricName];
         logDebug("  Metric: ", metricName, ", Count: ", values.size);
         if values.size > 0 {
           logDebug("First Value: ", values[0]);

@@ -52,12 +52,13 @@ module FastOTF2ConverterWriters {
   }
 
   proc writeCallgraphCSV(callGraph: shared CallGraph, group: string, thread: string, outputPath: string) throws {
+    const intervals = callGraph.getIntervalsBetween(-inf, inf);
+    if intervals.size == 0 then return;
+
     var outfile = open(outputPath, ioMode.cw);
     var writer = outfile.writer(locking=false);
 
     writer.writeln("Thread,Group,Depth,Name,Start Time,End Time,Duration");
-
-    const intervals = callGraph.getIntervalsBetween(-inf, inf);
 
     for iv in intervals {
       const start = iv.start;
@@ -75,12 +76,18 @@ module FastOTF2ConverterWriters {
   }
 
   proc writeMetricsCSV(group: string, threadMetrics: map(string, list((real(64), OTF2_Type, OTF2_MetricValue))), outputPath: string) throws {
+    var totalValues = 0;
+    for values in threadMetrics.values() do
+      totalValues += values.size;
+    if totalValues == 0 then return;
+
     var outfile = open(outputPath, ioMode.cw);
     var writer = outfile.writer(locking=false);
 
     writer.writeln("Group,Metric Name,Time,Value");
 
-    for (metricName, values) in threadMetrics.items() {
+    for metricName in threadMetrics.keys() {
+      const values = threadMetrics[metricName];
       for (time, valueType, value) in values {
         if valueType == OTF2_TYPE_INT64 then
           writer.writef("%s,%s,%.15dr,%i\n", group, metricName, time, value.signed_int);
@@ -152,7 +159,8 @@ module FastOTF2ConverterWriters {
     var valueCol:      [0..<totalValues] int(64);
 
     var idx = 0;
-    for (metricName, values) in threadMetrics.items() {
+    for metricName in threadMetrics.keys() {
+      const values = threadMetrics[metricName];
       for (time, valueType, value) in values {
         groupCol[idx]      = group;
         metricNameCol[idx] = metricName;
