@@ -5,10 +5,12 @@
 
 module FastOTF2ConverterCommon {
   use FastOTF2;
+  use FastOTF2ConverterWriters;
   use List;
   use Map;
   use CallGraphModule;
   use IO;
+  use Path;
 
   // ---------------------------------------------------------------------------
   // Logging infrastructure
@@ -129,7 +131,6 @@ module FastOTF2ConverterCommon {
     const metricsToTrack: domain(string);
     const excludeMPI: bool = false;
     const excludeHIP: bool = false;
-    const crayTimeOffset: real(64) = 0.0;
   }
 
   record EvtCallbackContext {
@@ -573,11 +574,7 @@ module FastOTF2ConverterCommon {
     const metricValue = metricValues[0];
 
     // Get the time for this metric in seconds
-    var currentTime = timestampToSeconds(time, defCtx.clockProps);
-    // Apply CrayPM time offset if configured
-    if ctx.evtArgs.crayTimeOffset != 0.0 && metricName.toLower().find("cray") >= 0 {
-      currentTime -= ctx.evtArgs.crayTimeOffset;
-    }
+    const currentTime = timestampToSeconds(time, defCtx.clockProps);
     // Update the seen groups, call graphs, and metrics maps
     updateMaps(ctx, locGroup, locName);
 
@@ -673,5 +670,90 @@ module FastOTF2ConverterCommon {
     }
 
     return mergedCtx;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Shared write / print helpers
+  // ---------------------------------------------------------------------------
+
+  proc writeCallgraph(callGraph: shared CallGraph, group: string, thread: string,
+                      format: OutputFormat, outputDir: string) {
+    const filename = callgraphFilename(group, thread, format);
+    logInfo("Writing to file: ", filename);
+
+    select format {
+      when OutputFormat.CSV {
+        try {
+          FastOTF2ConverterWriters.writeCallgraphCSV(callGraph, group, thread,
+                                                     joinPath(outputDir, filename));
+        } catch e {
+          logError("Error writing callgraph to CSV: ", e);
+        }
+      }
+      when OutputFormat.PARQUET {
+        try {
+          FastOTF2ConverterWriters.writeCallgraphParquet(callGraph, group, thread,
+                                                         joinPath(outputDir, filename));
+        } catch e {
+          logError("Error writing callgraph to PARQUET: ", e);
+          halt("failed to write callgraph parquet");
+        }
+      }
+    }
+  }
+
+  proc writeMetrics(group: string,
+                    threadMetrics: map(string, list((real(64), OTF2_Type, OTF2_MetricValue))),
+                    format: OutputFormat, outputDir: string) {
+    const filename = metricsFilename(group, format);
+    logInfo("Writing to file: ", filename);
+
+    select format {
+      when OutputFormat.CSV {
+        try {
+          FastOTF2ConverterWriters.writeMetricsCSV(group, threadMetrics,
+                                                   joinPath(outputDir, filename));
+        } catch e {
+          logError("Error writing metrics to CSV: ", e);
+        }
+      }
+      when OutputFormat.PARQUET {
+        try {
+          FastOTF2ConverterWriters.writeMetricsParquet(group, threadMetrics,
+                                                       joinPath(outputDir, filename));
+        } catch e {
+          logError("Error writing metrics to PARQUET: ", e);
+          halt("failed to write metrics parquet");
+        }
+      }
+    }
+  }
+
+  proc printCallGraphAndMetrics(ref evtCtx: EvtCallbackContext, verbose: bool = false) {
+    logDebug("\n--- Call Graphs ---");
+    logDebug("Total location groups with call graphs: ", evtCtx.callGraphs.size);
+    for locGroup in evtCtx.callGraphs.keys() {
+      logDebug("Location Group: ", locGroup);
+      const locMap = evtCtx.callGraphs[locGroup];
+      for locName in locMap.keys() {
+        logDebug("  Thread: ", locName);
+      }
+    }
+
+    logDebug("\n--- Metrics Summary ---");
+    var totalMetricsStored: int = 0;
+    for locGroup in evtCtx.metrics.keys() {
+      logDebug("Location Group: ", locGroup);
+      const metricMap = evtCtx.metrics[locGroup];
+      for metricName in metricMap.keys() {
+        const values = metricMap[metricName];
+        logDebug("  Metric: ", metricName, ", Count: ", values.size);
+        if values.size > 0 {
+          logDebug("First Value: ", values[0]);
+        }
+        totalMetricsStored += values.size;
+      }
+    }
+    logDebug("Total metrics stored: ", totalMetricsStored);
   }
 }

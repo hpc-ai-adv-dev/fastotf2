@@ -295,52 +295,6 @@ module FastOTF2ConverterParallel {
     logInfo("Finished converting trace in ", global_sw.elapsed(), " seconds");
   }
 
-  proc writeCallgraph(callGraph: shared CallGraph, group: string, thread: string, format: OutputFormat) {
-    const filename = callgraphFilename(group, thread, format);
-    logInfo("Writing to file: ", filename);
-
-    select format {
-      when OutputFormat.CSV {
-        try {
-          FastOTF2ConverterWriters.writeCallgraphCSV(callGraph, group, thread, joinPath(outputDir, filename));
-        } catch e {
-          logError("Error writing callgraph to CSV: ", e);
-        }
-      }
-      when OutputFormat.PARQUET {
-        try {
-          FastOTF2ConverterWriters.writeCallgraphParquet(callGraph, group, thread, joinPath(outputDir, filename));
-        } catch e {
-          logError("Error writing callgraph to PARQUET: ", e);
-          exit(1);
-        }
-      }
-    }
-  }
-
-  proc writeMetrics(group: string, threadMetrics: map(string, list((real(64), OTF2_Type, OTF2_MetricValue))), format: OutputFormat) {
-    const filename = metricsFilename(group, format);
-    logInfo("Writing to file: ", filename);
-
-    select format {
-      when OutputFormat.CSV {
-        try {
-          FastOTF2ConverterWriters.writeMetricsCSV(group, threadMetrics, joinPath(outputDir, filename));
-        } catch e {
-          logError("Error writing metrics to CSV: ", e);
-        }
-      }
-      when OutputFormat.PARQUET {
-        try {
-          FastOTF2ConverterWriters.writeMetricsParquet(group, threadMetrics, joinPath(outputDir, filename));
-        } catch e {
-          logError("Error writing metrics to PARQUET: ", e);
-          exit(1);
-        }
-      }
-    }
-  }
-
   proc writeCallGraphsAndMetrics(evtCtx: EvtCallbackContext, format: OutputFormat) {
     coforall (group, threads) in evtCtx.callGraphs.toArray() {
       if !evtCtx.evtArgs.processesToTrack.isEmpty() && !evtCtx.evtArgs.processesToTrack.contains(group) {
@@ -348,7 +302,7 @@ module FastOTF2ConverterParallel {
       } else {
         coforall thread in threads.keysToArray() {
           const callGraph = try! threads[thread];
-          writeCallgraph(callGraph, group, thread, format);
+          FastOTF2ConverterCommon.writeCallgraph(callGraph, group, thread, format, outputDir);
         }
       }
     }
@@ -357,37 +311,8 @@ module FastOTF2ConverterParallel {
       if !evtCtx.evtArgs.processesToTrack.isEmpty() && !evtCtx.evtArgs.processesToTrack.contains(group) {
         logInfo("Skipping group ", group, " as it is not in the processes to track.");
       } else {
-        writeMetrics(group, threadMetrics, format);
+        FastOTF2ConverterCommon.writeMetrics(group, threadMetrics, format, outputDir);
       }
     }
-  }
-
-  proc printCallGraphAndMetrics(evtCtx: EvtCallbackContext, verbose: bool = false) {
-    // Output call graphs and metrics summary to console
-    logDebug("\n--- Call Graphs ---");
-    logDebug("Total location groups with call graphs: ", evtCtx.callGraphs.size);
-    for locGroup in evtCtx.callGraphs.keys() {
-      logDebug("Location Group: ", locGroup);
-      const locMap = evtCtx.callGraphs[locGroup];
-      for locName in locMap.keys() {
-        logDebug("  Thread: ", locName);
-      }
-    }
-
-    logDebug("\n--- Metrics Summary ---");
-    var totalMetricsStored: int = 0;
-    for locGroup in evtCtx.metrics.keys() {
-      logDebug("Location Group: ", locGroup);
-      const metricMap = evtCtx.metrics[locGroup];
-      for metricName in metricMap.keys() {
-        const values = metricMap[metricName];
-        logDebug("  Metric: ", metricName, ", Count: ", values.size);
-        if values.size > 0 {
-          logDebug("First Value: ", values[0]);
-        }
-        totalMetricsStored += values.size;
-      }
-    }
-    logDebug("Total metrics stored: ", totalMetricsStored);
   }
 }
