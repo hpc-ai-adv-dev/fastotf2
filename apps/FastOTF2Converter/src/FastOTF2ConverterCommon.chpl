@@ -558,7 +558,7 @@ module FastOTF2ConverterCommon {
     // We only handle single metric members for now
     if numberOfMetrics != 1 then {
       logError("Metric event with multiple metrics not supported yet");
-      exit(1);
+      halt("unsupported: multiple metrics per event");
     }
 
     const (metricName, metricUnit, metricRecorder) = getMetricInfo(defCtx, location, metric);
@@ -615,8 +615,7 @@ module FastOTF2ConverterCommon {
 
   proc mergeEvtContexts(const ref contexts: [] EvtCallbackContext): EvtCallbackContext throws {
     if contexts.size == 0 {
-      logError("No contexts to merge");
-      exit(1);
+      halt("No contexts to merge");
     }
 
     // Start with the first context

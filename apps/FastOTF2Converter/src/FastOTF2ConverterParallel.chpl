@@ -94,14 +94,14 @@ module FastOTF2ConverterParallel {
         log = logArg.value(): LogLevel;
       } catch e {
         logError("Invalid log level: ", logArg.value(), ". Use one of: NONE, ERROR, WARN, INFO, DEBUG, or TRACE.");
-        exit(1);
+        halt("invalid log level");
       }
 
       try {
         outputFormat = parseOutputFormat(formatArg.value());
       } catch e {
         logError(e.message());
-        exit(1);
+        halt("invalid output format");
       }
 
       if excludeMPI {
@@ -112,19 +112,19 @@ module FastOTF2ConverterParallel {
       }
     } catch e {
       logError("Error parsing arguments: ", e);
-      exit(1);
+      halt("argument parsing failed");
     }
 
     try {
-      if !exists(trace) { logError("Trace file does not exist: ", trace); exit(1); }
-    } catch e { logError("Error checking trace file existence: ", e); exit(1); }
+      if !exists(trace) { logError("Trace file does not exist: ", trace); halt("trace file not found"); }
+    } catch e { logError("Error checking trace file existence: ", e); halt("trace file check failed"); }
 
     try {
       if !exists(outputDir) {
         logInfo("Output directory does not exist, creating: ", outputDir);
         mkdir(outputDir);
       }
-    } catch e { logError("Error checking/creating output directory: ", e); exit(1); }
+    } catch e { logError("Error checking/creating output directory: ", e); halt("output directory check failed"); }
 
     var sw: stopwatch;
     var global_sw: stopwatch;
@@ -134,7 +134,7 @@ module FastOTF2ConverterParallel {
     var reader = OTF2_Reader_Open(trace.c_str());
     if reader == nil {
       logError("Failed to open trace");
-      exit(1);
+      halt("failed to open trace");
     }
 
     const openTime = sw.elapsed();
