@@ -23,7 +23,7 @@ This example demonstrates:
 
 1. Building the FastOTF2 container image.
 2. Running the repository inside the container.
-3. Building the `TraceToCSV` Mason application inside the container.
+3. Building the `FastOTF2Converter` Mason application inside the container.
 4. Running a trace conversion against one of the bundled OTF2 traces.
 5. An optional next step of exercising the root FastOTF2 library examples.
 
@@ -167,41 +167,43 @@ docker run -it --rm \
 
 </details>
 
-### Step 3: Build TraceToCSV Inside the Container
+### Step 3: Build FastOTF2Converter Inside the Container
 
 Once inside the container, build the primary FastOTF2 application:
 
 ```bash
-cd /workspace/apps/TraceToCSV
+cd /workspace/apps/FastOTF2Converter
 mason build --release
 ```
 
 Use `--release` for normal builds and runs. Mason adds Chapel's `--fast` automatically for release builds, so `--fast` is not included in the package `compopts` by default.
 
-This builds the main user-facing executable, `TraceToCSV`.
+This builds the main user-facing executable, `FastOTF2Converter`.
 
 ### Step 4: Run a Trace Conversion Inside the Container
 
 Run the converter against one of the bundled traces:
 
 ```bash
-cd /workspace/apps/TraceToCSV
+cd /workspace/apps/FastOTF2Converter
 mason run --release -- /workspace/sample-traces/simple-mi300-example-run/traces.otf2
 ```
 
 You can also pass additional filters and output controls:
 
 ```bash
-cd /workspace/apps/TraceToCSV
+cd /workspace/apps/FastOTF2Converter
 mason run --release -- /workspace/sample-traces/simple-mi300-example-run/traces.otf2 \
   --metrics=metric1,metric2 \
   --processes=0,1 \
   --outputDir=./out \
+  --format=CSV \
   --excludeMPI \
   --log=DEBUG
 ```
 
 To run a different archive, replace the trace path after `--` with your own OTF2 archive.
+`--format=PARQUET` is also accepted now, but currently exits with a clear unimplemented message rather than writing output files.
 
 #### Expected Output
 
@@ -307,7 +309,7 @@ apptainer shell --bind $(pwd):/workspace --pwd /workspace fastotf2.sif
 5. Inside the container, run the same Mason commands you used on the desktop:
 
 ```bash
-cd /workspace/apps/TraceToCSV
+cd /workspace/apps/FastOTF2Converter
 mason run --release -- /workspace/sample-traces/simple-mi300-example-run/traces.otf2
 ```
 
@@ -440,7 +442,7 @@ That means the paths you will use inside the container look like this:
 ├── src/
 ├── example/
 ├── apps/
-│   └── TraceToCSV/
+│   └── FastOTF2Converter/
 ├── sample-traces/
 ├── comparisons/
 └── docs/
@@ -467,8 +469,8 @@ Make sure you are invoking Mason from the correct package root:
 cd /workspace
 mason build --release --example
 
-# TraceToCSV application package
-cd /workspace/apps/TraceToCSV
+# FastOTF2Converter application package
+cd /workspace/apps/FastOTF2Converter
 mason build --release
 ```
 

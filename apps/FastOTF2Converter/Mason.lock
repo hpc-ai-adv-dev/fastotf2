@@ -1,0 +1,36 @@
+
+[root]
+authors = ["Shreyas Khandekar"]
+chplVersion = "2.9.0..2.9.0"
+compopts = ["-M../../src", "-I/opt/otf2/include", "-L/opt/otf2/lib", "-lotf2"]
+copyrightYear = "2026"
+dependencies = ["Parquet -1 https://github.com/benharsh/Parquet"]
+license = "Apache-2.0"
+name = "FastOTF2Converter"
+source = "https://github.com/hpc-ai-adv-dev/fastotf2"
+type = "application"
+version = "0.1.0"
+
+[Parquet]
+branch = "write-strings"
+chplVersion = "2.9.0..2.9.0"
+name = "Parquet"
+rev = "1d56131aa28e70f9ed45eb0042656d0e7627d609"
+source = "https://github.com/benharsh/Parquet"
+version = "-1"
+
+[Parquet.system]
+
+[Parquet.system.arrow]
+include = "/Users/khandeka/dev/spack/opt/spack/darwin-m2/arrow-19.0.1-mg7vpcvhl7hobiainl4nx4agz75wk3sd/include"
+libs = "-L/Users/khandeka/dev/spack/opt/spack/darwin-m2/arrow-19.0.1-mg7vpcvhl7hobiainl4nx4agz75wk3sd/lib -larrow"
+name = "arrow"
+version = "19.0.1"
+
+[Parquet.system.parquet]
+include = "/Users/khandeka/dev/spack/opt/spack/darwin-m2/arrow-19.0.1-mg7vpcvhl7hobiainl4nx4agz75wk3sd/include"
+libs = "-L/Users/khandeka/dev/spack/opt/spack/darwin-m2/arrow-19.0.1-mg7vpcvhl7hobiainl4nx4agz75wk3sd/lib -lparquet -larrow"
+name = "parquet"
+version = "19.0.1"
+
+

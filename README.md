@@ -1,7 +1,7 @@
 # FastOTF2
 
 FastOTF2 is a Chapel-based toolkit for reading OTF2 traces and converting them into analysis-friendly outputs.
-The primary end-to-end workflow in this repository is the `TraceToCSV` Mason application in [apps/TraceToCSV](apps/TraceToCSV), built on top of the reusable FastOTF2 library at the repository root.
+The primary end-to-end workflow in this repository is the `FastOTF2Converter` Mason application in [apps/FastOTF2Converter](apps/FastOTF2Converter), built on top of the reusable FastOTF2 library at the repository root.
 
 The recommended path for most users is the container workflow. It assumes you do not already have Chapel, Mason, and OTF2 installed locally and gives you a ready-made environment for building and running the repository.
 
@@ -21,14 +21,14 @@ It walks through the full process in order:
 1. Prepare the required container inputs.
 2. Build the container.
 3. Launch the container.
-4. Build `TraceToCSV` inside the container.
+4. Build `FastOTF2Converter` inside the container.
 5. Run it against one of the bundled traces.
 
 The bundled traces used throughout the documentation live under [sample-traces](sample-traces).
 
 ## Repository Layout
 
-- [apps/TraceToCSV](apps/TraceToCSV): primary user-facing trace conversion application
+- [apps/FastOTF2Converter](apps/FastOTF2Converter): primary user-facing trace-to-table application
 - [src](src) and [Mason.toml](Mason.toml): reusable FastOTF2 Chapel library
 - [example](example): root Mason examples for the library package
 - [comparisons](comparisons): comparison material in C and Python
@@ -40,12 +40,14 @@ The bundled traces used throughout the documentation live under [sample-traces](
 Inside the container or any local environment where Chapel and OTF2 are already available:
 
 ```bash
-cd apps/TraceToCSV
+cd apps/FastOTF2Converter
 mason build --release
 mason run --release -- ../../sample-traces/simple-mi300-example-run/traces.otf2
 ```
 
 To run against a different trace, replace the final positional path with your own OTF2 archive.
+
+The converter supports `--format=CSV` (default) and `--format=PARQUET`. Parquet output requires Apache Arrow C++ libraries (see [apps/FastOTF2Converter/README.md](apps/FastOTF2Converter/README.md) for setup).
 
 Use `--release` for normal builds and runs. Mason adds Chapel's `--fast` automatically for release builds, so `--fast` is not included in the package `compopts` by default.
 

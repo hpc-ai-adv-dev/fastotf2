@@ -1,7 +1,8 @@
 // Copyright Hewlett Packard Enterprise Development LP.
 
-module TraceToCSVSerial {
+module FastOTF2ConverterSerial {
   use FastOTF2;
+  use FastOTF2ConverterWriters;
   use Time;
   use List;
   use Map;
@@ -9,8 +10,7 @@ module TraceToCSVSerial {
   use IO;
   import Math.inf;
 
-  // This record should be in a Chapel OTF2 module since it is common for all readers
-  // but for simplicity, we keep it here for now.
+  // TODO(refactor): Move ClockProperties into the FastOTF2 library package.
   record ClockProperties {
     // See https://perftools.pages.jsc.fz-juelich.de/cicd/otf2/tags/latest/html/group__records__definition.html#ClockProperties
     var timerResolution: uint(64);
@@ -40,9 +40,7 @@ module TraceToCSVSerial {
     return OTF2_CALLBACK_SUCCESS;
   }
 
-  // These records should be classes and moved into a proper Chapel OTF2 module
-  // but for simplicity, we keep them here for now.
-  // They are also not feature complete but sufficient for the current needs.
+  // TODO(refactor): Move definition records into the FastOTF2 library package.
   record LocationGroup {
     var name: string;
     var creatingLocationGroup: string;
@@ -57,7 +55,7 @@ module TraceToCSVSerial {
     var unit: string;
   }
 
-  // Metric class and instance should inherit from a common Metric base class
+  // TODO(refactor): Unify MetricClass and MetricInstance under a common base.
   record MetricClass {
     var numberOfMetrics: c_uint8;
     var firstMemberID: OTF2_MetricMemberRef;  // Store just the first member ID directly
@@ -327,11 +325,9 @@ module TraceToCSVSerial {
     }
     if !callGraphs[locGroup].contains(location) {
       writeln("New call graph for thread: ", location, " in group ", locGroup);
+      // TODO(chapel-bug): map[key] = new shared CallGraph() triggers an
+      // ownership issue in the Chapel compiler. Using add() works around it.
       callGraphs[locGroup].add(location, new shared CallGraph());
-      // For whatever reason
-      // callGraphs[locGroup][location] = new shared CallGraph();
-      // causes issues, so we use add() instead
-
     }
     }
 
@@ -495,9 +491,6 @@ module TraceToCSVSerial {
     if numberOfMetrics != 1 then
       halt("Metric event with multiple metrics not supported yet");
 
-    // Question: Should we check if this metric is one we want to track? Python version does not do that
-
-
     const (metricName, metricUnit, metricRecorder) = getMetricInfo(defCtx, location, metric);
 
     // If we are not tracking this metric, skip it
@@ -510,7 +503,9 @@ module TraceToCSVSerial {
 
     // Get the time for this metric in seconds
     var currentTime = timestampToSeconds(time, defCtx.clockProps);
-    // Adjust for craypm metrics, as they are reported with a delay
+    // TODO(cleanup): crayTimeOffset adjusts CrayPM metric timestamps.
+    // The parallel converter dropped this feature. Remove from serial too
+    // once confirmed unnecessary, or promote to the parallel path if needed.
     if metricName.toLower().find("cray") >= 0 && ctx.evtArgs.crayTimeOffset != 0.0 {
       currentTime -= ctx.evtArgs.crayTimeOffset;
     }
@@ -543,18 +538,27 @@ module TraceToCSVSerial {
 
   // Config constants for command-line arguments
   // Usage examples:
-  //   ./TraceToCSVSerial --tracePath=/path/to/traces.otf2
-  //   ./TraceToCSVSerial --crayTimeOffsetArg=2.5
-  //   ./TraceToCSVSerial --metricsToTrackArg="metric1,metric2,metric3"
-  //   ./TraceToCSVSerial --processesToTrackArg="process1,process2"
-  //   ./TraceToCSVSerial --tracePath=/path/to/traces.otf2 --crayTimeOffsetArg=1.5 --metricsToTrackArg="metric1,metric2"
+  //   ./FastOTF2ConverterSerial --tracePath=/path/to/traces.otf2
+  //   ./FastOTF2ConverterSerial --crayTimeOffsetArg=2.5
+  //   ./FastOTF2ConverterSerial --metricsToTrackArg="metric1,metric2,metric3"
+  //   ./FastOTF2ConverterSerial --processesToTrackArg="process1,process2"
+  //   ./FastOTF2ConverterSerial --outputFormatArg=CSV
+  //   ./FastOTF2ConverterSerial --tracePath=/path/to/traces.otf2 --crayTimeOffsetArg=1.5 --metricsToTrackArg="metric1,metric2"
 
   config const tracePath: string = "../../sample-traces/simple-mi300-example-run/traces.otf2";
   config const crayTimeOffsetArg: real(64) = 1.0;
   config const metricsToTrackArg: string = "A2rocm_smi:::energy_count:device=0,A2rocm_smi:::energy_count:device=2,A2rocm_smi:::energy_count:device=4,A2rocm_smi:::energy_count:device=6,A2coretemp:::craypm:accel0_energy,A2coretemp:::craypm:accel1_energy,A2coretemp:::craypm:accel2_energy,A2coretemp:::craypm:accel3_energy";
   config const processesToTrackArg: string = ""; // Empty string means track all processes
+  config const outputFormatArg: string = "CSV";
 
   proc main(args: [] string) {
+    var outputFormat: OutputFormat;
+    try {
+      outputFormat = parseOutputFormat(outputFormatArg);
+    } catch e {
+      writeln(e.message());
+      return;
+    }
 
     var sw: stopwatch;
     sw.start();
@@ -696,69 +700,56 @@ module TraceToCSVSerial {
     const closeTime = sw.elapsed();
     sw.stop();
     writeln("Total time: ", openTime + defReadTime + markTime + evtReadTime + closeTime, " seconds");
-    // printCallGraphAndMetrics(evtCtx, true);
-    writeCallGraphsAndMetricsToCSV(evtCtx);
+    writeCallGraphsAndMetrics(evtCtx, outputFormat);
   }
 
-  proc callgraphToCSV(callGraph: shared CallGraph, group: string, thread: string, filename: string) {
-    // Convert a CallGraph to a CSV file
-    try {
-      var outfile = open(filename, ioMode.cw);
-      var writer = outfile.writer(locking=false);
+  proc writeCallgraph(callGraph: shared CallGraph, group: string, thread: string, format: OutputFormat) {
+    const filename = callgraphFilename(group, thread, format);
+    writeln("Writing to file: ", filename);
 
-      writer.writeln("Thread,Group,Depth,Name,Start Time,End Time,Duration");
-
-      const intervals = callGraph.getIntervalsBetween(-inf, inf);
-
-      for iv in intervals {
-        const start = iv.start;
-        const end = if iv.hasEnd then iv.end else inf;
-        const duration = end - start;
-        const name = if iv.name != "" then iv.name else "Unknown";
-        const depth = iv.depth;
-
-        writer.writef("%s,%s,%i,\"%s\",%.15dr,%.15dr,%.15dr\n",
-                      thread, group, depth, name, start, end, duration);
-      }
-
-      writer.close();
-      outfile.close();
-    } catch e {
-      writeln("Error writing callgraph to CSV: ", e);
-    }
-  }
-
-  proc metricsToCSV(group: string, threadMetrics: map(string, list((real(64), OTF2_Type, OTF2_MetricValue))), filename: string) {
-    // Convert metrics to a CSV file
-    // Note: In the Python version, metrics are stored as List[Tuple[float, float]] (time, value)
-    try {
-      var outfile = open(filename, ioMode.cw);
-      var writer = outfile.writer(locking=false);
-
-      writer.writeln("Group,Metric Name,Time,Value");
-
-      for (metricName, values) in threadMetrics.items() {
-        for (time, valueType, value) in values {
-          if valueType == OTF2_TYPE_INT64 then
-            writer.writef("%s,%s,%.15dr,%i\n", group, metricName, time, value.signed_int);
-          else if valueType == OTF2_TYPE_UINT64 then
-            writer.writef("%s,%s,%.15dr,%u\n", group, metricName, time, value.unsigned_int);
-          else if valueType == OTF2_TYPE_DOUBLE then
-            writer.writef("%s,%s,%.15dr,%.15dr\n", group, metricName, time, value.floating_point);
+    select format {
+      when OutputFormat.CSV {
+        try {
+          FastOTF2ConverterWriters.writeCallgraphCSV(callGraph, group, thread, filename);
+        } catch e {
+          writeln("Error writing callgraph to CSV: ", e);
         }
       }
-
-      writer.close();
-      outfile.close();
-    } catch e {
-      writeln("Error writing metrics to CSV: ", e);
+      when OutputFormat.PARQUET {
+        try {
+          FastOTF2ConverterWriters.writeCallgraphParquet(callGraph, group, thread, filename);
+        } catch e {
+          writeln("Error writing callgraph to PARQUET: ", e);
+          exit(1);
+        }
+      }
     }
   }
 
-  proc writeCallGraphsAndMetricsToCSV(evtCtx: EvtCallbackContext) {
-    // Write call graphs to CSV files
+  proc writeMetrics(group: string, threadMetrics: map(string, list((real(64), OTF2_Type, OTF2_MetricValue))), format: OutputFormat) {
+    const filename = metricsFilename(group, format);
+    writeln("Writing to file: ", filename);
 
-    // cobegin {
+    select format {
+      when OutputFormat.CSV {
+        try {
+          FastOTF2ConverterWriters.writeMetricsCSV(group, threadMetrics, filename);
+        } catch e {
+          writeln("Error writing metrics to CSV: ", e);
+        }
+      }
+      when OutputFormat.PARQUET {
+        try {
+          FastOTF2ConverterWriters.writeMetricsParquet(group, threadMetrics, filename);
+        } catch e {
+          writeln("Error writing metrics to PARQUET: ", e);
+          exit(1);
+        }
+      }
+    }
+  }
+
+  proc writeCallGraphsAndMetrics(evtCtx: EvtCallbackContext, format: OutputFormat) {
     forall (group, threads) in evtCtx.callGraphs.toArray() {
       if !evtCtx.evtArgs.processesToTrack.isEmpty() && !evtCtx.evtArgs.processesToTrack.contains(group) {
         writeln("Skipping group ", group, " as it is not in the processes to track.");
@@ -766,23 +757,17 @@ module TraceToCSVSerial {
       }
       forall thread in threads.keysToArray() {
         const callGraph = try! threads[thread];
-        const filename = group + "_" + thread.replace(" ", "_") + "_callgraph.csv";
-        writeln("Writing to file: ", filename);
-        callgraphToCSV(callGraph, group, thread, filename);
+        writeCallgraph(callGraph, group, thread, format);
       }
     }
 
-    // Write metrics to CSV files
     forall (group, threadMetrics) in evtCtx.metrics.toArray() {
       if !evtCtx.evtArgs.processesToTrack.isEmpty() && !evtCtx.evtArgs.processesToTrack.contains(group) {
         writeln("Skipping group ", group, " as it is not in the processes to track.");
         continue;
       }
-      const filename = group + "_metrics.csv";
-      writeln("Writing to file: ", filename);
-      metricsToCSV(group, threadMetrics, filename);
+      writeMetrics(group, threadMetrics, format);
     }
-    // }
   }
 
   proc printCallGraphAndMetrics(evtCtx: EvtCallbackContext, verbose: bool = false) {

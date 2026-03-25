@@ -1,7 +1,7 @@
 
 [root]
 authors = ["Shreyas Khandekar"]
-chplVersion = "2.8.0..2.8.0"
+chplVersion = "2.9.0..2.9.0"
 compopts = ["-I/opt/otf2/include", "-L/opt/otf2/lib", "-lotf2"]
 copyrightYear = "2026"
 license = "Apache-2.0"

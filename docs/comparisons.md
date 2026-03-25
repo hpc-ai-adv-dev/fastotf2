@@ -4,7 +4,7 @@ FastOTF2 keeps multiple implementation styles in one repository, but they do not
 
 ## Primary Supported Workflow
 
-The main supported workflow is the Chapel-based trace conversion path centered on [../apps/TraceToCSV](../apps/TraceToCSV).
+The main supported workflow is the Chapel-based trace-to-table path centered on [../apps/FastOTF2Converter](../apps/FastOTF2Converter).
 That is the implementation the repository optimizes for in its structure, onboarding, and future packaging.
 
 ## Chapel

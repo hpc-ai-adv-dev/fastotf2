@@ -8,7 +8,7 @@ If you do not already have Chapel, Mason, and OTF2 installed locally, start with
 
 This quickstart covers the two primary Mason workflows in the repository:
 
-1. building and running the `TraceToCSV` application
+1. building and running the `FastOTF2Converter` application
 2. building and running the root FastOTF2 library examples
 
 ## What You Need
@@ -34,12 +34,12 @@ ls /opt/otf2/lib
 
 If those paths do not exist in your environment, you will need to either adjust your local installation to match or modify the manifest compiler options for your system.
 
-## Step 2: Build TraceToCSV
+## Step 2: Build FastOTF2Converter
 
 Build the primary converter with Mason:
 
 ```bash
-cd apps/TraceToCSV
+cd apps/FastOTF2Converter
 mason build --release
 ```
 
@@ -48,16 +48,16 @@ Use `--release` for normal builds and runs. Mason adds Chapel's `--fast` automat
 To build the serial example path as well:
 
 ```bash
-cd apps/TraceToCSV
+cd apps/FastOTF2Converter
 mason build --release --example
 ```
 
-## Step 3: Run TraceToCSV
+## Step 3: Run FastOTF2Converter
 
 Run the primary converter against one of the bundled traces:
 
 ```bash
-cd apps/TraceToCSV
+cd apps/FastOTF2Converter
 mason run --release -- ../../sample-traces/simple-mi300-example-run/traces.otf2
 ```
 
@@ -66,24 +66,41 @@ To run a different archive, replace the final positional path with your own `tra
 Run the serial example path:
 
 ```bash
-cd apps/TraceToCSV
-mason run --release --example TraceToCSVSerial.chpl
+cd apps/FastOTF2Converter
+mason run --release --example FastOTF2ConverterSerial.chpl
 ```
 
 The primary parallel implementation accepts options such as:
 
 - positional trace path
-- `--trace`
-- `--metrics`
-- `--processes`
-- `--outputDir`
-- `--excludeMPI`
-- `--excludeHIP`
-- `--log`
+- `--metrics` — comma-separated metric names to track (empty = all)
+- `--processes` — comma-separated process names to track (empty = all)
+- `--outputDir` — directory for output files
+- `--format` — output format: `CSV` (default) or `PARQUET`
+- `--excludeMPI` — exclude MPI regions from callgraph output
+- `--excludeHIP` — exclude HIP regions from callgraph output
+- `--log` — logging level: `NONE`, `ERROR`, `WARN`, `INFO`, `DEBUG`, `TRACE`
 
-The serial path remains an example-backed flow and still uses the older Chapel config-constant interface.
+Parquet output requires Apache Arrow C++ libraries. On systems using Spack:
 
-## Step 4: Run the Root Library Examples
+```bash
+. ~/dev/spack/share/spack/setup-env.sh && spack env activate arrow-19
+```
+
+The serial path remains an example-backed flow and uses Chapel config constants, including `--outputFormatArg=CSV` or `--outputFormatArg=PARQUET`.
+
+## Step 4: Run Tests
+
+The converter includes CSV↔Parquet parity tests. First generate reference output, then run tests:
+
+```bash
+cd apps/FastOTF2Converter
+mason run --release -- ../../sample-traces/simple-mi300-example-run/traces.otf2 --format=CSV --outputDir=/tmp/csv_out
+mason run --release -- ../../sample-traces/simple-mi300-example-run/traces.otf2 --format=PARQUET --outputDir=/tmp/pq_out
+mason test --show
+```
+
+## Step 5: Run the Root Library Examples
 
 The repository root is a Mason library package for FastOTF2. You can build and run the examples from the repository root:
 
