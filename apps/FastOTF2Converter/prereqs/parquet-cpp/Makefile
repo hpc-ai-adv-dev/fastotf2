@@ -4,21 +4,31 @@
 #
 # It delegates to the Parquet package's own prereqs/cpp/Makefile to compile
 # the C++ interop code, then emits the right flags via printchplflags.
+#
+# Mason runs prereqs *before* cloning git dependencies, so the Parquet
+# directory may not exist on the first pass.  The guards below make the
+# targets succeed silently in that case; Mason will re-run prereqs after
+# the clone, at which point the real build happens.
 
 MASON_HOME ?= $(HOME)/.mason
-PARQUET_PKG_DIR = $(MASON_HOME)/git/Parquet-write-strings
+PARQUET_PKG_DIR = $(MASON_HOME)/git/Parquet-HEAD
 PARQUET_PREREQS_DIR = $(PARQUET_PKG_DIR)/prereqs/cpp
 
 .PHONY: all clean printchplflags
 
 all:
-	$(MAKE) -C $(PARQUET_PREREQS_DIR) all
+	@if [ -d "$(PARQUET_PREREQS_DIR)" ]; then \
+		$(MAKE) -C $(PARQUET_PREREQS_DIR) all; \
+	else \
+		echo "parquet-cpp prereqs: Parquet not yet cloned, skipping (will retry after fetch)"; \
+	fi
 
-# Emit the chpl flags that Mason will pick up.
-# This delegates to the Parquet Makefile's own printchplflags target
-# which knows the correct headers, object files, and paths.
 printchplflags:
-	@$(MAKE) -C $(PARQUET_PREREQS_DIR) --quiet printchplflags
+	@if [ -d "$(PARQUET_PREREQS_DIR)" ]; then \
+		$(MAKE) -C $(PARQUET_PREREQS_DIR) --quiet printchplflags; \
+	fi
 
 clean:
-	$(MAKE) -C $(PARQUET_PREREQS_DIR) clean
+	@if [ -d "$(PARQUET_PREREQS_DIR)" ]; then \
+		$(MAKE) -C $(PARQUET_PREREQS_DIR) clean; \
+	fi
