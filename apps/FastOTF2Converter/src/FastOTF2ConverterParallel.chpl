@@ -565,7 +565,7 @@ module FastOTF2ConverterParallel {
     const (metricName, metricUnit, metricRecorder) = getMetricInfo(defCtx, location, metric);
 
     // If we are not tracking this metric, skip it
-    if !ctx.evtArgs.metricsToTrack.contains(metricName) && ctx.evtArgs.metricsToTrack.isEmpty() {
+    if !ctx.evtArgs.metricsToTrack.isEmpty() && !ctx.evtArgs.metricsToTrack.contains(metricName) {
       logTrace("Skipping metric: ", metricName, " in group ", locGroup);
       return OTF2_CALLBACK_SUCCESS;
     }
