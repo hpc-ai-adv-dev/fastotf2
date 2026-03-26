@@ -64,7 +64,7 @@ Search these tags in the source to find related workarounds.
 
 ## Command-Line Arguments
 
-The parallel converter accepts the following arguments:
+Both the parallel converter and the serial example accept the same CLI:
 
 | Argument | Default | Description |
 |----------|---------|-------------|
@@ -76,16 +76,6 @@ The parallel converter accepts the following arguments:
 | `--excludeMPI` | `false` | Exclude MPI regions from callgraph output |
 | `--excludeHIP` | `false` | Exclude HIP regions from callgraph output |
 | `--log` | `INFO` | Log level: `NONE`, `ERROR`, `WARN`, `INFO`, `DEBUG`, `TRACE` |
-
-The serial example path uses Chapel config constants instead of ArgumentParser:
-
-| Config Constant | Default | Description |
-|-----------------|---------|-------------|
-| `--tracePath` | `../../sample-traces/.../traces.otf2` | Path to the OTF2 trace archive |
-| `--outputFormatArg` | `CSV` | Output format: `CSV` or `PARQUET` |
-| `--metricsToTrackArg` | (energy metrics) | Comma-separated metric names |
-| `--processesToTrackArg` | (empty = all) | Comma-separated process names |
-| `--crayTimeOffsetArg` | `1.0` | Time offset for CrayPM metrics (serial only) |
 
 ## Running Tests
 

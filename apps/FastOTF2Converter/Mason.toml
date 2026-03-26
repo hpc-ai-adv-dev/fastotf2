@@ -10,7 +10,7 @@ type = "application"
 version = "0.1.0"
 
 [dependencies]
-Parquet = { git = "https://github.com/benharsh/Parquet", branch = "write-strings" }
+Parquet = { git = "https://github.com/e-kayrakli/Parquet" }
 # FastOTF2 = { git = "../../" }
 
 [examples]

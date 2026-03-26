@@ -1,3 +1,5 @@
+// Copyright Hewlett Packard Enterprise Development LP.
+
 module FastOTF2Converter {
   use FastOTF2ConverterParallel;
 

@@ -1,3 +1,5 @@
+// Copyright Hewlett Packard Enterprise Development LP.
+
 module FastOtf2ReadArchive {
   use FastOTF2;
 
