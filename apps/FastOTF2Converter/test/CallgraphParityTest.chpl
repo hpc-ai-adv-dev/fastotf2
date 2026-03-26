@@ -1,3 +1,5 @@
+// Copyright Hewlett Packard Enterprise Development LP.
+
 // CallgraphParityTest.chpl
 //
 // Verifies that FastOTF2Converter's Parquet callgraph output matches CSV output.

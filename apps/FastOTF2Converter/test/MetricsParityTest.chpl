@@ -1,3 +1,5 @@
+// Copyright Hewlett Packard Enterprise Development LP.
+
 // MetricsParityTest.chpl
 //
 // Verifies that FastOTF2Converter's Parquet metrics output matches CSV output.

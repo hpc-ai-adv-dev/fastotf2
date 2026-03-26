@@ -1,3 +1,4 @@
+# Copyright Hewlett Packard Enterprise Development LP.
 # This Makefile acts as a proxy for the Parquet library's C++ prereqs.
 # Mason doesn't build prereqs for git dependencies, so we do it here
 # from the root project's prereqs (which Mason does support).

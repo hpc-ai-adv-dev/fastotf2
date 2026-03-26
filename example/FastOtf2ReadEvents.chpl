@@ -1,3 +1,5 @@
+// Copyright Hewlett Packard Enterprise Development LP.
+
 module FastOtf2ReadEvents {
   use FastOTF2;
   use List;

@@ -1,3 +1,5 @@
+// Copyright Hewlett Packard Enterprise Development LP.
+
 module FastOTF2ConverterWriters {
   use FastOTF2;
   use List;
