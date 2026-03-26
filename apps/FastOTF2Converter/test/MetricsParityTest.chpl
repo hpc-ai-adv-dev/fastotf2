@@ -90,10 +90,17 @@ inline proc toNs(sec: real(64)): int(64) {
   return (sec * 1_000_000_000.0): int(64);
 }
 
-// CSV values may be int ("42") or float ("42.5"); Parquet stores all as int64.
-// Parsing as real then casting handles both representations.
+// CSV values may be int ("42") or float ("42.5").
+// Parquet stores them in separate columns: value_int (int64) and value_real (real64).
+// For int-typed metrics, compare via int64; for real-typed, compare via real64.
+proc csvValIsReal(s: string): bool {
+  return s.find(".") >= 0;
+}
 proc csvValToInt64(s: string): int(64) {
   return s: real(64) : int(64);
+}
+proc csvValToReal64(s: string): real(64) {
+  return s: real(64);
 }
 
 // ---------------------------------------------------------------------------
@@ -129,10 +136,12 @@ proc testMetricsNumericParity(test: borrowed Test) throws {
   const n = getArrSize(pqPath);
   if n == 0 { writeln("SKIP: no data rows"); return; }
 
-  var pqTimeNs: [0..<n] int(64);
-  var pqValue:  [0..<n] int(64);
-  readColumn(filename=pqPath, colName="time_ns",   Arr=pqTimeNs);
-  readColumn(filename=pqPath, colName="value_i64", Arr=pqValue);
+  var pqTimeNs:    [0..<n] int(64);
+  var pqValueInt:   [0..<n] int(64);
+  var pqValueReal:  [0..<n] real(64);
+  readColumn(filename=pqPath, colName="time_ns",    Arr=pqTimeNs);
+  readColumn(filename=pqPath, colName="value_int",  Arr=pqValueInt);
+  readColumn(filename=pqPath, colName="value_real", Arr=pqValueReal);
 
   const lines = readCSVDataLines(csvPath);
   var mismatches = 0;
@@ -146,10 +155,21 @@ proc testMetricsNumericParity(test: borrowed Test) throws {
       mismatches += 1;
     }
 
-    const csvVal = csvValToInt64(row.valueStr);
-    if csvVal != pqValue[i] {
-      writeln("row ", i, " value: CSV=", csvVal, " PQ=", pqValue[i]);
-      mismatches += 1;
+    // Check the appropriate value column based on the CSV value format.
+    // Integer values (no decimal point) are in value_int;
+    // real values (with decimal point) are in value_real.
+    if csvValIsReal(row.valueStr) {
+      const csvVal = csvValToReal64(row.valueStr);
+      if csvVal != pqValueReal[i] {
+        writeln("row ", i, " value_real: CSV=", csvVal, " PQ=", pqValueReal[i]);
+        mismatches += 1;
+      }
+    } else {
+      const csvVal = csvValToInt64(row.valueStr);
+      if csvVal != pqValueInt[i] {
+        writeln("row ", i, " value_int: CSV=", csvVal, " PQ=", pqValueInt[i]);
+        mismatches += 1;
+      }
     }
   }
 
@@ -168,14 +188,15 @@ proc testMetricsNumericParity(test: borrowed Test) throws {
 //   }
 //
 //   const cols = getDatasets(pqPath);
-//   const expectedCols = ["group", "metric_name", "time_ns", "value_i64"];
+//   const expectedCols = ["group", "metric_name", "time_ns", "value_int", "value_real"];
 //   for col in expectedCols do
 //     test.assertTrue(cols.contains(col));
 //
 //   test.assertEqual(getArrType(pqPath, "group"),       ArrowTypes.stringArr);
 //   test.assertEqual(getArrType(pqPath, "metric_name"), ArrowTypes.stringArr);
 //   test.assertEqual(getArrType(pqPath, "time_ns"),     ArrowTypes.int64);
-//   test.assertEqual(getArrType(pqPath, "value_i64"),   ArrowTypes.int64);
+//   test.assertEqual(getArrType(pqPath, "value_int"),    ArrowTypes.int64);
+//   test.assertEqual(getArrType(pqPath, "value_real"),   ArrowTypes.real64);
 // }
 
 // ---------------------------------------------------------------------------

@@ -688,6 +688,7 @@ module FastOTF2ConverterCommon {
                                                      joinPath(outputDir, filename));
         } catch e {
           logError("Error writing callgraph to CSV: ", e);
+          halt("failed to write callgraph CSV");
         }
       }
       when OutputFormat.PARQUET {
@@ -715,6 +716,7 @@ module FastOTF2ConverterCommon {
                                                    joinPath(outputDir, filename));
         } catch e {
           logError("Error writing metrics to CSV: ", e);
+          halt("failed to write metrics CSV");
         }
       }
       when OutputFormat.PARQUET {
