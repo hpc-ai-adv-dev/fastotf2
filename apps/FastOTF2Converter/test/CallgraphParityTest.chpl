@@ -137,13 +137,11 @@ proc testCallgraphNumericParity(test: borrowed Test) throws {
       mismatches += 1;
     }
 
-    if row.startSec != pqStartTime[i] {
-      // Allow ±1e-9 s tolerance for CSV text round-trip (%.15dr ≈ 15 sig digits;
-      // IEEE 754 double needs 17 for exact round-trip).
-      if abs(row.startSec - pqStartTime[i]) > 1e-9 {
-        writeln("row ", i, " start_time: CSV=", row.startSec, " PQ=", pqStartTime[i]);
-        mismatches += 1;
-      }
+    // Allow ±1e-9 s tolerance for CSV text round-trip (%.15dr ≈ 15 sig digits;
+    // IEEE 754 double needs 17 for exact round-trip).
+    if abs(row.startSec - pqStartTime[i]) > 1e-9 {
+      writeln("row ", i, " start_time: CSV=", row.startSec, " PQ=", pqStartTime[i]);
+      mismatches += 1;
     }
 
     if row.endSec != pqEndTime[i] {

@@ -90,6 +90,11 @@ proc parseMetLine(line: string): MetRow throws {
 // Parquet stores them in separate columns: value_int (int64) and value_real (real64).
 // For int-typed metrics, compare via int64; for real-typed, compare via real64.
 proc csvValIsReal(s: string): bool {
+  try {
+    var tmp = s: real(64);
+  } catch {
+    return false;
+  }
   return s.find(".") >= 0;
 }
 proc csvValToInt64(s: string): int(64) {
@@ -156,7 +161,7 @@ proc testMetricsNumericParity(test: borrowed Test) throws {
     // real values (with decimal point) are in value_real.
     if csvValIsReal(row.valueStr) {
       const csvVal = csvValToReal64(row.valueStr);
-      if csvVal != pqValueReal[i] {
+      if abs(csvVal - pqValueReal[i]) > 1e-9 {
         writeln("row ", i, " value_real: CSV=", csvVal, " PQ=", pqValueReal[i]);
         mismatches += 1;
       }

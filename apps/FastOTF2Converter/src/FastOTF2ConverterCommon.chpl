@@ -340,7 +340,7 @@ module FastOTF2ConverterCommon {
     if clockProps.timerResolution == 0 then
       return 0.0;
     // We use this start_time to normalize timestamps to start from zero
-    // We don't use a ProgramBegin event because each MPI rank will have it's own
+    // We don't use a ProgramBegin event because each MPI rank will have its own
     // and we want a global start time
     const start_time = clockProps.globalOffset;
     if ts < start_time {

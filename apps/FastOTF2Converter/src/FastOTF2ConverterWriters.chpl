@@ -38,7 +38,7 @@ module FastOTF2ConverterWriters {
     else if valueType == OTF2_TYPE_UINT64 then
       return value.unsigned_int: int(64);
     else
-      return 0: int(64);
+      return 0:int(64);
   }
 
   // Extract the real representation of an OTF2 metric value.
