@@ -80,7 +80,7 @@ podman run --rm ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:latest \
   /workspace/sample-traces/simple-mi300-example-run/traces.otf2
 ```
 
-This above command is more of a sanity check to make sure things are working.
+The above command is more of a sanity check to make sure things are working.
 Without a volume mounted to see the result, it will output nothing
 since the container is transient (removed at the end of the process).
 
@@ -119,7 +119,7 @@ podman run --rm \
 
 Output files will appear in `/path/to/my/traces/output/` on the host.
 
-The `/workspace/` prefix is the same path convention used outside the container, so the same relative references work in both environments.
+The `/workspace/` prefix is a path convention *inside the container*. On the host, you can use any directory; in these examples we mount that host directory into `/workspace/...` inside the container so that the in-container paths stay consistent across different systems.
 
 <details>
 <summary>Docker alternative</summary>

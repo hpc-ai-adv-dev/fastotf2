@@ -87,16 +87,17 @@ RUN rm -rf /tmp/*
 # via mason run --release (same command you would use outside the
 # container). Users can mount their own traces into /workspace/.
 # ---------------------------------------------------------------
-RUN printf '#!/bin/bash\n\
-set -e\n\
-case "${1:-}" in\n\
-  bash|sh|/bin/bash|/bin/sh)\n\
-    exec "$@"\n\
-    ;;\n\
-esac\n\
-cd /workspace/apps/FastOTF2Converter\n\
-exec mason run --release -- "$@"\n' \
-  > /usr/local/bin/entrypoint.sh && chmod +x /usr/local/bin/entrypoint.sh
+RUN cat << 'EOF' > /usr/local/bin/entrypoint.sh && chmod +x /usr/local/bin/entrypoint.sh
+#!/bin/bash
+set -e
+case "${1:-}" in
+  bash|sh|/bin/bash|/bin/sh)
+    exec "$@"
+    ;;
+esac
+cd /workspace/apps/FastOTF2Converter
+exec mason run --release -- "$@"
+EOF
 
 WORKDIR /workspace
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
