@@ -1,0 +1,15 @@
+# Build context is the repository root.
+# Exclude files that are not needed inside the container build.
+
+.git
+**/.git
+
+# Build artifacts
+**/target
+
+# Object files
+**/*.o
+**/*.a
+
+# Container outputs
+container/*.tar
