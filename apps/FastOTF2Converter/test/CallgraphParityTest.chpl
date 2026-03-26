@@ -99,10 +99,6 @@ proc parseCgLine(line: string): CgRow throws {
   return row;
 }
 
-inline proc toNs(sec: real(64)): int(64) {
-  return (sec * 1_000_000_000.0): int(64);
-}
-
 // ---------------------------------------------------------------------------
 // tests
 // ---------------------------------------------------------------------------
@@ -122,13 +118,13 @@ proc testCallgraphNumericParity(test: borrowed Test) throws {
   if n == 0 { writeln("SKIP: no data rows"); return; }
 
   var pqDepth:      [0..<n] int(64);
-  var pqStartNs:    [0..<n] int(64);
-  var pqEndNs:      [0..<n] int(64);
-  var pqDurationNs: [0..<n] int(64);
+  var pqStartTime:  [0..<n] real(64);
+  var pqEndTime:    [0..<n] real(64);
+  var pqDuration:   [0..<n] real(64);
   readColumn(filename=pqPath, colName="depth",       Arr=pqDepth);
-  readColumn(filename=pqPath, colName="start_ns",    Arr=pqStartNs);
-  readColumn(filename=pqPath, colName="end_ns",      Arr=pqEndNs);
-  readColumn(filename=pqPath, colName="duration_ns", Arr=pqDurationNs);
+  readColumn(filename=pqPath, colName="start_time",  Arr=pqStartTime);
+  readColumn(filename=pqPath, colName="end_time",    Arr=pqEndTime);
+  readColumn(filename=pqPath, colName="duration",    Arr=pqDuration);
 
   const lines = readCSVDataLines(csvPath);
   var mismatches = 0;
@@ -141,28 +137,27 @@ proc testCallgraphNumericParity(test: borrowed Test) throws {
       mismatches += 1;
     }
 
-    // ±1 ns tolerance for seconds→nanoseconds float-to-int conversion
-    if abs(toNs(row.startSec) - pqStartNs[i]) > 1 {
-      writeln("row ", i, " start_ns: CSV=", toNs(row.startSec), " PQ=", pqStartNs[i]);
-      mismatches += 1;
-    }
-
-    // Parquet uses -1 sentinel for unended intervals; CSV writes inf.
-    if row.endSec == inf {
-      if pqEndNs[i] != -1 {
-        writeln("row ", i, " end_ns: expected -1 for inf, got ", pqEndNs[i]);
-        mismatches += 1;
-      }
-    } else {
-      if abs(toNs(row.endSec) - pqEndNs[i]) > 1 {
-        writeln("row ", i, " end_ns: CSV=", toNs(row.endSec), " PQ=", pqEndNs[i]);
+    if row.startSec != pqStartTime[i] {
+      // Allow ±1e-9 s tolerance for CSV text round-trip (%.15dr ≈ 15 sig digits;
+      // IEEE 754 double needs 17 for exact round-trip).
+      if abs(row.startSec - pqStartTime[i]) > 1e-9 {
+        writeln("row ", i, " start_time: CSV=", row.startSec, " PQ=", pqStartTime[i]);
         mismatches += 1;
       }
     }
 
-    if abs(toNs(row.durationSec) - pqDurationNs[i]) > 1 {
-      writeln("row ", i, " duration_ns: CSV=", toNs(row.durationSec), " PQ=", pqDurationNs[i]);
-      mismatches += 1;
+    if row.endSec != pqEndTime[i] {
+      if abs(row.endSec - pqEndTime[i]) > 1e-9 {
+        writeln("row ", i, " end_time: CSV=", row.endSec, " PQ=", pqEndTime[i]);
+        mismatches += 1;
+      }
+    }
+
+    if row.durationSec != pqDuration[i] {
+      if abs(row.durationSec - pqDuration[i]) > 1e-9 {
+        writeln("row ", i, " duration: CSV=", row.durationSec, " PQ=", pqDuration[i]);
+        mismatches += 1;
+      }
     }
   }
 
@@ -179,7 +174,7 @@ proc testCallgraphNumericParity(test: borrowed Test) throws {
 //
 //   const cols = getDatasets(pqPath);
 //   const expectedCols = ["thread", "group", "depth", "name",
-//                         "start_ns", "end_ns", "duration_ns"];
+//                         "start_time", "end_time", "duration"];
 //   for col in expectedCols do
 //     test.assertTrue(cols.contains(col));
 //
@@ -187,9 +182,9 @@ proc testCallgraphNumericParity(test: borrowed Test) throws {
 //   test.assertEqual(getArrType(pqPath, "group"),       ArrowTypes.stringArr);
 //   test.assertEqual(getArrType(pqPath, "depth"),       ArrowTypes.int64);
 //   test.assertEqual(getArrType(pqPath, "name"),        ArrowTypes.stringArr);
-//   test.assertEqual(getArrType(pqPath, "start_ns"),    ArrowTypes.int64);
-//   test.assertEqual(getArrType(pqPath, "end_ns"),      ArrowTypes.int64);
-//   test.assertEqual(getArrType(pqPath, "duration_ns"), ArrowTypes.int64);
+//   test.assertEqual(getArrType(pqPath, "start_time"),  ArrowTypes.real64);
+//   test.assertEqual(getArrType(pqPath, "end_time"),    ArrowTypes.real64);
+//   test.assertEqual(getArrType(pqPath, "duration"),    ArrowTypes.real64);
 // }
 
 // ---------------------------------------------------------------------------

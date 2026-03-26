@@ -28,9 +28,7 @@ module FastOTF2ConverterWriters {
       return ".parquet";
   }
 
-  inline proc secondsToNanoseconds(value: real): int(64) {
-    return (value * 1_000_000_000.0): int(64);
-  }
+
 
   // Extract the integer representation of an OTF2 metric value.
   // Returns the native int64 for INT64/UINT64 types, 0 for others.
@@ -111,10 +109,9 @@ module FastOTF2ConverterWriters {
     outfile.close();
   }
 
-  // Writes all callgraph intervals to a Parquet file with the same columns as
-  // the CSV output: thread, group, depth, name, start_ns, end_ns, duration_ns.
-  // Times are stored as int64 nanoseconds (multiply CSV seconds columns by 1e9).
-  // end_ns is -1 for intervals with no recorded end event.
+  // Writes all callgraph intervals to a Parquet file with the same columns and
+  // values as the CSV output: thread, group, depth, name, start_time, end_time,
+  // duration.  Times are real(64) seconds — identical to CSV.
   proc writeCallgraphParquet(callGraph: shared CallGraph, group: string, thread: string, outputPath: string) throws {
     const intervals = callGraph.getIntervalsBetween(-inf, inf);
     const n = intervals.size;
@@ -123,34 +120,35 @@ module FastOTF2ConverterWriters {
     // Remove this guard when the Parquet package handles n=0 gracefully.
     if n == 0 then return;
 
-    var threadCol:   [0..<n] string;
-    var groupCol:    [0..<n] string;
-    var depthCol:    [0..<n] int(64);
-    var nameCol:     [0..<n] string;
-    var startNsCol:  [0..<n] int(64);
-    var endNsCol:    [0..<n] int(64);
-    var durationCol: [0..<n] int(64);
+    var threadCol:      [0..<n] string;
+    var groupCol:       [0..<n] string;
+    var depthCol:       [0..<n] int(64);
+    var nameCol:        [0..<n] string;
+    var startTimeCol:   [0..<n] real(64);
+    var endTimeCol:     [0..<n] real(64);
+    var durationCol:    [0..<n] real(64);
 
     for (idx, iv) in zip(0..<n, intervals) {
       const endSec = if iv.hasEnd then iv.end else inf;
-      threadCol[idx]   = thread;
-      groupCol[idx]    = group;
-      depthCol[idx]    = iv.depth: int(64);
-      nameCol[idx]     = if iv.name != "" then iv.name else "Unknown";
-      startNsCol[idx]  = secondsToNanoseconds(iv.start);
-      endNsCol[idx]    = if iv.hasEnd then secondsToNanoseconds(iv.end) else -1:int(64);
-      durationCol[idx] = secondsToNanoseconds(endSec - iv.start);
+      threadCol[idx]    = thread;
+      groupCol[idx]     = group;
+      depthCol[idx]     = iv.depth: int(64);
+      nameCol[idx]      = if iv.name != "" then iv.name else "Unknown";
+      startTimeCol[idx] = iv.start;
+      endTimeCol[idx]   = endSec;
+      durationCol[idx]  = endSec - iv.start;
     }
 
     writeTable(outputPath,
                colNames=("thread", "group", "depth", "name",
-                         "start_ns", "end_ns", "duration_ns"),
+                         "start_time", "end_time", "duration"),
                threadCol, groupCol, depthCol, nameCol,
-               startNsCol, endNsCol, durationCol);
+               startTimeCol, endTimeCol, durationCol);
   }
 
   // Writes all recorded metric samples to a Parquet file.
-  // Columns: group, metric_name, time_ns, value_int, value_real.
+  // Columns: group, metric_name, time, value_int, value_real.
+  // Time is real(64) seconds — identical to CSV.
   // INT64/UINT64 metrics populate value_int (value_real is 0.0).
   // DOUBLE metrics populate value_real (value_int is 0).
   // This preserves the native OTF2 type without forced conversions.
@@ -165,7 +163,7 @@ module FastOTF2ConverterWriters {
 
     var groupCol:      [0..<totalValues] string;
     var metricNameCol: [0..<totalValues] string;
-    var timeNsCol:     [0..<totalValues] int(64);
+    var timeCol:       [0..<totalValues] real(64);
     var valueIntCol:   [0..<totalValues] int(64);
     var valueRealCol:  [0..<totalValues] real(64);
 
@@ -175,7 +173,7 @@ module FastOTF2ConverterWriters {
       for (time, valueType, value) in values {
         groupCol[idx]      = group;
         metricNameCol[idx] = metricName;
-        timeNsCol[idx]     = secondsToNanoseconds(time);
+        timeCol[idx]       = time;
         valueIntCol[idx]   = metricValueAsInt(valueType, value);
         valueRealCol[idx]  = metricValueAsReal(valueType, value);
         idx += 1;
@@ -183,9 +181,9 @@ module FastOTF2ConverterWriters {
     }
 
     writeTable(outputPath,
-               colNames=("group", "metric_name", "time_ns",
+               colNames=("group", "metric_name", "time",
                          "value_int", "value_real"),
-               groupCol, metricNameCol, timeNsCol,
+               groupCol, metricNameCol, timeCol,
                valueIntCol, valueRealCol);
   }
 }

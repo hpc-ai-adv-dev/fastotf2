@@ -86,10 +86,6 @@ proc parseMetLine(line: string): MetRow throws {
   return row;
 }
 
-inline proc toNs(sec: real(64)): int(64) {
-  return (sec * 1_000_000_000.0): int(64);
-}
-
 // CSV values may be int ("42") or float ("42.5").
 // Parquet stores them in separate columns: value_int (int64) and value_real (real64).
 // For int-typed metrics, compare via int64; for real-typed, compare via real64.
@@ -136,10 +132,10 @@ proc testMetricsNumericParity(test: borrowed Test) throws {
   const n = getArrSize(pqPath);
   if n == 0 { writeln("SKIP: no data rows"); return; }
 
-  var pqTimeNs:    [0..<n] int(64);
+  var pqTime:       [0..<n] real(64);
   var pqValueInt:   [0..<n] int(64);
   var pqValueReal:  [0..<n] real(64);
-  readColumn(filename=pqPath, colName="time_ns",    Arr=pqTimeNs);
+  readColumn(filename=pqPath, colName="time",       Arr=pqTime);
   readColumn(filename=pqPath, colName="value_int",  Arr=pqValueInt);
   readColumn(filename=pqPath, colName="value_real", Arr=pqValueReal);
 
@@ -149,9 +145,9 @@ proc testMetricsNumericParity(test: borrowed Test) throws {
   for i in 0..<lines.size {
     const row = parseMetLine(lines[i]);
 
-    // ±1 ns tolerance for seconds->nanoseconds float-to-int conversion
-    if abs(toNs(row.timeSec) - pqTimeNs[i]) > 1 {
-      writeln("row ", i, " time_ns: CSV=", toNs(row.timeSec), " PQ=", pqTimeNs[i]);
+    // Allow ±1e-9 s tolerance for CSV text round-trip (%.15dr ≈ 15 sig digits).
+    if abs(row.timeSec - pqTime[i]) > 1e-9 {
+      writeln("row ", i, " time: CSV=", row.timeSec, " PQ=", pqTime[i]);
       mismatches += 1;
     }
 
@@ -188,13 +184,13 @@ proc testMetricsNumericParity(test: borrowed Test) throws {
 //   }
 //
 //   const cols = getDatasets(pqPath);
-//   const expectedCols = ["group", "metric_name", "time_ns", "value_int", "value_real"];
+//   const expectedCols = ["group", "metric_name", "time", "value_int", "value_real"];
 //   for col in expectedCols do
 //     test.assertTrue(cols.contains(col));
 //
 //   test.assertEqual(getArrType(pqPath, "group"),       ArrowTypes.stringArr);
 //   test.assertEqual(getArrType(pqPath, "metric_name"), ArrowTypes.stringArr);
-//   test.assertEqual(getArrType(pqPath, "time_ns"),     ArrowTypes.int64);
+//   test.assertEqual(getArrType(pqPath, "time"),        ArrowTypes.real64);
 //   test.assertEqual(getArrType(pqPath, "value_int"),    ArrowTypes.int64);
 //   test.assertEqual(getArrType(pqPath, "value_real"),   ArrowTypes.real64);
 // }
