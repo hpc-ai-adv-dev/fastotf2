@@ -1,7 +1,7 @@
 
 [root]
 authors = ["Shreyas Khandekar"]
-chplVersion = "2.9.0..2.9.0"
+chplVersion = "2.8.0..2.8.0"
 compopts = ["-M../../src", "-I/opt/otf2/include", "-L/opt/otf2/lib", "-lotf2"]
 copyrightYear = "2026"
 dependencies = ["Parquet -1 https://github.com/e-kayrakli/Parquet"]
@@ -12,23 +12,23 @@ type = "application"
 version = "0.1.0"
 
 [Parquet]
-chplVersion = "2.9.0..2.9.0"
+chplVersion = "2.8.0..2.8.0"
 name = "Parquet"
-rev = "3742827fa72e6b35df49fa8661177a3c099a93aa"
+rev = "c3c3b0ed142187594fc552ef1077bee55a147426"
 source = "https://github.com/e-kayrakli/Parquet"
 version = "-1"
 
 [Parquet.system]
 
 [Parquet.system.arrow]
-include = "/Users/khandeka/dev/spack/opt/spack/darwin-m2/arrow-19.0.1-mg7vpcvhl7hobiainl4nx4agz75wk3sd/include"
-libs = "-L/Users/khandeka/dev/spack/opt/spack/darwin-m2/arrow-19.0.1-mg7vpcvhl7hobiainl4nx4agz75wk3sd/lib -larrow"
+include = "/opt/arrow/include"
+libs = "-L/opt/arrow/lib -larrow"
 name = "arrow"
 version = "19.0.1"
 
 [Parquet.system.parquet]
-include = "/Users/khandeka/dev/spack/opt/spack/darwin-m2/arrow-19.0.1-mg7vpcvhl7hobiainl4nx4agz75wk3sd/include"
-libs = "-L/Users/khandeka/dev/spack/opt/spack/darwin-m2/arrow-19.0.1-mg7vpcvhl7hobiainl4nx4agz75wk3sd/lib -lparquet -larrow"
+include = "/opt/arrow/include"
+libs = "-L/opt/arrow/lib -lparquet -larrow"
 name = "parquet"
 version = "19.0.1"
 
