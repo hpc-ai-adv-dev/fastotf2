@@ -80,7 +80,7 @@ podman run --rm ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:latest \
   /workspace/sample-traces/simple-mi300-example-run/traces.otf2
 ```
 
-This above command is more of a sanity check to make sure things are wroking.
+This above command is more of a sanity check to make sure things are working.
 Without a volume mounted to see the result, it will output nothing
 since the container is transient (removed at the end of the process).
 
