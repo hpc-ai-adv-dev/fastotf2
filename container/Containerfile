@@ -1,39 +1,105 @@
 # Copyright Hewlett Packard Enterprise Development LP.
+#
+# Pre-built FastOTF2Converter container.
+#
+# See container/README.md for details and usage instructions.
 
 # Start from official Chapel image
 FROM docker.io/chapel/chapel:2.8.0
 
-# System deps needed for building OTF2
+# ---------------------------------------------------------------
+# System dependencies for building OTF2, Arrow, and the converter
+# ---------------------------------------------------------------
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    build-essential cmake git wget curl unzip pkg-config \
-    python3 python3-pip python3-dev python3-venv \
+    build-essential cmake git wget curl pkg-config \
+    python3 python3-dev \
     libssl-dev zlib1g-dev libbz2-dev liblz4-dev libzstd-dev \
+    libsnappy-dev libbrotli-dev \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# -----------------------------
-# Install OTF2
-# -----------------------------
-COPY otf2-3.1.1.tar.gz /opt/
-WORKDIR /opt
-RUN tar -xzf otf2-3.1.1.tar.gz && \
+# ---------------------------------------------------------------
+# Install OTF2 3.1.1
+# ---------------------------------------------------------------
+RUN cd /tmp && \
+    wget -q https://perftools.pages.jsc.fz-juelich.de/cicd/otf2/tags/otf2-3.1.1/otf2-3.1.1.tar.gz && \
+    tar -xzf otf2-3.1.1.tar.gz && \
     cd otf2-3.1.1 && ./configure --prefix=/opt/otf2 && \
-    make -j$(nproc) && make install && \
-    rm -rf /opt/otf2-3.1.1*
-ENV LD_LIBRARY_PATH=/opt/otf2/lib:$LD_LIBRARY_PATH
+    make -j"$(nproc)" && make install && \
+    rm -rf /tmp/otf2-3.1.1*
 
-# -----------------------------
-# Setup Python venv & install otf2
-# -----------------------------
-ENV VIRTUAL_ENV=/opt/venv
-RUN python3 -m venv $VIRTUAL_ENV
-ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+# ---------------------------------------------------------------
+# Install Apache Arrow 19.0.1 with Parquet + compression codecs
+# (mirrors: spack add arrow@19 +parquet +snappy +zstd +lz4 +brotli)
+# ---------------------------------------------------------------
+ARG ARROW_VERSION=apache-arrow-19.0.1
+RUN cd /tmp && \
+    wget -q https://github.com/apache/arrow/archive/refs/tags/${ARROW_VERSION}.tar.gz && \
+    tar xf ${ARROW_VERSION}.tar.gz && \
+    cd arrow-${ARROW_VERSION}/cpp && \
+    cmake -B build \
+      -DCMAKE_INSTALL_PREFIX=/opt/arrow \
+      -DCMAKE_INSTALL_LIBDIR=lib \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DARROW_PARQUET=ON \
+      -DARROW_WITH_SNAPPY=ON \
+      -DARROW_WITH_ZSTD=ON \
+      -DARROW_WITH_LZ4=ON \
+      -DARROW_WITH_BROTLI=ON \
+      -DARROW_WITH_ZLIB=ON \
+      -DARROW_FILESYSTEM=ON \
+      -DARROW_COMPUTE=OFF \
+      -DARROW_CSV=OFF \
+      -DARROW_DATASET=OFF \
+      -DARROW_JSON=OFF \
+      -DARROW_FLIGHT=OFF \
+      -DARROW_GANDIVA=OFF \
+      -DARROW_S3=OFF \
+      -DARROW_GCS=OFF \
+      -DARROW_HDFS=OFF \
+      -DARROW_BUILD_SHARED=ON \
+      -DARROW_BUILD_STATIC=OFF \
+      -DARROW_BUILD_TESTS=OFF \
+      -DARROW_BUILD_EXAMPLES=OFF \
+      -DARROW_BUILD_UTILITIES=OFF \
+      -DARROW_BUILD_INTEGRATION=OFF && \
+    cmake --build build -j"$(nproc)" && \
+    cmake --install build && \
+    rm -rf /tmp/${ARROW_VERSION}* /tmp/arrow-${ARROW_VERSION}*
 
-RUN pip install --upgrade pip && \
-    pip install otf2
+# ---------------------------------------------------------------
+# Environment — pkg-config, linker, and PATH for OTF2 + Arrow
+# ---------------------------------------------------------------
+ENV PKG_CONFIG_PATH=/opt/arrow/lib/pkgconfig:/opt/otf2/lib/pkgconfig
+ENV LD_LIBRARY_PATH=/opt/otf2/lib:/opt/arrow/lib
+ENV PATH=/opt/otf2/bin:$PATH
 
-# -----------------------------
-# Default working dir + shell
-# -----------------------------
+# ---------------------------------------------------------------
+# Copy the repository and build the converter
+# ---------------------------------------------------------------
+COPY . /workspace
+WORKDIR /workspace/apps/FastOTF2Converter
+RUN rm -f Mason.lock && mason build --release
+RUN rm -rf /tmp/*
+
+# ---------------------------------------------------------------
+# Entrypoint: detects shell requests, otherwise runs the converter
+# via mason run --release (same command you would use outside the
+# container). Users can mount their own traces into /workspace/.
+# ---------------------------------------------------------------
+RUN cat << 'EOF' > /usr/local/bin/entrypoint.sh && chmod +x /usr/local/bin/entrypoint.sh
+#!/bin/bash
+set -e
+case "${1:-}" in
+  bash|sh|/bin/bash|/bin/sh)
+    exec "$@"
+    ;;
+esac
+cd /workspace/apps/FastOTF2Converter
+exec mason run --release -- "$@"
+EOF
+
 WORKDIR /workspace
-CMD ["/bin/bash"]
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+CMD ["--help"]
 

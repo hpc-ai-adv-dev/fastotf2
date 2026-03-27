@@ -1,31 +1,38 @@
 # FastOTF2 in Containers
 
-These are instructions for creating and using a FastOTF2 container on a desktop or laptop, and for optionally migrating that environment to an HPC system.
+These are instructions for using a pre-built FastOTF2 container on a desktop, laptop, or HPC system.
 
-The document assumes you do not already have Chapel, Mason, and OTF2 installed locally and would like to use containers for this workflow instead.
+The container ships with a pre-built `FastOTF2Converter` binary along with all dependencies (Chapel, OTF2, Apache Arrow, Parquet). No compilation, `mason build`, or language-specific toolchains are required to run a conversion.
+
+Pre-built container images are published to the GitHub Container Registry (GHCR) at
+`ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter`.
+Every merge to `main` publishes a `:latest` image, and pull-request builds are available with `pr-<number>` tags. No local build is required — just pull and run.
 
 The instructions are based on `podman`. Docker is still supported as an alternative, and the Docker commands are preserved below in expandable sections.
 
-The first section shows a complete working example of building and running FastOTF2 in a container on a desktop. The later sections provide more details about each step, dependency checks, and HPC migration.
+The first section shows a complete working example of pulling the container image and running a trace conversion on a desktop. The later sections provide more details about each step, dependency checks, and HPC migration.
 
 ## Table of Contents
 
-- [Complete Working Example: Building and Running FastOTF2 Container on a Desktop or Laptop](#complete-working-example-building-and-running-fastotf2-container-on-a-desktop-or-laptop)
+- [Complete Working Example: Pull and Run FastOTF2 Container](#complete-working-example-pull-and-run-fastotf2-container)
+- [Building the Container from Source](#building-the-container-from-source)
 - [Install and Verify Required Dependencies](#install-and-verify-required-dependencies)
 - [Container Layout and Mounted Paths](#container-layout-and-mounted-paths)
 - [Troubleshooting](#troubleshooting)
 
-## Complete Working Example: Building and Running FastOTF2 Container on a Desktop or Laptop
+## Complete Working Example: Pull and Run FastOTF2 Container
 
-Here is a complete example of building and using the FastOTF2 container locally. This example demonstrates the full workflow from container build to running the primary trace conversion path, which should be usable as a practical foundation for FastOTF2 development and testing.
+Here is a complete example of using the FastOTF2 container. This example demonstrates the full workflow from pulling the image to running a trace conversion, which should be usable as a practical foundation for trace conversion and optional FastOTF2 development.
 
 This example demonstrates:
 
-1. Building the FastOTF2 container image.
-2. Running the repository inside the container.
-3. Building the `FastOTF2Converter` Mason application inside the container.
-4. Running a trace conversion against one of the bundled OTF2 traces.
+1. Pulling the pre-built container image from GHCR (one-time step, requires internet).
+2. Running a trace conversion directly — no shell, no compilation needed.
+3. Running the converter against your own OTF2 traces.
+4. Optionally entering an interactive shell for development or advanced use.
 5. An optional next step of exercising the root FastOTF2 library examples.
+
+Once the image is pulled, the container works fully offline.
 
 More details about the process, including setting up prerequisite software and troubleshooting tips, can be found in the later sections of this document.
 
@@ -34,184 +41,143 @@ More details about the process, including setting up prerequisite software and t
 Ensure you have the following:
 
 - `podman` installed and working
-- `podman compose` available on your system
-- this `fastotf2` repository cloned locally
-- the OTF2 source tarball `otf2-3.1.1.tar.gz` downloaded into this `container/` directory
 
-If you prefer Docker, the alternative commands below assume `docker` plus the Compose plugin are installed and working.
+If you prefer Docker, the alternative commands below assume `docker` is installed and working.
 
-On some systems, `podman compose` is provided by a separate compose provider. If `podman compose version` fails, install the provider your platform recommends before using the compose-based commands below, or use the `podman run` alternative commands instead.
+A local clone of the repository is **not** required to use the converter. You only need the repository if you want to build the image from source (see the fallback option in Step 1).
 
-The checked-in build expects the OTF2 tarball to be present locally before the build starts. `Containerfile` is the single maintained build file in this directory. For compose compatibility, `Dockerfile` is just a symlink to `Containerfile`.
+### Step 1: Pull the Pre-built Container
 
-### Step 0: Prepare the Environment
-
-This step assumes access to the internet. Skip it if the necessary files are already available locally.
-
-1. Clone the repository if you have not already done so.
-2. Download `otf2-3.1.1.tar.gz` from the OTF2 release site: https://perftools.pages.jsc.fz-juelich.de/cicd/otf2/
-   ```bash
-   cd container/
-   wget https://perftools.pages.jsc.fz-juelich.de/cicd/otf2/tags/otf2-3.1.1/otf2-3.1.1.tar.gz
-   ```
-3. Place that tarball in this `container/` directory so the container build can copy it into the image.
-
-At this point, your `container/` directory should contain at least:
-
-```text
-container/
-├── Containerfile
-├── Dockerfile -> Containerfile
-├── compose.yaml
-├── README.md
-└── otf2-3.1.1.tar.gz
-```
-
-### Step 1: Build the FastOTF2 Container
-
-This step assumes access to the base image registry, OS package repositories, and the OTF2 tarball you placed in the previous step.
-
-Now build the FastOTF2 container:
+Pull the latest image from GHCR:
 
 ```bash
-cd container
-podman compose -f compose.yaml build
-```
-
-This command:
-
-- builds the `fastotf2-dev` service from the checked-in `compose.yaml`
-- uses the default `Dockerfile` path, which resolves to the same `Containerfile`
-- produces the `localhost/fastotf2:latest` image used by the run step
-
-If you prefer to avoid compose, the equivalent direct build is:
-
-```bash
-cd container
-podman build \
-  -f Containerfile \
-  -t localhost/fastotf2:latest \
-  .
+podman pull ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:latest
 ```
 
 <details>
 <summary>Docker alternative</summary>
 
-Use the checked-in Compose file:
-
 ```bash
-cd container
-docker compose -f compose.yaml build
-```
-
-Or build the image directly from the same `Containerfile`:
-
-```bash
-cd container
-docker build \
-  -f Containerfile \
-  -t fastotf2:latest \
-  .
+docker pull ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:latest
 ```
 
 </details>
 
-### Step 2: Run the FastOTF2 Container
+If you need to build the image locally instead of pulling it, see [Building the Container from Source](#building-the-container-from-source).
 
-Launch the container and enter an interactive shell:
+### Step 2: Run a Trace Conversion
 
-```bash
-cd container
-podman compose -f compose.yaml run --rm fastotf2-dev
-```
-
-This command:
-
-- starts the `fastotf2-dev` service defined in `compose.yaml`
-- mounts the repository checkout into `/workspace` inside the container
-- starts an interactive shell in that mounted workspace
-- removes the transient run container after you exit
-
-If you prefer to avoid compose, the equivalent direct run is:
+The converter runs directly — no shell needed. By default it prints the help message:
 
 ```bash
-cd container
-podman run -it --rm \
-  --volume "$(cd .. && pwd -P):/workspace" \
-  --workdir /workspace \
-  localhost/fastotf2:latest
+podman run --rm ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:latest
 ```
 
+Run a conversion against the bundled sample trace:
 
-Once inside the container, you should be in `/workspace` with the full repository available.
+```bash
+podman run --rm ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:latest \
+  /workspace/sample-traces/simple-mi300-example-run/traces.otf2
+```
+
+The above command is more of a sanity check to make sure things are working.
+Without a volume mounted to see the result, it will output nothing
+since the container is transient (removed at the end of the process).
+
+You can also pass additional filters and output controls:
+
+```bash
+podman run --rm ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:latest \
+  /workspace/sample-traces/simple-mi300-example-run/traces.otf2 \
+  --format=CSV \
+  --outputDir=/workspace/out \
+  --excludeMPI \
+  --log=DEBUG
+```
 
 <details>
 <summary>Docker alternative</summary>
 
-Use the checked-in Compose file:
-
 ```bash
-cd container
-docker compose -f compose.yaml run --rm fastotf2-dev
-```
-
-Or run the image directly:
-
-```bash
-cd container
-docker run -it --rm \
-  --volume "$(cd .. && pwd -P):/workspace" \
-  --workdir /workspace \
-  fastotf2:latest
+docker run --rm ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:latest
 ```
 
 </details>
 
-### Step 3: Build FastOTF2Converter Inside the Container
+### Step 3: Run with Your Own Traces
 
-Once inside the container, build the primary FastOTF2 application:
+Mount a host directory containing your OTF2 traces into `/workspace/` inside the container, then reference the mounted path:
 
 ```bash
-cd /workspace/apps/FastOTF2Converter
-mason build --release
+podman run --rm \
+  --volume /path/to/my/traces:/workspace/traces \
+  ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:latest \
+  /workspace/traces/traces.otf2 \
+  --format=PARQUET \
+  --outputDir=/workspace/traces/output
 ```
 
-Use `--release` for normal builds and runs. Mason adds Chapel's `--fast` automatically for release builds, so `--fast` is not included in the package `compopts` by default.
+Output files will appear in `/path/to/my/traces/output/` on the host.
 
-This builds the main user-facing executable, `FastOTF2Converter`.
+The `/workspace/` prefix is a path convention *inside the container*. On the host, you can use any directory; in these examples we mount that host directory into `/workspace/...` inside the container so that the in-container paths stay consistent across different systems.
 
-### Step 4: Run a Trace Conversion Inside the Container
+<details>
+<summary>Docker alternative</summary>
 
-Run the converter against one of the bundled traces:
+```bash
+docker run --rm \
+  --volume /path/to/my/traces:/workspace/traces \
+  ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:latest \
+  /workspace/traces/traces.otf2 \
+  --format=PARQUET \
+  --outputDir=/workspace/traces/output
+```
+
+</details>
+
+### Step 4: Advanced: Interactive Shell for Development
+
+If you want to explore the container, do development against the FastOTF2 library, or run Mason commands directly, you can enter an interactive shell:
+
+```bash
+podman run -it --rm ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:latest bash
+```
+
+Once inside, you are in `/workspace` with the full repository, all dependencies, and the pre-built converter available. You can run Mason commands exactly as you would outside the container:
 
 ```bash
 cd /workspace/apps/FastOTF2Converter
 mason run --release -- /workspace/sample-traces/simple-mi300-example-run/traces.otf2
 ```
 
-You can also pass additional filters and output controls:
+To mount the host repository for live editing:
 
 ```bash
-cd /workspace/apps/FastOTF2Converter
-mason run --release -- /workspace/sample-traces/simple-mi300-example-run/traces.otf2 \
-  --metrics=metric1,metric2 \
-  --processes=0,1 \
-  --outputDir=./out \
-  --format=CSV \
-  --excludeMPI \
-  --log=DEBUG
+podman run -it --rm \
+  --volume "$(pwd):/workspace" \
+  ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:latest bash
 ```
 
-To run a different archive, replace the trace path after `--` with your own OTF2 archive.
-`--format=PARQUET` is also accepted now, but currently exits with a clear unimplemented message rather than writing output files.
+<details>
+<summary>Docker alternative</summary>
 
-#### Expected Output
+```bash
+docker run -it --rm ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:latest bash
+```
 
-You should see the build complete and then trace-processing output from the converter. Depending on the options you selected, the run should produce generated files in the directory you passed through `--outputDir`, or in the tool's default output location if you did not override it.
+Or with the host repository mounted:
+
+```bash
+docker run -it --rm \
+  --volume "$(pwd):/workspace" \
+  ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:latest bash
+```
+
+</details>
 
 ### Step 5: Optional Library Examples
 
-If you also want to exercise the reusable FastOTF2 library package directly, run the root Mason examples:
+If you also want to exercise the reusable FastOTF2 library package directly, enter an interactive shell (Step 4) and run the root Mason examples:
 
 ```bash
 cd /workspace
@@ -224,94 +190,152 @@ This is useful when you want to inspect the lower-level OTF2 reading flow apart 
 
 ### Step 6: Exit the Container
 
-When finished, exit the container:
+When finished with an interactive shell, exit the container:
 
 ```bash
 exit
 ```
 
-Because the compose and direct-run commands both use `--rm`, the transient run container will be removed automatically after exit. The Docker alternatives above behave the same way.
+Because the run commands above all use `--rm`, the transient run container will be removed automatically after exit. The Docker alternatives behave the same way.
 
 ### Optional: Migrate the Container to HPC Systems
 
-After building and testing the container on a desktop or laptop, you can migrate that environment to an HPC system for further runs. This involves saving the image as an OCI archive and then converting it to an Apptainer SIF file.
+The pre-built GHCR image can be pulled directly into Apptainer on any HPC system that has outbound internet access. No desktop build, export, or file transfer is required.
 
-1. On the desktop, save the Podman image as an OCI archive:
+#### Direct pull from GHCR (recommended)
+
+If the HPC login or compute nodes can reach `ghcr.io`:
 
 ```bash
-cd container
-podman save --format oci-archive -o fastotf2-container.tar localhost/fastotf2:latest
+module load apptainer
+apptainer pull fastotf2-converter.sif docker://ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:latest
 ```
 
-On an ARM-based Mac targeting x86_64 Linux systems, you will usually want to build an x86_64 image first and then save that image:
+This creates `fastotf2-converter.sif` ready to use.
+
+#### Offline / air-gapped HPC systems
+
+If the HPC system cannot reach the internet, export the image on a connected machine and transfer it manually.
+
+1. On the desktop, save the image as an OCI archive:
 
 ```bash
-cd container
-podman build \
-  --platform linux/amd64 \
-  -f Containerfile \
-  -t localhost/fastotf2:amd64 \
-  .
-
-podman save --format oci-archive -o fastotf2-container-amd64.tar localhost/fastotf2:amd64
+podman save --format oci-archive -o fastotf2-converter.tar ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:latest
 ```
 
 <details>
 <summary>Docker alternative</summary>
 
-For Docker, use `buildx` to emit an OCI archive directly from the same `Containerfile`:
+Docker's `save` command produces a Docker-format tar, not an OCI archive.
+To get an OCI archive compatible with the `oci-archive://` import below, use `buildx`:
 
 ```bash
-cd container
 docker buildx build \
-  --output type=oci,dest=fastotf2-container.tar \
-  -t fastotf2:latest \
-  -f Containerfile \
+  --platform linux/amd64 \
+  --output type=oci,dest=fastotf2-converter.tar \
+  -t ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:latest \
+  -f container/Containerfile \
   .
 ```
 
-On an ARM-based Mac targeting x86_64 Linux systems, you will usually want:
+If the image is already pulled and you don't want to rebuild, you can use
+`docker save` instead, but then import with `docker-archive://` on the HPC side:
 
 ```bash
-cd container
-docker buildx build \
-  --platform linux/amd64 \
-  --output type=oci,dest=fastotf2-container-amd64.tar \
-  -t fastotf2:amd64 \
-  -f Containerfile \
-  .
+docker save -o fastotf2-converter.tar ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:latest
+# On the HPC system:
+# apptainer build fastotf2-converter.sif docker-archive://fastotf2-converter.tar
 ```
 
 </details>
 
-2. Transfer `fastotf2-container.tar` or `fastotf2-container-amd64.tar` to the HPC system.
+2. Transfer `fastotf2-converter.tar` to the HPC system.
 
 3. On the HPC system, convert the OCI archive to a SIF file:
 
 ```bash
 module load apptainer
-apptainer build fastotf2.sif oci-archive://fastotf2-container.tar
+apptainer build fastotf2-converter.sif oci-archive://fastotf2-converter.tar
 ```
 
-If you exported the x86_64 image instead, use:
+#### Running with Apptainer
+
+Run a conversion directly on the HPC system:
 
 ```bash
-module load apptainer
-apptainer build fastotf2-amd64.sif oci-archive://fastotf2-container-amd64.tar
+apptainer run --bind /path/to/traces:/workspace/traces fastotf2-converter.sif \
+  /workspace/traces/traces.otf2 --format=PARQUET --outputDir=/workspace/traces/output
 ```
 
-4. Run the container on the HPC system with your workspace bound in:
+Or enter an interactive shell for more advanced use:
 
 ```bash
-apptainer shell --bind $(pwd):/workspace --pwd /workspace fastotf2.sif
+apptainer shell --bind $(pwd):/workspace --pwd /workspace fastotf2-converter.sif
 ```
 
-5. Inside the container, run the same Mason commands you used on the desktop:
+Inside the shell, run the same Mason commands you would use outside the container:
 
 ```bash
 cd /workspace/apps/FastOTF2Converter
 mason run --release -- /workspace/sample-traces/simple-mi300-example-run/traces.otf2
 ```
+
+## Building the Container from Source
+
+If you need to customize the image, work on a fork, or cannot pull from GHCR, you can build locally. This requires a local clone of the repository and internet access for fetching dependencies.
+
+`Containerfile` is the single maintained build file in the `container/` directory. `Dockerfile` is a symlink to `Containerfile`.
+
+### Build with Podman
+
+From the **repository root**:
+
+```bash
+podman build \
+  -f container/Containerfile \
+  -t ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:latest \
+  .
+```
+
+
+<details>
+<summary>Docker alternative</summary>
+
+```bash
+docker build \
+  -f container/Containerfile \
+  -t ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:latest \
+  .
+```
+
+</details>
+
+### Cross-platform Build (ARM Mac targeting x86_64 Linux)
+
+If you are on an ARM-based Mac and need an x86_64 image for HPC systems:
+
+```bash
+podman build \
+  --platform linux/amd64 \
+  -f container/Containerfile \
+  -t ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:amd64 \
+  .
+```
+
+<details>
+<summary>Docker alternative</summary>
+
+```bash
+docker buildx build \
+  --platform linux/amd64 \
+  -f container/Containerfile \
+  -t ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:amd64 \
+  .
+```
+
+</details>
+
+Once built, the locally-tagged image works with all the same `podman run` / `docker run` / `apptainer` commands shown in the earlier sections.
 
 ## Install and Verify Required Dependencies
 
@@ -324,7 +348,6 @@ Use the following commands to check whether the required tools are already insta
 ```bash
 which podman
 podman --version
-podman compose version
 which apptainer
 ```
 
@@ -332,7 +355,7 @@ If you plan to use the Docker alternatives instead, also check:
 
 ```bash
 which docker
-docker compose version
+docker --version
 ```
 
 `apptainer` is only needed if you intend to move the built image to an HPC system.
@@ -359,7 +382,6 @@ Then verify:
 ```zsh
 podman --version
 podman info
-podman compose version
 ```
 
 If the container build is killed due to memory pressure inside the Podman VM, recreate the machine with more memory before retrying the build:
@@ -383,12 +405,6 @@ podman info
 apptainer --version
 ```
 
-If you plan to use `podman compose`, also verify:
-
-```bash
-podman compose version
-```
-
 On some Linux systems, rootless container tools also require `/etc/subuid` and `/etc/subgid` entries for your user.
 
 ### Verifying Podman Installation
@@ -398,7 +414,6 @@ To verify that Podman is properly installed and working, run:
 ```bash
 podman --version
 podman info
-podman compose version
 podman images
 podman run --rm hello-world
 ```
@@ -415,7 +430,6 @@ If you intend to use the Docker alternatives, verify that Docker is properly ins
 
 ```bash
 docker --version
-docker compose version
 docker info
 ```
 
@@ -432,9 +446,7 @@ The second command requires access to a container registry.
 
 ## Container Layout and Mounted Paths
 
-When you launch the container with either the `podman compose` or direct `podman run` command above, the repository root is mounted into `/workspace`.
-
-That means the paths you will use inside the container look like this:
+The image contains the full repository pre-built at `/workspace`. The converter binary, sample traces, library source, and examples are all available there:
 
 ```text
 /workspace/
@@ -443,22 +455,26 @@ That means the paths you will use inside the container look like this:
 ├── example/
 ├── apps/
 │   └── FastOTF2Converter/
+│       └── target/release/FastOTF2Converter   (pre-built)
 ├── sample-traces/
 ├── comparisons/
 └── docs/
 ```
 
-The OTF2 installation built into the image is available under `/opt/otf2`.
+The OTF2 installation is under `/opt/otf2` and Apache Arrow under `/opt/arrow`. Both are configured in `PKG_CONFIG_PATH` and `LD_LIBRARY_PATH`.
+
+When mounting host directories for your own traces, mount them under `/workspace/` (e.g. `-v /path/to/traces:/workspace/traces`) so that paths are consistent with the outside-container workflow.
+
+For the interactive development case, mounting the host repository to `/workspace` replaces the baked-in copy. You will need to rebuild with `mason build --release` inside the container after mounting.
 
 ## Troubleshooting
 
 ### If the Container Build Fails
 
-- Ensure you have internet connectivity.
-- Ensure `otf2-3.1.1.tar.gz` is present in `container/`.
+- Ensure you have internet connectivity (the build downloads OTF2 and Apache Arrow sources).
 - Check Podman itself with `podman info`.
-- If you are using the compose path, also check `podman compose version`.
-- If you are using the Docker alternative instead, check `docker info` and `docker compose version`.
+- If you are using the Docker alternative instead, check `docker info`.
+- If the Arrow CMake build fails, ensure the base image has `libsnappy-dev`, `libbrotli-dev`, `liblz4-dev`, and `libzstd-dev` (they are installed by the Containerfile, but network issues during `apt-get` could cause failures).
 
 ### If Mason Cannot Build What You Expect
 
@@ -476,12 +492,14 @@ mason build --release
 
 ### If Chapel or OTF2 Appear to Be Missing Inside the Container
 
-Verify the toolchain and OTF2 install:
+Verify the toolchain and dependency installs:
 
 ```bash
 chpl --version
 ls /opt/otf2/include/otf2
 ls /opt/otf2/lib
+pkg-config --modversion arrow parquet
+ls /opt/arrow/lib
 ```
 
 ### If Trace Files Cannot Be Found
@@ -496,7 +514,7 @@ ls /workspace/sample-traces
 
 - Make sure you used an OCI archive when exporting the container image.
 - If you are moving from ARM macOS to x86_64 Linux, build with `--platform linux/amd64` and export that image.
-- If the image works locally but not on the HPC system, test the SIF file directly with `apptainer inspect fastotf2.sif` and `apptainer exec fastotf2.sif chpl --version`.
+- If the image works locally but not on the HPC system, test the SIF file directly with `apptainer inspect fastotf2-converter.sif` and `apptainer exec fastotf2-converter.sif chpl --version`.
 
 ## Additional Resources
 
