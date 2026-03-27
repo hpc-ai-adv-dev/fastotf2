@@ -4,12 +4,16 @@ All development happens inside the container. You do not need to install Chapel,
 
 ## Setup
 
-Clone the repository and start an interactive container with your clone mounted:
+Clone the repository:
 
 ```bash
 git clone https://github.com/hpc-ai-adv-dev/fastotf2.git
 cd fastotf2
+```
 
+Start an interactive container, using `-v` to mount your local clone into `/workspace` inside the container. This lets you edit source files with your normal editor on the host while building and running inside the container:
+
+```bash
 podman run -it --rm \
   -v "$(pwd):/workspace" \
   ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:latest bash
@@ -106,6 +110,7 @@ These are useful for understanding the lower-level OTF2 reading API apart from t
 
 ## References
 
+- [Mason Documentation](https://chapel-lang.org/docs/tools/mason/mason.html)
 - [Chapel Language Documentation](https://chapel-lang.org/docs/)
 - [Chapel GitHub](https://github.com/chapel-lang/chapel)
 - [OTF2 / Score-P Documentation](https://www.vi-hps.org/projects/score-p/)

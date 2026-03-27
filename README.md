@@ -1,6 +1,6 @@
 # FastOTF2Converter
 
-Convert [OTF2](https://www.vi-hps.org/projects/score-p/) traces to **Parquet** or **CSV**.
+The FastOTF2Converter converts [OTF2](https://www.vi-hps.org/projects/score-p/) traces to **Parquet** or **CSV** 40 times faster than a Python-based converter. This guide covers using the container to convert your files, performance details, running with Apptainer on HPC systems, and extending the converter for other formats.
 
 ## Quick Start
 
@@ -44,7 +44,7 @@ For more container details (building from source, troubleshooting): [docs/contai
 | CSV | `--format=CSV` (default) | Human-readable. Times in seconds. |
 | Parquet | `--format=PARQUET` | Columnar binary. Times in nanoseconds. |
 
-### CLI Options
+### Command Line Interface Options
 
 | Flag | Default | Description |
 |------|---------|-------------|
@@ -61,10 +61,10 @@ For more container details (building from source, troubleshooting): [docs/contai
 
 FastOTF2Converter reads trace locations in parallel, scaling with available threads. Early benchmarks on a MacBook Pro M2 Max:
 
-| Trace Size | Events | Python | C | FastOTF2 Serial | FastOTF2 Parallel (8 threads) |
+| Input Size | Events | Python | C | FastOTF2 Serial | FastOTF2 Parallel (8 threads) |
 |---|---|---|---|---|---|
-| Small | 72,670 | 0.28 s | 0.02 s | 0.017 s | 0.004 s |
-| Large | 16.6 M | 42.2 s | 2.00 s | 1.99 s | 1.02 s |
+| 1.6 MB | 72,670 | 0.28 s | 0.02 s | 0.017 s | 0.004 s |
+| 200 MB | 16.6 M | 42.2 s | 2.00 s | 1.99 s | 1.02 s |
 
 <!-- TODO: Update numbers and dd performance chart image once HPC benchmarks are available -->
 <!-- ![Performance chart](docs/benchmarks/perf-chart.png maybe?) -->
