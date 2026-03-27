@@ -1,59 +1,92 @@
-# FastOTF2
+# FastOTF2Converter
 
-FastOTF2 is a Chapel-based toolkit for reading OTF2 traces and converting them into analysis-friendly outputs.
-The primary end-to-end workflow in this repository is the `FastOTF2Converter` Mason application in [apps/FastOTF2Converter](apps/FastOTF2Converter), built on top of the reusable FastOTF2 library at the repository root.
+Convert [OTF2](https://www.vi-hps.org/projects/score-p/) traces to **Parquet** or **CSV**.
 
-The recommended path for most users is the container workflow. It assumes you do not already have Chapel, Mason, and OTF2 installed locally and gives you a ready-made environment for building and running the repository.
-
-## Using FastOTF2 to convert your OTF2 traces
-
-Depending on your use case, you may want to pick one of the following options:
-
-- **Container-first workflow (recommended):** [container/README.md](container/README.md)
-- **Local/native workflow with your own Chapel and OTF2 install:** [docs/quickstart.md](docs/quickstart.md)
-- **Developer and repository documentation:** [docs/README.md](docs/README.md)
-
-## Recommended Workflow
-
-If you want the shortest path to a working FastOTF2 environment, use the container guide.
-It walks through the full process in order:
-
-1. Prepare the required container inputs.
-2. Build the container.
-3. Launch the container.
-4. Build `FastOTF2Converter` inside the container.
-5. Run it against one of the bundled traces.
-
-The bundled traces used throughout the documentation live under [sample-traces](sample-traces).
-
-## Repository Layout
-
-- [apps/FastOTF2Converter](apps/FastOTF2Converter): primary user-facing trace-to-table application
-- [src](src) and [Mason.toml](Mason.toml): reusable FastOTF2 Chapel library
-- [example](example): root Mason examples for the library package
-- [comparisons](comparisons): comparison material in C and Python
-- [container](container): container build and runtime workflow
-- [docs](docs): native-build guidance, architecture notes, benchmarks, tutorials, and other developer-focused material
-
-## Primary Commands
-
-Inside the container or any local environment where Chapel and OTF2 are already available:
+## Quick Start
 
 ```bash
-cd apps/FastOTF2Converter
-mason build --release
-mason run --release -- ../../sample-traces/simple-mi300-example-run/traces.otf2
+# 1. Pull the pre-built container (one-time)
+podman pull ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:latest
+
+# 2. Convert your traces
+podman run --rm \
+  -v /path/to/my/traces:/data \
+  ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:latest \
+  /data/traces.otf2 \
+  --format=PARQUET \
+  --outputDir=/data/output
+
+# Output files appear in /path/to/my/traces/output/
 ```
 
-To run against a different trace, replace the final positional path with your own OTF2 archive.
+<details>
+<summary>Docker alternative</summary>
 
-The converter supports `--format=CSV` (default) and `--format=PARQUET`. Parquet output requires Apache Arrow C++ libraries (see [apps/FastOTF2Converter/README.md](apps/FastOTF2Converter/README.md) for setup).
+```bash
+docker pull ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:latest
 
-Use `--release` for normal builds and runs. Mason adds Chapel's `--fast` automatically for release builds, so `--fast` is not included in the package `compopts` by default.
+docker run --rm \
+  -v /path/to/my/traces:/data \
+  ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:latest \
+  /data/traces.otf2 \
+  --format=PARQUET \
+  --outputDir=/data/output
+```
 
-## Additional Reading
+</details>
 
-- [container/README.md](container/README.md): full container walkthrough for users
-- [docs/quickstart.md](docs/quickstart.md): native/local build and run workflow
-- [docs/README.md](docs/README.md): developer docs index
-- [DEMO.md](DEMO.md): OTF2 walkthrough and project background
+For more container details (building from source, troubleshooting): [docs/container.md](docs/container.md)
+
+## Output Formats
+
+| Format | Flag | Description |
+|--------|------|-------------|
+| CSV | `--format=CSV` (default) | Human-readable. Times in seconds. |
+| Parquet | `--format=PARQUET` | Columnar binary. Times in nanoseconds. |
+
+### CLI Options
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `<trace>` | — | Path to the OTF2 trace archive (positional) |
+| `--format` | `CSV` | `CSV` or `PARQUET` |
+| `--outputDir` | `./` | Directory for output files |
+| `--metrics` | all | Comma-separated metric names to include |
+| `--processes` | all | Comma-separated process/group names to include |
+| `--excludeMPI` | `false` | Exclude MPI regions |
+| `--excludeHIP` | `false` | Exclude HIP regions |
+| `--log` | `INFO` | `NONE` · `ERROR` · `WARN` · `INFO` · `DEBUG` · `TRACE` |
+
+## Performance
+
+FastOTF2Converter reads trace locations in parallel, scaling with available threads. Early benchmarks on a MacBook Pro M2 Max:
+
+| Trace Size | Events | Python | C | FastOTF2 Serial | FastOTF2 Parallel (8 threads) |
+|---|---|---|---|---|---|
+| Small | 72,670 | 0.28 s | 0.02 s | 0.017 s | 0.004 s |
+| Large | 16.6 M | 42.2 s | 2.00 s | 1.99 s | 1.02 s |
+
+<!-- TODO: Update numbers and dd performance chart image once HPC benchmarks are available -->
+<!-- ![Performance chart](docs/benchmarks/perf-chart.png maybe?) -->
+
+> Formal benchmarks on HPC hardware are in progress. Raw data: [docs/benchmarks/perfnotes.md](docs/benchmarks/perfnotes.md)
+
+Under the hood, FastOTF2 is written in [Chapel](https://chapel-lang.org/) — a modern parallel programming language designed for productive, high-performance computing on hardware ranging from laptops to supercomputers. Chapel's built-in support for data parallelism, task parallelism, and multi-locale execution is what makes FastOTF2Converter fast and scalable.
+## Running on HPC Systems
+
+If you need to run on an HPC cluster using Apptainer, see the dedicated guide: [docs/hpc-apptainer.md](docs/hpc-apptainer.md)
+
+Multi-node (multi-locale) container support is planned.
+
+## Extending & Developing
+
+Want to add a new output format, modify the converter, or build on the FastOTF2 library? All development can happen inside the container — no local Chapel installation needed.
+
+See the developer guide: [docs/developing.md](docs/developing.md)
+
+## Additional Resources
+
+- [Full CLI and output format details](apps/FastOTF2Converter/README.md)
+- [OTF2 format background and project walkthrough](DEMO.md)
+- [Raw benchmark data](docs/benchmarks/perfnotes.md)
+- [Jupyter notebook tutorials](docs/tutorials)
