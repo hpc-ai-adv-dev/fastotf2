@@ -30,9 +30,9 @@ docker run -it --rm \
 
 </details>
 
-You are now in `/workspace` with Chapel, Mason, OTF2, and Apache Arrow all available.
+You are now inside the container where your clone of `fastotf2` is mounted at `/workspace`
+with Chapel, Mason, OTF2, and Apache Arrow all pre-installed within the container.
 
-> Mounting your clone replaces the baked-in copy inside the container. You will need to rebuild after mounting.
 
 ## Build and Run
 
