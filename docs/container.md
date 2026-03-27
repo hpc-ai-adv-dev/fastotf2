@@ -45,20 +45,38 @@ By default the converter prints its help message:
 podman run --rm ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:latest
 ```
 
-Run against the bundled sample trace:
+Run against the bundled sample trace as a quick sanity check.
+You will see processing output in the terminal, but no files are saved to the host since the container is removed at the end:
 
 ```bash
 podman run --rm ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:latest \
   /workspace/sample-traces/simple-mi300-example-run/traces.otf2
 ```
 
+To actually keep the output files, mount a host directory with `-v` and write into it:
+
+```bash
+mkdir -p /tmp/fastotf2-out
+
+podman run --rm \
+  -v /tmp/fastotf2-out:/data/output \
+  ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:latest \
+  /workspace/sample-traces/simple-mi300-example-run/traces.otf2 \
+  --format=PARQUET \
+  --outputDir=/data/output
+```
+
+Output files appear in `/tmp/fastotf2-out/` on the host.
+
 You can also pass filters and output controls:
 
 ```bash
-podman run --rm ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:latest \
+podman run --rm \
+  -v /tmp/fastotf2-out:/data/output \
+  ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:latest \
   /workspace/sample-traces/simple-mi300-example-run/traces.otf2 \
   --format=CSV \
-  --outputDir=/workspace/out \
+  --outputDir=/data/output \
   --excludeMPI \
   --log=DEBUG
 ```
@@ -68,6 +86,13 @@ podman run --rm ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:latest \
 
 ```bash
 docker run --rm ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:latest
+
+docker run --rm \
+  -v /tmp/fastotf2-out:/data/output \
+  ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:latest \
+  /workspace/sample-traces/simple-mi300-example-run/traces.otf2 \
+  --format=PARQUET \
+  --outputDir=/data/output
 ```
 
 </details>
