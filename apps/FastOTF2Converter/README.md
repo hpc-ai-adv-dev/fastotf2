@@ -1,33 +1,14 @@
 # FastOTF2Converter
 
-This directory contains the primary FastOTF2 application package.
-It is a Mason application built on the reusable FastOTF2 Chapel library at the repository root.
+The primary trace-to-table converter application. For getting started, see the [root README](../../README.md).
 
-For end-to-end user instructions, start with one of these instead of using this package README as a standalone quickstart:
-
-- [../../container/README.md](../../container/README.md): recommended container-first workflow
-- [../../docs/quickstart.md](../../docs/quickstart.md): local/native workflow
-
-## Package Layout
-
-- [Mason.toml](Mason.toml): application package manifest
-- [src/FastOTF2Converter.chpl](src/FastOTF2Converter.chpl): Mason application entrypoint
-- [src/FastOTF2ConverterParallel.chpl](src/FastOTF2ConverterParallel.chpl): primary parallel implementation
-- [src/FastOTF2ConverterWriters.chpl](src/FastOTF2ConverterWriters.chpl): CSV and Parquet output writers
-- [src/CallGraphModule.chpl](src/CallGraphModule.chpl): timeline and interval data structures
-- [example/FastOTF2ConverterSerial.chpl](example/FastOTF2ConverterSerial.chpl): serial reference example
-- [test/CallgraphParityTest.chpl](test/CallgraphParityTest.chpl): CSV↔Parquet callgraph parity test
-- [test/MetricsParityTest.chpl](test/MetricsParityTest.chpl): CSV↔Parquet metrics parity test
-
-## Common Commands
+## Build and Run
 
 ```bash
 cd apps/FastOTF2Converter
 mason build --release
 mason run --release -- ../../sample-traces/simple-mi300-example-run/traces.otf2
 ```
-
-To use a different trace, replace the final positional path when invoking `mason run`.
 
 ## Output Formats
 
@@ -44,23 +25,9 @@ Both formats produce the same set of output files per location group:
 
 ### Parquet Prerequisites
 
-The Parquet output path requires Apache Arrow C++ libraries. On systems using Spack:
-
-```bash
-. ~/dev/spack/share/spack/setup-env.sh && spack env activate arrow-19
-```
-
+The Parquet output path requires Apache Arrow C++ libraries.
+Make sure `pkg-config` can find arrow and parquet headers.
 The Parquet package dependency is declared in [Mason.toml](Mason.toml) and pulled automatically by `mason build`.
-
-### Known Parquet Limitations
-
-The Parquet backend has the following known limitations due to the upstream Chapel Parquet package:
-
-- **[PARQUET-PKG-GUARD]** `writeTable()` crashes on empty arrays — the converter skips writing when there are zero rows.
-- **[PARQUET-PKG-1]** `getDatasets()` / `getArrType()` segfault on valid files — schema validation tests are disabled.
-- **[PARQUET-PKG-2]** `readColumn()` does not support string columns — string parity tests are disabled.
-
-Search these tags in the source to find related workarounds.
 
 ## Command-Line Arguments
 
@@ -79,19 +46,13 @@ Both the parallel converter and the serial example accept the same CLI:
 
 ## Running Tests
 
-Tests verify numeric parity between CSV and Parquet output. They require pre-generated output files:
+Tests verify numeric parity between CSV and Parquet output:
 
 ```bash
 # Generate CSV and Parquet reference output
 mason run --release -- ../../sample-traces/simple-mi300-example-run/traces.otf2 --format=CSV --outputDir=/tmp/csv_out
 mason run --release -- ../../sample-traces/simple-mi300-example-run/traces.otf2 --format=PARQUET --outputDir=/tmp/pq_out
 
-# Run parity tests
+# Run Parity tests
 mason test --show
 ```
-
-## Notes
-
-- Use `--release` for normal builds and runs.
-- Mason adds Chapel's `--fast` automatically for release builds.
-- The package builds against the root FastOTF2 library source via Mason compiler options.
