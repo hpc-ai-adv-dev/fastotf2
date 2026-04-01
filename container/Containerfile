@@ -83,21 +83,13 @@ RUN rm -f Mason.lock && mason build --release
 RUN rm -rf /tmp/*
 
 # ---------------------------------------------------------------
-# Entrypoint: detects shell requests, otherwise runs the converter
-# via mason run --release (same command you would use outside the
-# container). Users can mount their own traces into /workspace/.
+# Entrypoint: detects shell requests, otherwise runs the built
+# converter binary directly. For launcher-backed Chapel builds,
+# prefer the `_real` executable so an external launcher (for example
+# Slurm/e4s-cl) owns process placement outside the container.
 # ---------------------------------------------------------------
-RUN cat << 'EOF' > /usr/local/bin/entrypoint.sh && chmod +x /usr/local/bin/entrypoint.sh
-#!/bin/bash
-set -e
-case "${1:-}" in
-  bash|sh|/bin/bash|/bin/sh)
-    exec "$@"
-    ;;
-esac
-cd /workspace/apps/FastOTF2Converter
-exec mason run --release -- "$@"
-EOF
+COPY container/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
 WORKDIR /workspace
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
