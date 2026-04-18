@@ -3,9 +3,9 @@
 // Shared types, callbacks, and helpers used by both the parallel and serial
 // converter implementations.
 
-module FastOTF2ConverterCommon {
+module ConverterCommon {
   use FastOTF2;
-  use FastOTF2ConverterWriters;
+  use ConverterWriters;
   use List;
   use Map;
   use CallGraphModule;
@@ -684,7 +684,7 @@ module FastOTF2ConverterCommon {
     select format {
       when OutputFormat.CSV {
         try {
-          FastOTF2ConverterWriters.writeCallgraphCSV(callGraph, group, thread,
+          ConverterWriters.writeCallgraphCSV(callGraph, group, thread,
                                                      joinPath(outputDir, filename));
         } catch e {
           logError("Error writing callgraph to CSV: ", e);
@@ -693,7 +693,7 @@ module FastOTF2ConverterCommon {
       }
       when OutputFormat.PARQUET {
         try {
-          FastOTF2ConverterWriters.writeCallgraphParquet(callGraph, group, thread,
+          ConverterWriters.writeCallgraphParquet(callGraph, group, thread,
                                                          joinPath(outputDir, filename));
         } catch e {
           logError("Error writing callgraph to PARQUET: ", e);
@@ -712,7 +712,7 @@ module FastOTF2ConverterCommon {
     select format {
       when OutputFormat.CSV {
         try {
-          FastOTF2ConverterWriters.writeMetricsCSV(group, threadMetrics,
+          ConverterWriters.writeMetricsCSV(group, threadMetrics,
                                                    joinPath(outputDir, filename));
         } catch e {
           logError("Error writing metrics to CSV: ", e);
@@ -721,7 +721,7 @@ module FastOTF2ConverterCommon {
       }
       when OutputFormat.PARQUET {
         try {
-          FastOTF2ConverterWriters.writeMetricsParquet(group, threadMetrics,
+          ConverterWriters.writeMetricsParquet(group, threadMetrics,
                                                        joinPath(outputDir, filename));
         } catch e {
           logError("Error writing metrics to PARQUET: ", e);

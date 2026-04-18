@@ -1,6 +1,6 @@
 // Copyright Hewlett Packard Enterprise Development LP.
 
-module FastOTF2ConverterWriters {
+module ConverterWriters {
   use FastOTF2;
   use List;
   use Map;

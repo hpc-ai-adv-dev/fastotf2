@@ -1,9 +1,43 @@
 // Copyright Hewlett Packard Enterprise Development LP.
 
 module FastOTF2Converter {
-  use FastOTF2ConverterParallel;
+  use ConverterDefReaders;
+  use Strategy_LocBlock;
+  use Strategy_LocGroupBlock;
+  // Future strategies:
+  // use Strategy_Serial;
+  // use Strategy_LocDynamic;
+  // use Strategy_LocGroupDynamic;
+  // use Strategy_LocGroupDistBlock;
+  // use Strategy_LocGroupBlockDistDynamic;
+  // use Strategy_LocGroupDistBalanced;
 
-  proc main(args: [] string) {
-    FastOTF2ConverterParallel.main(args);
+  proc main(args: [] string) throws {
+    const conf = parseConverterArgs(args);
+    validatePaths(conf);
+
+    select conf.strategy {
+      when "loc_block" do
+        Strategy_LocBlock.run(conf);
+      when "loc_dynamic" do
+        halt("Strategy loc_dynamic not yet implemented");
+      when "locgroup_block" do
+        Strategy_LocGroupBlock.run(conf);
+      when "locgroup_dynamic" do
+        halt("Strategy locgroup_dynamic not yet implemented");
+      when "locgroup_dist_block" do
+        halt("Strategy locgroup_dist_block not yet implemented");
+      when "locgroup_blockdist_dynamic" do
+        halt("Strategy locgroup_blockdist_dynamic not yet implemented");
+      when "locgroup_dist_balanced" do
+        halt("Strategy locgroup_dist_balanced not yet implemented");
+      when "serial" do
+        halt("Strategy serial not yet implemented");
+      otherwise
+        halt("Unknown strategy: ", conf.strategy,
+             ". Use one of: serial, loc_block, loc_dynamic, locgroup_block, ",
+             "locgroup_dynamic, locgroup_dist_block, ",
+             "locgroup_blockdist_dynamic, locgroup_dist_balanced");
+    }
   }
 }
