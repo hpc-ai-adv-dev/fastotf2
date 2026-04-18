@@ -26,13 +26,13 @@ module Strategy_LocGroupBlock {
     const defReadTime = sw.elapsed();
     sw.clear();
 
-    // Build location-group ownership map
+    // Build output-group ownership map (resolves HIP contexts to parent MPI ranks)
     const groupLocationMap = buildGroupLocationMap(defCtx);
-    const groupIds = orderedGroupIds(defCtx, groupLocationMap);
-    const totalGroups = groupIds.size;
+    const groupNames = orderedOutputGroups(defCtx, groupLocationMap);
+    const totalGroups = groupNames.size;
     const numberOfReaders = min(here.maxTaskPar, totalGroups);
     logInfo("Using locgroup_block strategy with ", numberOfReaders,
-            " reader tasks for ", totalGroups, " groups");
+            " reader tasks for ", totalGroups, " output groups");
 
     // Block-distribute groups to readers
     var readerGroups: [0..<numberOfReaders] list(OTF2_LocationGroupRef);
@@ -49,7 +49,7 @@ module Strategy_LocGroupBlock {
     logTrace("Reader group distribution:");
     for r in 0..<numberOfReaders {
       var assignedLocs = 0;
-      for gid in readerGroups[r] do assignedLocs += groupLocationMap[gid].size;
+      for name in readerGroups[r] do assignedLocs += groupLocationMap[name].size;
       logTrace("  Reader ", r, ": ", readerGroups[r].size, " groups, ",
                assignedLocs, " locations");
     }
@@ -64,10 +64,10 @@ module Strategy_LocGroupBlock {
     coforall i in 0..<numberOfReaders
       with (+ reduce totalEventsRead, ref evtContexts) {
 
-      // Collect locations for this reader's groups
-      const myGroupIds: [0..<readerGroups[i].size] OTF2_LocationGroupRef =
+      // Collect locations for this reader's output groups
+      const myGroupNames: [0..<readerGroups[i].size] string =
         for g in readerGroups[i] do g;
-      const myLocs = locationsForGroups(myGroupIds, groupLocationMap);
+      const myLocs = locationsForOutputGroups(myGroupNames, groupLocationMap);
 
       logTrace("Reader ", i, " assigned ", readerGroups[i].size,
                " groups with ", myLocs.size, " total locations");

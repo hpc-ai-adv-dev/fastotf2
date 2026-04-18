@@ -347,84 +347,102 @@ module ConverterDefReaders {
   }
 
   // -------------------------------------------------------------------------
-  // buildGroupLocationMap — build location-group ownership map
+  // buildGroupLocationMap — build output-group → locations map
+  //
+  // Groups locations by their *resolved output group name* (the name used
+  // for output filenames), NOT by raw OTF2 location group ID.  HIP contexts
+  // whose creatingLocationGroup points to an MPI rank are folded under that
+  // rank's name, so all locations that contribute to the same output files
+  // end up in the same partition.
   // -------------------------------------------------------------------------
+
+  proc resolveOutputGroup(
+    const ref defCtx: DefCallbackContext,
+    groupRef: OTF2_LocationGroupRef
+  ): string {
+    if defCtx.locationGroupIds.contains(groupRef) {
+      const locationGroup = defCtx.locationGroupTable[groupRef];
+      return if locationGroup.creatingLocationGroup != "None"
+                && locationGroup.creatingLocationGroup != ""
+             then locationGroup.creatingLocationGroup
+             else locationGroup.name;
+    }
+    return "UnknownGroup";
+  }
 
   proc buildGroupLocationMap(
     const ref defCtx: DefCallbackContext
-  ): map(OTF2_LocationGroupRef, list(OTF2_LocationRef)) throws {
-    var groupLocationMap: map(OTF2_LocationGroupRef, list(OTF2_LocationRef));
+  ): map(string, list(OTF2_LocationRef)) throws {
+    var groupLocationMap: map(string, list(OTF2_LocationRef));
     for locId in defCtx.locationIds {
       const loc = defCtx.locationTable[locId];
-      const gid = loc.group;
-      groupLocationMap[gid].pushBack(locId);
+      const outputGroup = resolveOutputGroup(defCtx, loc.group);
+      groupLocationMap[outputGroup].pushBack(locId);
     }
 
-    logDebug("Found ", groupLocationMap.size, " location groups");
-    for gid in groupLocationMap.keys() {
-      logDebug("  Group ", gid, " (",
-               if defCtx.locationGroupIds.contains(gid)
-                 then defCtx.locationGroupTable[gid].name
-                 else "UnknownGroup",
-               "): ", groupLocationMap[gid].size, " locations");
+    logDebug("Found ", groupLocationMap.size, " output groups");
+    for name in groupLocationMap.keys() {
+      logDebug("  Output group '", name, "': ",
+               groupLocationMap[name].size, " locations");
     }
 
     return groupLocationMap;
   }
 
   // -------------------------------------------------------------------------
-  // orderedGroupIds — deterministic ordering of group IDs
+  // orderedOutputGroups — deterministic ordering of output group names
   // -------------------------------------------------------------------------
 
-  proc orderedGroupIds(
+  proc orderedOutputGroups(
     const ref defCtx: DefCallbackContext,
-    const ref groupLocationMap: map(OTF2_LocationGroupRef, list(OTF2_LocationRef))
-  ): [] OTF2_LocationGroupRef {
+    const ref groupLocationMap: map(string, list(OTF2_LocationRef))
+  ): [] string {
     const totalGroups = groupLocationMap.size;
-    var groupIds: [0..<totalGroups] OTF2_LocationGroupRef;
+    var groups: [0..<totalGroups] string;
+    var seen: domain(string);
     var idx = 0;
 
-    // First pass: add groups in definition order
+    // Walk OTF2 location groups in definition order, resolve to output name,
+    // and add each unique output name once.
     for gid in defCtx.locationGroupIds {
-      if groupLocationMap.contains(gid) {
-        groupIds[idx] = gid;
+      const name = resolveOutputGroup(defCtx, gid);
+      if groupLocationMap.contains(name) && !seen.contains(name) {
+        groups[idx] = name;
+        seen += name;
         idx += 1;
       }
     }
 
-    // Second pass: pick up any groups not in locationGroupIds (safety)
+    // Safety: pick up any names not yet emitted
     if idx < totalGroups {
-      for gid in groupLocationMap.keys() {
-        var seen = false;
-        for j in 0..<idx {
-          if groupIds[j] == gid { seen = true; break; }
-        }
-        if !seen {
-          groupIds[idx] = gid;
+      for name in groupLocationMap.keys() {
+        if !seen.contains(name) {
+          groups[idx] = name;
+          seen += name;
           idx += 1;
           if idx == totalGroups then break;
         }
       }
     }
 
-    return groupIds;
+    return groups;
   }
 
   // -------------------------------------------------------------------------
-  // locationsForGroups — collect all locations for a list of group IDs
+  // locationsForOutputGroups — collect all locations for a list of output group names
   // -------------------------------------------------------------------------
 
-  proc locationsForGroups(
-    const ref groupIds: [] OTF2_LocationGroupRef,
-    const ref groupLocationMap: map(OTF2_LocationGroupRef, list(OTF2_LocationRef))
+  proc locationsForOutputGroups(
+    const ref groupNames: [] string,
+    const ref groupLocationMap: map(string, list(OTF2_LocationRef))
   ): [] OTF2_LocationRef throws {
     var totalLocs = 0;
-    for gid in groupIds do totalLocs += groupLocationMap[gid].size;
+    for name in groupNames do totalLocs += groupLocationMap[name].size;
 
     var locs: [0..<totalLocs] OTF2_LocationRef;
     var idx = 0;
-    for gid in groupIds {
-      for loc in groupLocationMap[gid] {
+    for name in groupNames {
+      for loc in groupLocationMap[name] {
         locs[idx] = loc;
         idx += 1;
       }
