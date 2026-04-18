@@ -11,6 +11,7 @@ module Strategy_LocBlock {
   use ConverterCommon;
   use FastOTF2;
   use Time;
+  use RangeChunk;
 
   proc run(conf: ConverterConfig) throws {
     var sw: stopwatch;
@@ -37,16 +38,12 @@ module Strategy_LocBlock {
 
     coforall i in 0..<numberOfReaders
       with (+ reduce totalEventsRead, ref evtContexts) {
-      // Block partition: contiguous ranges
-      const locsPerReader = totalLocs / numberOfReaders;
-      const remainder = totalLocs % numberOfReaders;
-      const low = i * locsPerReader + min(i, remainder);
-      const high = low + locsPerReader + (if i < remainder then 1 else 0);
+      const myRange = chunk(0..<totalLocs, numberOfReaders, i);
 
-      logTrace("Reader ", i, " assigned locations [", low, "..", high, ")");
+      logTrace("Reader ", i, " assigned locations [", myRange.low, "..", myRange.high, "]");
 
-      const myLocs: [0..<(high - low)] OTF2_LocationRef =
-        for idx in low..<high do locationArray[idx];
+      const myLocs: [0..<myRange.size] OTF2_LocationRef =
+        for idx in myRange do locationArray[idx];
 
       totalEventsRead += readEventsForLocations(conf.trace, myLocs, evtContexts[i]);
     }

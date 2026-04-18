@@ -13,6 +13,7 @@ module Strategy_LocGroupBlock {
   use Time;
   use List;
   use Map;
+  use RangeChunk;
 
   proc run(conf: ConverterConfig) throws {
     var sw: stopwatch;
@@ -34,15 +35,11 @@ module Strategy_LocGroupBlock {
     logInfo("Using locgroup_block strategy with ", numberOfReaders,
             " reader tasks for ", totalGroups, " output groups");
 
-    // Block-distribute groups to readers
-    var readerGroups: [0..<numberOfReaders] list(OTF2_LocationGroupRef);
-    const groupsPerReader = totalGroups / numberOfReaders;
-    const remainder = totalGroups % numberOfReaders;
-    for r in 0..<numberOfReaders {
-      const low = r * groupsPerReader + min(r, remainder);
-      const high = low + groupsPerReader + (if r < remainder then 1 else 0);
-      for idx in low..<high {
-        readerGroups[r].pushBack(groupIds[idx]);
+    // Block-distribute output groups to readers
+    var readerGroups: [0..<numberOfReaders] list(string);
+    for (r, groupRange) in zip(0..<numberOfReaders, chunks(0..<totalGroups, numberOfReaders)) {
+      for idx in groupRange {
+        readerGroups[r].pushBack(groupNames[idx]);
       }
     }
 
