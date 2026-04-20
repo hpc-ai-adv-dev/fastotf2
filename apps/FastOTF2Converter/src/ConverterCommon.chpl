@@ -676,61 +676,6 @@ module ConverterCommon {
   // Shared write / print helpers
   // ---------------------------------------------------------------------------
 
-  proc writeCallgraph(callGraph: shared CallGraph, group: string, thread: string,
-                      format: OutputFormat, outputDir: string) {
-    const filename = callgraphFilename(group, thread, format);
-    logInfo("Writing to file: ", filename);
-
-    select format {
-      when OutputFormat.CSV {
-        try {
-          ConverterWriters.writeCallgraphCSV(callGraph, group, thread,
-                                                     joinPath(outputDir, filename));
-        } catch e {
-          logError("Error writing callgraph to CSV: ", e);
-          halt("failed to write callgraph CSV");
-        }
-      }
-      when OutputFormat.PARQUET {
-        try {
-          ConverterWriters.writeCallgraphParquet(callGraph, group, thread,
-                                                         joinPath(outputDir, filename));
-        } catch e {
-          logError("Error writing callgraph to PARQUET: ", e);
-          halt("failed to write callgraph parquet");
-        }
-      }
-    }
-  }
-
-  proc writeMetrics(group: string,
-                    threadMetrics: map(string, list((real(64), OTF2_Type, OTF2_MetricValue))),
-                    format: OutputFormat, outputDir: string) {
-    const filename = metricsFilename(group, format);
-    logInfo("Writing to file: ", filename);
-
-    select format {
-      when OutputFormat.CSV {
-        try {
-          ConverterWriters.writeMetricsCSV(group, threadMetrics,
-                                                   joinPath(outputDir, filename));
-        } catch e {
-          logError("Error writing metrics to CSV: ", e);
-          halt("failed to write metrics CSV");
-        }
-      }
-      when OutputFormat.PARQUET {
-        try {
-          ConverterWriters.writeMetricsParquet(group, threadMetrics,
-                                                       joinPath(outputDir, filename));
-        } catch e {
-          logError("Error writing metrics to PARQUET: ", e);
-          halt("failed to write metrics parquet");
-        }
-      }
-    }
-  }
-
   proc printCallGraphAndMetrics(ref evtCtx: EvtCallbackContext, verbose: bool = false) {
     logDebug("\n--- Call Graphs ---");
     logDebug("Total location groups with call graphs: ", evtCtx.callGraphs.size);

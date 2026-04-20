@@ -2,9 +2,11 @@
 
 module ConverterWriters {
   use FastOTF2;
+  use ConverterCommon;
   use List;
   use Map;
   use IO;
+  use Path;
   use CallGraphModule;
   use Parquet;
 
@@ -187,5 +189,95 @@ module ConverterWriters {
                          "value_int", "value_real"),
                groupCol, metricNameCol, timeCol,
                valueIntCol, valueRealCol);
+  }
+
+  // ---------------------------------------------------------------------------
+  // High-level write helpers (format dispatch + error handling)
+  // ---------------------------------------------------------------------------
+
+  proc writeCallgraph(callGraph: shared CallGraph, group: string, thread: string,
+                      format: OutputFormat, outputDir: string) {
+    const filename = callgraphFilename(group, thread, format);
+    logInfo("Writing to file: ", filename);
+
+    select format {
+      when OutputFormat.CSV {
+        try {
+          writeCallgraphCSV(callGraph, group, thread,
+                            joinPath(outputDir, filename));
+        } catch e {
+          logError("Error writing callgraph to CSV: ", e);
+          halt("failed to write callgraph CSV");
+        }
+      }
+      when OutputFormat.PARQUET {
+        try {
+          writeCallgraphParquet(callGraph, group, thread,
+                                joinPath(outputDir, filename));
+        } catch e {
+          logError("Error writing callgraph to PARQUET: ", e);
+          halt("failed to write callgraph parquet");
+        }
+      }
+    }
+  }
+
+  proc writeMetrics(group: string,
+                    threadMetrics: map(string, list((real(64), OTF2_Type, OTF2_MetricValue))),
+                    format: OutputFormat, outputDir: string) {
+    const filename = metricsFilename(group, format);
+    logInfo("Writing to file: ", filename);
+
+    select format {
+      when OutputFormat.CSV {
+        try {
+          writeMetricsCSV(group, threadMetrics,
+                          joinPath(outputDir, filename));
+        } catch e {
+          logError("Error writing metrics to CSV: ", e);
+          halt("failed to write metrics CSV");
+        }
+      }
+      when OutputFormat.PARQUET {
+        try {
+          writeMetricsParquet(group, threadMetrics,
+                              joinPath(outputDir, filename));
+        } catch e {
+          logError("Error writing metrics to PARQUET: ", e);
+          halt("failed to write metrics parquet");
+        }
+      }
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // writeOutputForContext — write callgraphs and metrics for one EvtCallbackContext
+  // ---------------------------------------------------------------------------
+
+  proc writeOutputForContext(
+    ref evtCtx: EvtCallbackContext,
+    format: OutputFormat,
+    outputDir: string
+  ) {
+    for (group, threads) in evtCtx.callGraphs.toArray() {
+      if !evtCtx.evtArgs.processesToTrack.isEmpty() &&
+         !evtCtx.evtArgs.processesToTrack.contains(group) {
+        logTrace("Skipping group ", group, " (not in processes to track)");
+      } else {
+        for thread in threads.keysToArray() {
+          const callGraph = try! threads[thread];
+          writeCallgraph(callGraph, group, thread, format, outputDir);
+        }
+      }
+    }
+
+    for (group, threadMetrics) in evtCtx.metrics.toArray() {
+      if !evtCtx.evtArgs.processesToTrack.isEmpty() &&
+         !evtCtx.evtArgs.processesToTrack.contains(group) {
+        logTrace("Skipping group ", group, " (not in processes to track)");
+      } else {
+        writeMetrics(group, threadMetrics, format, outputDir);
+      }
+    }
   }
 }
