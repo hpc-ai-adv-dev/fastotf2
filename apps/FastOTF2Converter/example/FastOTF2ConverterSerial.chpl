@@ -278,7 +278,7 @@ module FastOTF2ConverterSerial {
       } else {
         for thread in threads.keysToArray() {
           const callGraph = try! threads[thread];
-          ConverterCommon.writeCallgraph(callGraph, group, thread, format, outputDir);
+          ConverterWriters.writeCallgraph(callGraph, group, thread, format, outputDir);
         }
       }
     }
@@ -287,7 +287,7 @@ module FastOTF2ConverterSerial {
       if !evtCtx.evtArgs.processesToTrack.isEmpty() && !evtCtx.evtArgs.processesToTrack.contains(group) {
         logInfo("Skipping group ", group, " as it is not in the processes to track.");
       } else {
-        ConverterCommon.writeMetrics(group, threadMetrics, format, outputDir);
+        ConverterWriters.writeMetrics(group, threadMetrics, format, outputDir);
       }
     }
   }
