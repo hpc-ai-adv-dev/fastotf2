@@ -2,6 +2,7 @@
 
 module FastOTF2Converter {
   use ConverterDefReaders;
+  use Strategy_Serial;
   use Strategy_LocBlock;
   use Strategy_LocGroupBlock;
   // Future strategies:
@@ -17,6 +18,8 @@ module FastOTF2Converter {
     validatePaths(conf);
 
     select conf.strategy {
+      when "serial" do
+        Strategy_Serial.run(conf);
       when "loc_block" do
         Strategy_LocBlock.run(conf);
       when "loc_dynamic" do
@@ -31,8 +34,6 @@ module FastOTF2Converter {
         halt("Strategy locgroup_blockdist_dynamic not yet implemented");
       when "locgroup_dist_balanced" do
         halt("Strategy locgroup_dist_balanced not yet implemented");
-      when "serial" do
-        halt("Strategy serial not yet implemented");
       otherwise
         halt("Unknown strategy: ", conf.strategy,
              ". Use one of: serial, loc_block, loc_dynamic, locgroup_block, ",
