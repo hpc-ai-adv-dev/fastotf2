@@ -1,7 +1,7 @@
 // Copyright Hewlett Packard Enterprise Development LP.
 
 module FastOTF2Converter {
-  use ConverterDefReaders;
+  use ConverterArgs;
   use Strategy_Serial;
   use Strategy_LocBlock;
   use Strategy_LocGroupBlock;
