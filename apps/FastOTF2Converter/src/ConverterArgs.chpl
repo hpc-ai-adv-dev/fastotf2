@@ -69,15 +69,14 @@ module ConverterArgs {
     );
 
     const defaultStrategy = if numLocales > 1
-      then "locgroup_dist_balanced"
-      else "locgroup_dynamic";
+      then "locgroup_dist_block"
+      else "locgroup_block";
     var strategyArg = parser.addOption(
       name="strategy",
       defaultValue=defaultStrategy,
       numArgs=1,
-      help="Partition strategy: serial, loc_block, loc_dynamic, "
-           + "locgroup_block, locgroup_dynamic, locgroup_dist_block, "
-           + "locgroup_blockdist_dynamic, locgroup_dist_balanced"
+      help="Partition strategy: serial, loc_block, "
+           + "locgroup_block, locgroup_dist_block "
     );
 
     var excludeMPIArg = parser.addFlag(
