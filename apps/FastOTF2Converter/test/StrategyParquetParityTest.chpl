@@ -2,17 +2,17 @@
 
 // StrategyParquetParityTest.chpl
 //
-// Verifies parity between the baseline location strategy and the
-// location_group strategy using Parquet outputs.
+// Verifies parity between any two strategy runs using Parquet outputs.
+// Compares file lists, row counts, and numeric column values (order-insensitive).
 //
 // Prerequisites:
-//   # Baseline (old) output
-//   mason run --release -- ../../sample-traces/simple-mi300-example-run/traces.otf2 \
-//     --partitionStrategy=location --format=PARQUET --outputDir=/tmp/old_pq_out
+//   # Baseline output (e.g. locgroup_block)
+//   mason run --release -- ../../scorep-traces/frontier-hpl-run-using-2-ranks/traces.otf2 \
+//     --strategy=locgroup_block --format=PARQUET --outputDir=/tmp/old_pq_out
 //
-//   # New output
-//   mason run --release -- ../../sample-traces/simple-mi300-example-run/traces.otf2 \
-//     --partitionStrategy=location_group --format=PARQUET --outputDir=/tmp/new_pq_out
+//   # Comparison output (e.g. loc_block)
+//   mason run --release -- ../../scorep-traces/frontier-hpl-run-using-2-ranks/traces.otf2 \
+//     --strategy=loc_block --format=PARQUET --outputDir=/tmp/new_pq_out
 //
 // Run:
 //   mason test --show
