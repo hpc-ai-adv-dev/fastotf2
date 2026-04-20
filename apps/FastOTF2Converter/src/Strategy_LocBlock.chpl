@@ -7,8 +7,11 @@
 // Single-locale only.
 
 module Strategy_LocBlock {
-  use ConverterDefReaders;
+  use ConverterArgs;
   use ConverterCommon;
+  use ConverterDefReaders;
+  use ConverterEvtReaders;
+  use ConverterWriters;
   use FastOTF2;
   use Time;
   use RangeChunk;

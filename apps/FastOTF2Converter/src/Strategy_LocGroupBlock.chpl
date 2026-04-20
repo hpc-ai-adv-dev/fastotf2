@@ -7,8 +7,12 @@
 // Single-locale only.
 
 module Strategy_LocGroupBlock {
-  use ConverterDefReaders;
+  use ConverterArgs;
   use ConverterCommon;
+  use ConverterDefReaders;
+  use ConverterEvtReaders;
+  use ConverterGroupMap;
+  use ConverterWriters;
   use FastOTF2;
   use Time;
   use List;

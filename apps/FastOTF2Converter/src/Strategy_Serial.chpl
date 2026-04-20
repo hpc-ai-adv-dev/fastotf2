@@ -7,8 +7,11 @@
 // Single-locale only.
 
 module Strategy_Serial {
-  use ConverterDefReaders;
+  use ConverterArgs;
   use ConverterCommon;
+  use ConverterDefReaders;
+  use ConverterEvtReaders;
+  use ConverterWriters;
   use FastOTF2;
   use Time;
 

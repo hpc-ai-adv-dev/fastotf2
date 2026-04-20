@@ -1,17 +1,12 @@
 // Copyright Hewlett Packard Enterprise Development LP.
 //
-// Shared read-side pipeline for all converter strategies.
-// Provides argument parsing, global definition reading, event callback
-// argument construction, per-task event reading, and output writing.
-//
-// This is the read-side analog to ConverterWriters (the write-side).
-// Strategy modules import this and control only how work is distributed.
+// Global definition reading for the converter.
+// Opens the OTF2 archive, registers definition callbacks, reads all
+// global definitions, and returns the populated DefCallbackContext.
 
 module ConverterDefReaders {
   use FastOTF2;
   use ConverterCommon;
-  use ConverterWriters;
-  use CallGraphModule;
   use Time;
 
   // -------------------------------------------------------------------------
@@ -78,230 +73,183 @@ module ConverterDefReaders {
     return (defCtx, numberOfLocations);
   }
 
-  // -------------------------------------------------------------------------
-  // buildEvtCallbackArgs — parse metrics/processes strings into EvtCallbackArgs
-  // -------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
+  // Definition callbacks
+  // ---------------------------------------------------------------------------
 
-  proc buildEvtCallbackArgs(const ref conf: ConverterConfig): EvtCallbackArgs {
-    var metricsToTrack: domain(string);
-    if conf.metrics != "" {
-      for metric in conf.metrics.split(",") {
-        metricsToTrack += metric.strip();
-      }
-    }
-
-    var processesToTrack: domain(string);
-    if conf.processes != "" {
-      for process in conf.processes.split(",") {
-        processesToTrack += process.strip();
-      }
-    }
-
-    return new EvtCallbackArgs(
-      processesToTrack=processesToTrack,
-      metricsToTrack=metricsToTrack,
-      excludeMPI=conf.excludeMPI,
-      excludeHIP=conf.excludeHIP
-    );
+  proc registerClockProperties(userData: c_ptr(void),
+                              timerResolution: uint(64),
+                              globalOffset: uint(64),
+                              traceLength: uint(64),
+                              realtimeTimestamp: uint(64)): OTF2_CallbackCode {
+    var defContextPtr = userData: c_ptr(DefCallbackContext);
+    if defContextPtr == nil then return OTF2_CALLBACK_ERROR;
+    ref defContext = defContextPtr.deref();
+    ref clockProps = defContext.clockProps;
+    clockProps.timerResolution = timerResolution;
+    clockProps.globalOffset = globalOffset;
+    clockProps.traceLength = traceLength;
+    clockProps.realtimeTimestamp = realtimeTimestamp;
+    logTrace("Trace Clock Properties:");
+    logTrace(" Timer Resolution. : ", clockProps.timerResolution);
+    logTrace(" Global Offset     : ", clockProps.globalOffset);
+    logTrace(" Trace Length      : ", clockProps.traceLength);
+    logTrace(" Realtime Timestamp: ", clockProps.realtimeTimestamp);
+    return OTF2_CALLBACK_SUCCESS;
   }
 
-  // -------------------------------------------------------------------------
-  // readEventsForLocations — the key abstraction
-  //
-  // Opens a fresh OTF2 reader, selects the given locations, registers
-  // Enter/Leave/Metric callbacks, reads all events, then closes.
-  // Returns the number of events read.
-  // -------------------------------------------------------------------------
-
-  proc readEventsForLocations(
-    trace: string,
-    locations: [] OTF2_LocationRef,
-    ref evtCtx: EvtCallbackContext
-  ): c_uint64 {
-    var reader = OTF2_Reader_Open(trace.c_str());
-    if reader == nil {
-      logError("Failed to open trace file for event reading");
-      return 0;
-    }
-
-    OTF2_Reader_SetSerialCollectiveCallbacks(reader);
-
-    // Select locations
-    for loc in locations {
-      OTF2_Reader_SelectLocation(reader, loc);
-    }
-
-    OTF2_Reader_OpenEvtFiles(reader);
-
-    // Mark event files for reading
-    for loc in locations {
-      var _evtReader = OTF2_Reader_GetEvtReader(reader, loc);
-    }
-
-    var eventsRead: c_uint64 = 0;
-
-    var globalEvtReader = OTF2_Reader_GetGlobalEvtReader(reader);
-    if globalEvtReader != nil {
-      var evtCallbacks = OTF2_GlobalEvtReaderCallbacks_New();
-
-      OTF2_GlobalEvtReaderCallbacks_SetEnterCallback(
-        evtCallbacks, c_ptrTo(Enter_callback): c_fn_ptr);
-      OTF2_GlobalEvtReaderCallbacks_SetLeaveCallback(
-        evtCallbacks, c_ptrTo(Leave_callback): c_fn_ptr);
-      OTF2_GlobalEvtReaderCallbacks_SetMetricCallback(
-        evtCallbacks, c_ptrTo(Metric_callback): c_fn_ptr);
-
-      OTF2_Reader_RegisterGlobalEvtCallbacks(
-        reader, globalEvtReader, evtCallbacks,
-        c_ptrTo(evtCtx): c_ptr(void));
-      OTF2_GlobalEvtReaderCallbacks_Delete(evtCallbacks);
-
-      OTF2_Reader_ReadAllGlobalEvents(
-        reader, globalEvtReader, c_ptrTo(eventsRead));
-
-      OTF2_Reader_CloseGlobalEvtReader(reader, globalEvtReader);
+  proc GlobDefString_Register(userData: c_ptr(void),
+                              strRef: OTF2_StringRef,
+                              strName: c_ptrConst(c_uchar)):
+                              OTF2_CallbackCode {
+    var ctxPtr = userData: c_ptr(DefCallbackContext);
+    if ctxPtr == nil then return OTF2_CALLBACK_ERROR;
+    ref ctx = ctxPtr.deref();
+    // Add string to the lookup table
+    ctx.stringIds += strRef;
+    if strName != nil {
+      try! ctx.stringTable[strRef] = string.createCopyingBuffer(strName);
     } else {
-      logError("Failed to create global event reader");
+      ctx.stringTable[strRef] = "UnknownString";
     }
-
-    OTF2_Reader_CloseEvtFiles(reader);
-    OTF2_Reader_Close(reader);
-
-    return eventsRead;
+    logTrace("Registered string: ", ctx.stringTable[strRef]);
+    return OTF2_CALLBACK_SUCCESS;
   }
 
-  // -------------------------------------------------------------------------
-  // writeOutputForContext — write callgraphs and metrics for one EvtCallbackContext
-  // -------------------------------------------------------------------------
-
-  proc writeOutputForContext(
-    ref evtCtx: EvtCallbackContext,
-    format: OutputFormat,
-    outputDir: string
-  ) {
-    for (group, threads) in evtCtx.callGraphs.toArray() {
-      if !evtCtx.evtArgs.processesToTrack.isEmpty() &&
-         !evtCtx.evtArgs.processesToTrack.contains(group) {
-        logTrace("Skipping group ", group, " (not in processes to track)");
-      } else {
-        for thread in threads.keysToArray() {
-          const callGraph = try! threads[thread];
-          ConverterCommon.writeCallgraph(callGraph, group, thread, format, outputDir);
-        }
-      }
-    }
-
-    for (group, threadMetrics) in evtCtx.metrics.toArray() {
-      if !evtCtx.evtArgs.processesToTrack.isEmpty() &&
-         !evtCtx.evtArgs.processesToTrack.contains(group) {
-        logTrace("Skipping group ", group, " (not in processes to track)");
-      } else {
-        ConverterCommon.writeMetrics(group, threadMetrics, format, outputDir);
-      }
-    }
+  proc GlobDefLocationGroup_Register(userData: c_ptr(void),
+                                     self : OTF2_LocationGroupRef,
+                                     name : OTF2_StringRef,
+                                     locationGroupType : OTF2_LocationGroupType,
+                                     systemTreeParent : OTF2_SystemTreeNodeRef,
+                                     creatingLocationGroup : OTF2_LocationGroupRef): OTF2_CallbackCode {
+    // Get the reference to the context record
+    var ctxPtr = userData: c_ptr(DefCallbackContext);
+    if ctxPtr == nil then return OTF2_CALLBACK_ERROR;
+    ref ctx = ctxPtr.deref();
+    // Lookup name in string table
+    const groupName = if ctx.stringIds.contains(name) && ctx.stringTable[name] != "" then ctx.stringTable[name] else "UnknownGroup";
+    // Check if this location has a creating group
+    if creatingLocationGroup != 0 then
+      logTrace("Location group ", groupName, " created by group ID ", creatingLocationGroup);
+    else
+      logTrace("Location group ", groupName, " has no creating group");
+    const creatingGroupName = if ctx.locationGroupIds.contains(creatingLocationGroup) then ctx.locationGroupTable[creatingLocationGroup].name else "None";
+    // Add location group to the lookup table
+    ctx.locationGroupIds += self;
+    ctx.locationGroupTable[self] = new LocationGroup(name=groupName, creatingLocationGroup=creatingGroupName);
+    logTrace("Registered location group: ", ctx.locationGroupTable[self]);
+    return OTF2_CALLBACK_SUCCESS;
   }
 
-  // -------------------------------------------------------------------------
-  // buildGroupLocationMap — build output-group → locations map
-  //
-  // Groups locations by their *resolved output group name* (the name used
-  // for output filenames), NOT by raw OTF2 location group ID.  HIP contexts
-  // whose creatingLocationGroup points to an MPI rank are folded under that
-  // rank's name, so all locations that contribute to the same output files
-  // end up in the same partition.
-  // -------------------------------------------------------------------------
-
-  proc resolveOutputGroup(
-    const ref defCtx: DefCallbackContext,
-    groupRef: OTF2_LocationGroupRef
-  ): string {
-    if defCtx.locationGroupIds.contains(groupRef) {
-      const locationGroup = defCtx.locationGroupTable[groupRef];
-      return if locationGroup.creatingLocationGroup != "None"
-                && locationGroup.creatingLocationGroup != ""
-             then locationGroup.creatingLocationGroup
-             else locationGroup.name;
-    }
-    return "UnknownGroup";
+  proc GlobDefLocation_Register(userData: c_ptr(void),
+                                location: OTF2_LocationRef,
+                                name: OTF2_StringRef,
+                                locationType: OTF2_LocationType,
+                                numberOfEvents: c_uint64,
+                                locationGroup: OTF2_LocationGroupRef):
+                                OTF2_CallbackCode {
+    // Get the reference to the context record
+    var ctxPtr = userData: c_ptr(DefCallbackContext);
+    if ctxPtr == nil then return OTF2_CALLBACK_ERROR;
+    ref ctx = ctxPtr.deref();
+    // Lookup name in string table
+    const locName = if ctx.stringIds.contains(name) && ctx.stringTable[name] != "" then ctx.stringTable[name] else "UnknownLocation";
+    ctx.locationIds += location;
+    var loc = new Location(name=locName, group=locationGroup);
+    ctx.locationTable[location] = loc;
+    logTrace("Registered location ID=", location, ": ", ctx.locationTable[location], " in group ID ", locationGroup, " (", if ctx.locationGroupIds.contains(locationGroup) then ctx.locationGroupTable[locationGroup].name else "UnknownGroup", ")");
+    return OTF2_CALLBACK_SUCCESS;
   }
 
-  proc buildGroupLocationMap(
-    const ref defCtx: DefCallbackContext
-  ): map(string, list(OTF2_LocationRef)) throws {
-    var groupLocationMap: map(string, list(OTF2_LocationRef));
-    for locId in defCtx.locationIds {
-      const loc = defCtx.locationTable[locId];
-      const outputGroup = resolveOutputGroup(defCtx, loc.group);
-      groupLocationMap[outputGroup].pushBack(locId);
-    }
-
-    logDebug("Found ", groupLocationMap.size, " output groups");
-    for name in groupLocationMap.keys() {
-      logDebug("  Output group '", name, "': ",
-               groupLocationMap[name].size, " locations");
-    }
-
-    return groupLocationMap;
+  proc GlobDefRegion_Register(userData: c_ptr(void),
+                              region: OTF2_RegionRef,
+                              name: OTF2_StringRef,
+                              canonicalName: OTF2_StringRef,
+                              description: OTF2_StringRef,
+                              regionRole: OTF2_RegionRole,
+                              paradigm: OTF2_Paradigm,
+                              regionFlags: OTF2_RegionFlag,
+                              sourceFile: OTF2_StringRef,
+                              beginLineNumber: c_uint32,
+                              endLineNumber: c_uint32):
+                              OTF2_CallbackCode {
+    // Get the reference to the context record
+    var ctxPtr = userData: c_ptr(DefCallbackContext);
+    if ctxPtr == nil then return OTF2_CALLBACK_ERROR;
+    ref ctx = ctxPtr.deref();
+    // Lookup name in string table
+    const regionName = if ctx.stringIds.contains(name) && ctx.stringTable[name] != "" then ctx.stringTable[name] else "UnknownRegion";
+    // Add region to the lookup table
+    ctx.regionIds += region;
+    ctx.regionTable[region] = regionName;
+    logTrace("Registered region: ", regionName);
+    return OTF2_CALLBACK_SUCCESS;
   }
 
-  // -------------------------------------------------------------------------
-  // orderedOutputGroups — deterministic ordering of output group names
-  // -------------------------------------------------------------------------
-
-  proc orderedOutputGroups(
-    const ref defCtx: DefCallbackContext,
-    const ref groupLocationMap: map(string, list(OTF2_LocationRef))
-  ): [] string {
-    const totalGroups = groupLocationMap.size;
-    var groups: [0..<totalGroups] string;
-    var seen: domain(string);
-    var idx = 0;
-
-    // Walk OTF2 location groups in definition order, resolve to output name,
-    // and add each unique output name once.
-    for gid in defCtx.locationGroupIds {
-      const name = resolveOutputGroup(defCtx, gid);
-      if groupLocationMap.contains(name) && !seen.contains(name) {
-        groups[idx] = name;
-        seen += name;
-        idx += 1;
-      }
-    }
-
-    // Safety: pick up any names not yet emitted
-    if idx < totalGroups {
-      for name in groupLocationMap.keys() {
-        if !seen.contains(name) {
-          groups[idx] = name;
-          seen += name;
-          idx += 1;
-          if idx == totalGroups then break;
-        }
-      }
-    }
-
-    return groups;
+  proc GlobDefMetricMember_Register(userData: c_ptr(void),
+                                    self: OTF2_MetricMemberRef,
+                                    name: OTF2_StringRef,
+                                    description: OTF2_StringRef,
+                                    metricType: OTF2_MetricType,
+                                    mode: OTF2_MetricMode,
+                                    valueType: OTF2_Type,
+                                    base: OTF2_Base,
+                                    exponent: c_int64,
+                                    unit: OTF2_StringRef): OTF2_CallbackCode {
+    var ctxPtr = userData: c_ptr(DefCallbackContext);
+    if ctxPtr == nil then return OTF2_CALLBACK_ERROR;
+    ref ctx = ctxPtr.deref();
+    ref mctx = ctx.metricDefContext;
+    mctx.metricMemberIds += self;
+    const memberName = if ctx.stringIds.contains(name) && ctx.stringTable[name] != "" then ctx.stringTable[name] else "UnknownMetricMember";
+    const unitName = if ctx.stringIds.contains(unit) && ctx.stringTable[unit] != "" then ctx.stringTable[unit] else "UnknownUnit";
+    mctx.metricMemberTable[self] = new MetricMember(name=memberName, unit=unitName);
+    logTrace("Registered metric member: ", mctx.metricMemberTable[self]);
+    return OTF2_CALLBACK_SUCCESS;
   }
 
-  // -------------------------------------------------------------------------
-  // locationsForOutputGroups — collect all locations for a list of output group names
-  // -------------------------------------------------------------------------
+  proc GlobDefMetricClass_Register(userData: c_ptr(void),
+                                   self: OTF2_MetricRef,
+                                   numberOfMetrics: c_uint8,
+                                   metricMembers: c_ptrConst(OTF2_MetricMemberRef),
+                                   metricOccurrence: OTF2_MetricOccurrence,
+                                   recorderKind: OTF2_RecorderKind): OTF2_CallbackCode {
+    var ctxPtr = userData: c_ptr(DefCallbackContext);
+    if ctxPtr == nil then return OTF2_CALLBACK_ERROR;
+    ref ctx = ctxPtr.deref();
+    ref mctx = ctx.metricDefContext;
+    mctx.metricClassIds += self;
+    const firstMember = if numberOfMetrics > 0 then metricMembers[0] else 0;
+    mctx.metricClassTable[self] = new MetricClass(numberOfMetrics=numberOfMetrics, firstMemberID=firstMember);
+    return OTF2_CALLBACK_SUCCESS;
+  }
 
-  proc locationsForOutputGroups(
-    const ref groupNames: [] string,
-    const ref groupLocationMap: map(string, list(OTF2_LocationRef))
-  ): [] OTF2_LocationRef throws {
-    var totalLocs = 0;
-    for name in groupNames do totalLocs += groupLocationMap[name].size;
+  proc GlobDefMetricInstance_Register(userData: c_ptr(void),
+                                      self: OTF2_MetricRef,
+                                      metricClass: OTF2_MetricRef,
+                                      recorder: OTF2_LocationRef,
+                                      metricScope: OTF2_MetricScope,
+                                      scope: c_uint64): OTF2_CallbackCode {
+    var ctxPtr = userData: c_ptr(DefCallbackContext);
+    if ctxPtr == nil then return OTF2_CALLBACK_ERROR;
+    ref ctx = ctxPtr.deref();
+    ref mctx = ctx.metricDefContext;
+    mctx.metricInstanceIds += self;
+    mctx.metricInstanceTable[self] = new MetricInstance(metricClass=metricClass, recorder=recorder);
+    logTrace("Registered metric instance ID=", self, " with class=", metricClass, " recorder=", recorder);
+    return OTF2_CALLBACK_SUCCESS;
+  }
 
-    var locs: [0..<totalLocs] OTF2_LocationRef;
-    var idx = 0;
-    for name in groupNames {
-      for loc in groupLocationMap[name] {
-        locs[idx] = loc;
-        idx += 1;
-      }
-    }
-    return locs;
+  proc GlobDefMetricClassRecorder_Register(userData: c_ptr(void),
+                                           metric: OTF2_MetricRef,
+                                           recorder: OTF2_LocationRef): OTF2_CallbackCode {
+    var ctxPtr = userData: c_ptr(DefCallbackContext);
+    if ctxPtr == nil then return OTF2_CALLBACK_ERROR;
+    ref ctx = ctxPtr.deref();
+    ref mctx = ctx.metricDefContext;
+    mctx.metricClassRecorderIds += metric;
+    mctx.metricClassRecorderTable[metric] = recorder;
+    logTrace("Registered metric class recorder: metric=", metric, " recorder=", recorder);
+    return OTF2_CALLBACK_SUCCESS;
   }
 }
