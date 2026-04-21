@@ -416,7 +416,11 @@ int main(int argc, char** argv) {
     clock_t start_time = clock();
 
     // OTF2_Reader* reader = OTF2_Reader_Open("/path/to/traces.otf2" );
-    OTF2_Reader* reader = OTF2_Reader_Open("/workspace/sample-traces/simple-mi300-example-run/traces.otf2" );
+    const char* archive_path = getenv("OTF2_SAMPLE_TRACE");
+    if (!archive_path) {
+        archive_path = "/workspace/fastotf2/sample-traces/simple-mi300-example-run/traces.otf2";
+    }
+    OTF2_Reader* reader = OTF2_Reader_Open(archive_path );
     if (!reader) {
         fprintf(stderr, "Failed to open OTF2 archive\n");
         return EXIT_FAILURE;
