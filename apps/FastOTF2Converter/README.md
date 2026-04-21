@@ -38,6 +38,7 @@ Both the parallel converter and the serial example accept the same CLI:
 | `<trace>` (positional) | `../../sample-traces/.../traces.otf2` | Path to the OTF2 trace archive |
 | `--format` | `CSV` | Output format: `CSV` or `PARQUET` |
 | `--outputDir` | `./` | Directory for output files |
+| `--strategy` | Single-locale: `locgroup_block` (recommended) / Multi-locale: `locgroup_dist_block` (default) | Strategy to distribute work across tasks. See [Strategy Options](../../docs/strategies.md) for detailed guidance. |
 | `--metrics` | (empty = all) | Comma-separated metric names to track |
 | `--processes` | (empty = all) | Comma-separated process/group names to track |
 | `--excludeMPI` | `false` | Exclude MPI regions from callgraph output |
@@ -52,6 +53,10 @@ Tests verify numeric parity between CSV and Parquet output:
 # Generate CSV and Parquet reference output
 mason run --release -- ../../sample-traces/simple-mi300-example-run/traces.otf2 --format=CSV --outputDir=/tmp/csv_out
 mason run --release -- ../../sample-traces/simple-mi300-example-run/traces.otf2 --format=PARQUET --outputDir=/tmp/pq_out
+
+# Generate Output from two different strategies
+mason run --release -- ../../sample-traces/simple-mi300-example-run/traces.otf2 --strategy=serial --outputDir=/tmp/old_pq_out
+mason run --release -- ../../sample-traces/simple-mi300-example-run/traces.otf2 --strategy=locgroup_block --outputDir=/tmp/new_pq_out
 
 # Run Parity tests
 mason test --show
