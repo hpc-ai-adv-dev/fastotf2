@@ -11,11 +11,11 @@ git clone https://github.com/hpc-ai-adv-dev/fastotf2.git
 cd fastotf2
 ```
 
-Start an interactive container, using `-v` to mount your local clone into `/workspace` inside the container. This lets you edit source files with your normal editor on the host while building and running inside the container:
+Start an interactive container, using `-v` to mount your local clone into `/workspace/fastotf2` inside the container. This lets you edit source files with your normal editor on the host while building and running inside the container:
 
 ```bash
 podman run -it --rm \
-  -v "$(pwd):/workspace" \
+  -v "$(pwd):/workspace/fastotf2" \
   ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:latest bash
 ```
 
@@ -24,13 +24,13 @@ podman run -it --rm \
 
 ```bash
 docker run -it --rm \
-  -v "$(pwd):/workspace" \
+  -v "$(pwd):/workspace/fastotf2" \
   ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:latest bash
 ```
 
 </details>
 
-You are now inside the container where your clone of `fastotf2` is mounted at `/workspace`
+You are now inside the container where your clone of `fastotf2` is mounted at `/workspace/fastotf2`
 with Chapel, Mason, OTF2, and Apache Arrow all pre-installed within the container.
 
 
@@ -39,9 +39,9 @@ with Chapel, Mason, OTF2, and Apache Arrow all pre-installed within the containe
 The converter application lives under `apps/FastOTF2Converter/`:
 
 ```bash
-cd /workspace/apps/FastOTF2Converter
+cd /workspace/fastotf2/apps/FastOTF2Converter
 mason build --release
-mason run --release -- /workspace/sample-traces/simple-mi300-example-run/traces.otf2
+mason run --release -- /workspace/fastotf2/sample-traces/simple-mi300-example-run/traces.otf2
 ```
 
 To run against a different trace, replace the final path. All CLI options are documented in the [converter README](../apps/FastOTF2Converter/README.md).
@@ -51,12 +51,12 @@ To run against a different trace, replace the final path. All CLI options are do
 Tests verify numeric parity between CSV and Parquet output:
 
 ```bash
-cd /workspace/apps/FastOTF2Converter
+cd /workspace/fastotf2/apps/FastOTF2Converter
 
 # Generate reference output
-mason run --release -- /workspace/sample-traces/simple-mi300-example-run/traces.otf2 \
+mason run --release -- /workspace/fastotf2/sample-traces/simple-mi300-example-run/traces.otf2 \
   --format=CSV --outputDir=/tmp/csv_out
-mason run --release -- /workspace/sample-traces/simple-mi300-example-run/traces.otf2 \
+mason run --release -- /workspace/fastotf2/sample-traces/simple-mi300-example-run/traces.otf2 \
   --format=PARQUET --outputDir=/tmp/pq_out
 
 # Run parity tests
@@ -84,6 +84,8 @@ src/                            ← The FastOTF2 library (reusable OTF2 modules)
 example/                        ← Library examples (OTF2 reading demos)
 ```
 
+Inside the container, the repository is at `/workspace/fastotf2`.
+
 The converter application (`apps/FastOTF2Converter`) depends on the root library (`src/`) via Mason compiler options. Both are Mason packages.
 
 ## Adding a New Output Format
@@ -100,7 +102,7 @@ Output formats are implemented in `apps/FastOTF2Converter/src/FastOTF2ConverterW
 The root package contains standalone examples for reading OTF2 traces with the FastOTF2 library:
 
 ```bash
-cd /workspace
+cd /workspace/fastotf2
 mason build --release --example
 mason run --release --example FastOtf2ReadArchive.chpl
 mason run --release --example FastOtf2ReadEvents.chpl

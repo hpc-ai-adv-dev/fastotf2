@@ -39,7 +39,7 @@ apptainer run fastotf2-converter.sif --help
 To explore the container or do development work on an HPC node:
 
 ```bash
-apptainer shell --bind $(pwd):/workspace --pwd /workspace fastotf2-converter.sif
+apptainer shell --bind $(pwd):/workspace/fastotf2 --pwd /workspace/fastotf2 fastotf2-converter.sif
 ```
 
 ## Offline / Air-Gapped HPC Systems

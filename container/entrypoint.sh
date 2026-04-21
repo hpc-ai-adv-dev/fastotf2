@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-app_dir=/workspace/apps/FastOTF2Converter
+app_dir=/workspace/fastotf2/apps/FastOTF2Converter
 app_bin="$app_dir/target/release/FastOTF2Converter"
 real_bin="${app_bin}_real"
 
