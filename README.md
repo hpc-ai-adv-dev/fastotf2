@@ -51,6 +51,7 @@ For more container details (building from source, troubleshooting): [docs/contai
 | `<trace>` | — | Path to the OTF2 trace archive (positional) |
 | `--format` | `CSV` | `CSV` or `PARQUET` |
 | `--outputDir` | `./` | Directory for output files |
+| `--strategy` | single-locale: `locgroup_block`, multi-locale: `locgroup_dist_block` | Partition strategy for event reading and output ownership. See [docs/strategies.md](docs/strategies.md). |
 | `--metrics` | all | Comma-separated metric names to include |
 | `--processes` | all | Comma-separated process/group names to include |
 | `--excludeMPI` | `false` | Exclude MPI regions |
