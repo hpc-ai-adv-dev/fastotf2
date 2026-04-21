@@ -56,23 +56,23 @@ podman run --rm ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:latest \
 To actually keep the output files, mount a host directory with `-v` and write into it:
 
 ```bash
-mkdir -p /tmp/fastotf2-out
+mkdir -p "$(pwd)/fastotf2-out"
 
 podman run --rm \
-  -v /tmp/fastotf2-out:/data/output \
+  -v $(pwd)/fastotf2-out:/data/output \
   ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:latest \
   /workspace/fastotf2/sample-traces/simple-mi300-example-run/traces.otf2 \
   --format=PARQUET \
   --outputDir=/data/output
 ```
 
-Output files appear in `/tmp/fastotf2-out/` on the host.
+Output files appear in `$(pwd)/fastotf2-out/` on the host.
 
 You can also pass filters and output controls:
 
 ```bash
 podman run --rm \
-  -v /tmp/fastotf2-out:/data/output \
+  -v $(pwd)/fastotf2-out:/data/output \
   ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:latest \
   /workspace/fastotf2/sample-traces/simple-mi300-example-run/traces.otf2 \
   --format=CSV \
@@ -88,7 +88,7 @@ podman run --rm \
 docker run --rm ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:latest
 
 docker run --rm \
-  -v /tmp/fastotf2-out:/data/output \
+  -v $(pwd)/fastotf2-out:/data/output \
   ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:latest \
   /workspace/fastotf2/sample-traces/simple-mi300-example-run/traces.otf2 \
   --format=PARQUET \
