@@ -5,11 +5,10 @@ module FastOTF2Converter {
   use Strategy_Serial;
   use Strategy_LocBlock;
   use Strategy_LocGroupBlock;
+  use Strategy_LocGroupDistBlock;
   // Future strategies:
-  // use Strategy_Serial;
   // use Strategy_LocDynamic;
   // use Strategy_LocGroupDynamic;
-  // use Strategy_LocGroupDistBlock;
   // use Strategy_LocGroupBlockDistDynamic;
   // use Strategy_LocGroupDistBalanced;
 
@@ -29,7 +28,7 @@ module FastOTF2Converter {
       when "locgroup_dynamic" do
         halt("Strategy locgroup_dynamic not yet implemented");
       when "locgroup_dist_block" do
-        halt("Strategy locgroup_dist_block not yet implemented");
+        Strategy_LocGroupDistBlock.run(conf);
       when "locgroup_blockdist_dynamic" do
         halt("Strategy locgroup_blockdist_dynamic not yet implemented");
       when "locgroup_dist_balanced" do
