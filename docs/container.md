@@ -50,31 +50,31 @@ You will see processing output in the terminal, but no files are saved to the ho
 
 ```bash
 podman run --rm ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:latest \
-  /workspace/sample-traces/simple-mi300-example-run/traces.otf2
+  /workspace/fastotf2/sample-traces/simple-mi300-example-run/traces.otf2
 ```
 
 To actually keep the output files, mount a host directory with `-v` and write into it:
 
 ```bash
-mkdir -p /tmp/fastotf2-out
+mkdir -p "$(pwd)/fastotf2-out"
 
 podman run --rm \
-  -v /tmp/fastotf2-out:/data/output \
+  -v $(pwd)/fastotf2-out:/data/output \
   ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:latest \
-  /workspace/sample-traces/simple-mi300-example-run/traces.otf2 \
+  /workspace/fastotf2/sample-traces/simple-mi300-example-run/traces.otf2 \
   --format=PARQUET \
   --outputDir=/data/output
 ```
 
-Output files appear in `/tmp/fastotf2-out/` on the host.
+Output files appear in `$(pwd)/fastotf2-out/` on the host.
 
 You can also pass filters and output controls:
 
 ```bash
 podman run --rm \
-  -v /tmp/fastotf2-out:/data/output \
+  -v $(pwd)/fastotf2-out:/data/output \
   ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:latest \
-  /workspace/sample-traces/simple-mi300-example-run/traces.otf2 \
+  /workspace/fastotf2/sample-traces/simple-mi300-example-run/traces.otf2 \
   --format=CSV \
   --outputDir=/data/output \
   --excludeMPI \
@@ -88,9 +88,9 @@ podman run --rm \
 docker run --rm ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:latest
 
 docker run --rm \
-  -v /tmp/fastotf2-out:/data/output \
+  -v $(pwd)/fastotf2-out:/data/output \
   ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:latest \
-  /workspace/sample-traces/simple-mi300-example-run/traces.otf2 \
+  /workspace/fastotf2/sample-traces/simple-mi300-example-run/traces.otf2 \
   --format=PARQUET \
   --outputDir=/data/output
 ```
@@ -197,7 +197,7 @@ docker buildx build \
 
 ## Container Layout
 
-The image contains the full repository at `/workspace` with a pre-built converter binary. OTF2 is installed at `/opt/otf2` and Apache Arrow at `/opt/arrow`. Both are configured in `PKG_CONFIG_PATH` and `LD_LIBRARY_PATH`.
+The image contains the full repository at `/workspace/fastotf2` with a pre-built converter binary. OTF2 is installed at `/opt/otf2` and Apache Arrow at `/opt/arrow`. Both are configured in `PKG_CONFIG_PATH` and `LD_LIBRARY_PATH`.
 
 When mounting host directories, mount them under `/data` (or any path you prefer) so that paths stay consistent.
 
@@ -209,7 +209,7 @@ When mounting host directories, mount them under `/data` (or any path you prefer
 - On macOS, if the build is killed by memory pressure, give the Podman VM more memory: `podman machine stop && podman machine rm && podman machine init --memory=4096 && podman machine start`.
 
 **Traces not found?**
-- Verify your volume mount maps the right host path. Inside the container, bundled traces are at `/workspace/sample-traces/`.
+- Verify your volume mount maps the right host path. Inside the container, bundled traces are at `/workspace/fastotf2/sample-traces/`.
 
 **Missing toolchain inside the container?**
 - Run `chpl --version` and `pkg-config --modversion arrow parquet` to verify the install.

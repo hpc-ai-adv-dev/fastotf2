@@ -38,7 +38,8 @@ def read_otf2_events_only(archive_name):
     return data
 
 
-archive_name = "sample-traces/simple-mi300-example-run/traces.otf2"
+import os
+archive_name = os.getenv("OTF2_SAMPLE_TRACE", "/workspace/fastotf2/sample-traces/simple-mi300-example-run/traces.otf2")
 # archive_name = "/path/to/traces.otf2"
 
 start_time = time.time()

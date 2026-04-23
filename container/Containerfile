@@ -77,8 +77,8 @@ ENV PATH=/opt/otf2/bin:$PATH
 # ---------------------------------------------------------------
 # Copy the repository and build the converter
 # ---------------------------------------------------------------
-COPY . /workspace
-WORKDIR /workspace/apps/FastOTF2Converter
+COPY . /workspace/fastotf2
+WORKDIR /workspace/fastotf2/apps/FastOTF2Converter
 RUN rm -f Mason.lock && mason build --release
 RUN rm -rf /tmp/*
 
@@ -91,7 +91,7 @@ RUN rm -rf /tmp/*
 COPY container/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-WORKDIR /workspace
+WORKDIR /workspace/fastotf2
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD ["--help"]
 
