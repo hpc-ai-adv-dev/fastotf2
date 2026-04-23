@@ -8,6 +8,7 @@
 module ConverterEvtReaders {
   use FastOTF2;
   use ConverterCommon;
+  use Time;
   use CallGraphModule;
   use List;
   use Map;
@@ -25,6 +26,9 @@ module ConverterEvtReaders {
     locations: [] OTF2_LocationRef,
     ref evtCtx: EvtCallbackContext
   ): c_uint64 {
+    var sw: stopwatch;
+    sw.start();
+
     var reader = OTF2_Reader_Open(trace.c_str());
     if reader == nil {
       logError("Failed to open trace file for event reading");
@@ -39,6 +43,10 @@ module ConverterEvtReaders {
     }
 
     OTF2_Reader_OpenEvtFiles(reader);
+
+    const openTime = sw.elapsed();
+    logDebug("Evt reader opened trace in ", openTime, " seconds");
+    sw.clear();
 
     // Mark event files for reading
     for loc in locations {
@@ -65,6 +73,9 @@ module ConverterEvtReaders {
 
       OTF2_Reader_ReadAllGlobalEvents(
         reader, globalEvtReader, c_ptrTo(eventsRead));
+
+      const readTime = sw.elapsed();
+      logDebug("Evt reader read events in ", readTime, " seconds");
 
       OTF2_Reader_CloseGlobalEvtReader(reader, globalEvtReader);
     } else {

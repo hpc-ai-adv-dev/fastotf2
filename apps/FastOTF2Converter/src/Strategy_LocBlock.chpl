@@ -19,14 +19,11 @@ module Strategy_LocBlock {
   proc run(conf: ConverterConfig) throws {
     var sw: stopwatch;
     var global_sw: stopwatch;
-    sw.start();
     global_sw.start();
 
     const (defCtx, numberOfLocations) = readGlobalDefinitions(conf.trace);
     const evtArgs = buildEvtCallbackArgs(conf);
-
-    const defReadTime = sw.elapsed();
-    sw.clear();
+    sw.start();
 
     // Convert locationIds to array for partitioning
     const locationArray: [0..<numberOfLocations] OTF2_LocationRef =
@@ -52,7 +49,7 @@ module Strategy_LocBlock {
     }
 
     const evtReadTime = sw.elapsed();
-    logDebug("Time taken to read events: ", evtReadTime, " seconds");
+    logInfo("Time to setup + read events: ", evtReadTime, " seconds");
     sw.clear();
 
     logDebug("Total events read: ", totalEventsRead);
@@ -61,7 +58,7 @@ module Strategy_LocBlock {
     logDebug("Merging event contexts...");
     var mergedCtx = mergeEvtContexts(evtContexts);
     const mergeTime = sw.elapsed();
-    logDebug("Time taken to merge contexts: ", mergeTime, " seconds");
+    logInfo("Time to merge contexts: ", mergeTime, " seconds");
     sw.clear();
 
     logInfo("Trace loaded in ", global_sw.elapsed(), " seconds");
