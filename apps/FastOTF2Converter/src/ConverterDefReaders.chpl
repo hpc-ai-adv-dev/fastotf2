@@ -24,7 +24,7 @@ module ConverterDefReaders {
     }
 
     const openTime = sw.elapsed();
-    logTrace("Time taken to open OTF2 archive: %.2dr seconds\n", openTime);
+    logInfo("Time to open OTF2 archive: ", openTime, " seconds");
     sw.clear();
 
     OTF2_Reader_SetSerialCollectiveCallbacks(reader);
@@ -66,7 +66,7 @@ module ConverterDefReaders {
     logTrace("Global definitions read: ", definitionsRead);
 
     const defReadTime = sw.elapsed();
-    logTrace("Time taken to read global definitions: %.2dr seconds\n", defReadTime);
+    logInfo("Time to read global definitions: ", defReadTime, " seconds");
 
     OTF2_Reader_Close(reader);
 

@@ -22,14 +22,11 @@ module Strategy_LocGroupBlock {
   proc run(conf: ConverterConfig) throws {
     var sw: stopwatch;
     var global_sw: stopwatch;
-    sw.start();
     global_sw.start();
 
     const (defCtx, numberOfLocations) = readGlobalDefinitions(conf.trace);
     const evtArgs = buildEvtCallbackArgs(conf);
-
-    const defReadTime = sw.elapsed();
-    sw.clear();
+    sw.start();
 
     // Build output-group ownership map (resolves HIP contexts to parent MPI ranks)
     const groupLocationMap = buildGroupLocationMap(defCtx);
@@ -80,10 +77,9 @@ module Strategy_LocGroupBlock {
     }
 
     const evtReadTime = sw.elapsed();
-    logDebug("Time taken to read events and write output: ", evtReadTime, " seconds");
+    logInfo("Time to setup + read events + write output: ", evtReadTime, " seconds");
 
     logDebug("Total events read: ", totalEventsRead);
-    logInfo("Trace loaded in ", global_sw.elapsed(), " seconds");
     logInfo("Finished converting trace in ", global_sw.elapsed(), " seconds");
   }
 }

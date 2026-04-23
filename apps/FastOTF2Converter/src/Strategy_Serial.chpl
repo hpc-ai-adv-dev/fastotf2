@@ -18,14 +18,11 @@ module Strategy_Serial {
   proc run(conf: ConverterConfig) throws {
     var sw: stopwatch;
     var global_sw: stopwatch;
-    sw.start();
     global_sw.start();
 
     const (defCtx, numberOfLocations) = readGlobalDefinitions(conf.trace);
     const evtArgs = buildEvtCallbackArgs(conf);
-
-    const defReadTime = sw.elapsed();
-    sw.clear();
+    sw.start();
 
     const locationArray: [0..<numberOfLocations] OTF2_LocationRef =
       for l in defCtx.locationIds do l;
@@ -35,11 +32,10 @@ module Strategy_Serial {
     const totalEventsRead = readEventsForLocations(conf.trace, locationArray, evtCtx);
 
     const evtReadTime = sw.elapsed();
-    logDebug("Time taken to read events: ", evtReadTime, " seconds");
+    logInfo("Time to setup + read events: ", evtReadTime, " seconds");
     sw.clear();
 
     logDebug("Total events read: ", totalEventsRead);
-    logInfo("Trace loaded in ", global_sw.elapsed(), " seconds");
     logInfo("Writing ", conf.outputFormat: string, " files to directory: ", conf.outputDir);
     writeOutputForContext(evtCtx, conf.outputFormat, conf.outputDir);
     logInfo("Finished writing to ", conf.outputDir, " in ", sw.elapsed(), " seconds");
