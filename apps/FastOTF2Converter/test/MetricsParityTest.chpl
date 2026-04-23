@@ -15,8 +15,8 @@
 // Run:
 //   mason test --show
 //
-// Override paths:
-//   mason test --show -- --csvDir=/path --pqDir=/path
+// Override paths (for direct binary execution):
+//   ./MetricsParityTest --csvDir=/path --pqDir=/path --help
 //
 // Known Parquet package issues (search these tags to find/remove workarounds):
 //   [PARQUET-PKG-1] getDatasets() / getArrType() segfault on valid files
@@ -28,16 +28,54 @@ use FileSystem;
 use IO;
 use List;
 
-private config const csvDir = "/tmp/csv_out";
-private config const pqDir  = "/tmp/pq_out";
-private config const metricsBase = "Process_metrics";
+config const csvDir = "/tmp/csv_out";
+config const pqDir  = "/tmp/pq_out";
 
 // ---------------------------------------------------------------------------
 // helpers
 // ---------------------------------------------------------------------------
 
-private proc csvPath: string { return csvDir + "/" + metricsBase + ".csv"; }
-private proc pqPath:  string { return pqDir  + "/" + metricsBase + ".parquet"; }
+proc metricsCSVFilesInDir(dirPath: string): domain(string) {
+  var files: domain(string);
+  if !exists(dirPath) || !isDir(dirPath) then return files;
+
+  for entry in listDir(dirPath) {
+    const fullPath = dirPath + "/" + entry;
+    if isFile(fullPath) && entry.endsWith("_metrics.csv") {
+      files += entry;
+    }
+  }
+  return files;
+}
+
+proc metricsParquetFilesInDir(dirPath: string): domain(string) {
+  var files: domain(string);
+  if !exists(dirPath) || !isDir(dirPath) then return files;
+
+  for entry in listDir(dirPath) {
+    const fullPath = dirPath + "/" + entry;
+    if isFile(fullPath) && entry.endsWith("_metrics.parquet") {
+      files += entry;
+    }
+  }
+  return files;
+}
+
+proc metricsInputsReady(): (bool, string) {
+  if !exists(csvDir) || !isDir(csvDir) {
+    return (false, "CSV directory not found: " + csvDir);
+  }
+  if !exists(pqDir) || !isDir(pqDir) {
+    return (false, "Parquet directory not found: " + pqDir);
+  }
+
+  const csvFiles = metricsCSVFilesInDir(csvDir);
+  if csvFiles.size == 0 {
+    return (false, "No metrics CSV files found in " + csvDir);
+  }
+
+  return (true, "");
+}
 
 proc countCSVDataRows(path: string): int throws {
   var n = 0;
@@ -112,72 +150,152 @@ proc csvValToReal64(s: string): real(64) {
 
 // When the trace has no metric data the CSV file has only the header row
 // and no Parquet file is created.  Verify this invariant.
+proc testMetricsFileListParity(test: borrowed Test) throws {
+  const (ready, reason) = metricsInputsReady();
+  test.skipIf(!ready, reason);
+
+  const csvFiles = metricsCSVFilesInDir(csvDir);
+  const pqFiles = metricsParquetFilesInDir(pqDir);
+
+  writeln("testing metrics parity:");
+  writeln("  CSV dir:     ", csvDir);
+  writeln("  PQ dir:      ", pqDir);
+  writeln("  CSV files:     ", csvFiles.size);
+  writeln("  Parquet files: ", pqFiles.size);
+
+  writeln("  file list parity:");
+  var missingFromCsv = 0;
+  var missingParquetForNonEmptyCsv = 0;
+
+  // Every parquet metrics file must have a matching CSV file.
+  for pqFile in pqFiles {
+    const baseName = pqFile[0..pqFile.size-9]; // remove ".parquet"
+    const csvFile = baseName + ".csv";
+    if !csvFiles.contains(csvFile) {
+      writeln("    ERROR: missing CSV file for parquet: ", csvFile);
+      missingFromCsv += 1;
+    }
+  }
+
+  // CSV files with metric rows must have matching parquet files.
+  for csvFile in csvFiles {
+    const baseName = csvFile[0..csvFile.size-5];
+    const pqFile = baseName + ".parquet";
+    if !pqFiles.contains(pqFile) {
+      const csvPath = csvDir + "/" + csvFile;
+      const csvN = countCSVDataRows(csvPath);
+      if csvN > 0 {
+        writeln("    ERROR: missing parquet file for non-empty CSV: ", pqFile);
+        missingParquetForNonEmptyCsv += 1;
+      }
+    }
+  }
+
+  test.assertEqual(missingFromCsv, 0);
+  test.assertEqual(missingParquetForNonEmptyCsv, 0);
+}
+
 proc testMetricsRowCount(test: borrowed Test) throws {
-  if !exists(csvPath) {
-    writeln("SKIP: CSV not found: ", csvPath);
-    return;
+  const (ready, reason) = metricsInputsReady();
+  test.skipIf(!ready, reason);
+
+  const csvFiles = metricsCSVFilesInDir(csvDir);
+  const pqFiles = metricsParquetFilesInDir(pqDir);
+
+  writeln("  row count parity:");
+  var totalMismatches = 0;
+
+  for csvFile in csvFiles {
+    const baseName = csvFile[0..csvFile.size-5];
+    const pqFile = baseName + ".parquet";
+    const csvPath = csvDir + "/" + csvFile;
+    const pqPath = pqDir + "/" + pqFile;
+
+    const csvN = countCSVDataRows(csvPath);
+
+    if !exists(pqPath) {
+      // Parquet can be absent only for empty metrics CSV outputs.
+      if csvN != 0 {
+        writeln("    ERROR: ", csvFile, ": CSV has data but no parquet file");
+        totalMismatches += 1;
+      }
+      continue;
+    }
+
+    const pqN = getArrSize(pqPath);
+    if csvN != pqN {
+      writeln("    ERROR: ", csvFile, ": CSV=", csvN, " PQ=", pqN);
+      totalMismatches += 1;
+    }
   }
 
-  const csvN = countCSVDataRows(csvPath);
-
-  if !exists(pqPath) {
-    // Parquet file absent -> CSV must also be empty.
-    writeln("metrics rows: CSV=", csvN, " Parquet file absent");
-    test.assertEqual(csvN, 0);
-    return;
-  }
-
-  const pqN = getArrSize(pqPath);
-  writeln("metrics rows: CSV=", csvN, " Parquet=", pqN);
-  test.assertEqual(csvN, pqN);
+  test.assertEqual(totalMismatches, 0);
 }
 
 proc testMetricsNumericParity(test: borrowed Test) throws {
-  if !exists(csvPath) { writeln("SKIP: CSV not found"); return; }
-  if !exists(pqPath)  { writeln("SKIP: Parquet file absent (no metric data)"); return; }
+  const (ready, reason) = metricsInputsReady();
+  test.skipIf(!ready, reason);
 
-  const n = getArrSize(pqPath);
-  if n == 0 { writeln("SKIP: no data rows"); return; }
+  const csvFiles = metricsCSVFilesInDir(csvDir);
+  const pqFiles = metricsParquetFilesInDir(pqDir);
 
-  var pqTime:       [0..<n] real(64);
-  var pqValueInt:   [0..<n] int(64);
-  var pqValueReal:  [0..<n] real(64);
-  readColumn(filename=pqPath, colName="time",       Arr=pqTime);
-  readColumn(filename=pqPath, colName="value_int",  Arr=pqValueInt);
-  readColumn(filename=pqPath, colName="value_real", Arr=pqValueReal);
+  writeln("  numeric parity:");
+  var totalMismatches = 0;
 
-  const lines = readCSVDataLines(csvPath);
-  var mismatches = 0;
+  for csvFile in csvFiles {
+    const baseName = csvFile[0..csvFile.size-5];
+    const pqFile = baseName + ".parquet";
+    const csvPath = csvDir + "/" + csvFile;
+    const pqPath = pqDir + "/" + pqFile;
 
-  for i in 0..<lines.size {
-    const row = parseMetLine(lines[i]);
+    if !exists(pqPath) then continue;
 
-    // Allow ±1e-9 s tolerance for CSV text round-trip (%.15dr ≈ 15 sig digits).
-    if abs(row.timeSec - pqTime[i]) > 1e-9 {
-      writeln("row ", i, " time: CSV=", row.timeSec, " PQ=", pqTime[i]);
-      mismatches += 1;
+    const n = getArrSize(pqPath);
+    if n == 0 then continue;
+
+    var pqTime:       [0..<n] real(64);
+    var pqValueInt:   [0..<n] int(64);
+    var pqValueReal:  [0..<n] real(64);
+    readColumn(filename=pqPath, colName="time",       Arr=pqTime);
+    readColumn(filename=pqPath, colName="value_int",  Arr=pqValueInt);
+    readColumn(filename=pqPath, colName="value_real", Arr=pqValueReal);
+
+    const lines = readCSVDataLines(csvPath);
+    var mismatches = 0;
+
+    for i in 0..<lines.size {
+      const row = parseMetLine(lines[i]);
+
+      // Allow ±1e-9 s tolerance for CSV text round-trip (%.15dr ≈ 15 sig digits).
+      if abs(row.timeSec - pqTime[i]) > 1e-9 {
+        mismatches += 1;
+      }
+
+      // Check the appropriate value column based on the CSV value format.
+      // Integer values (no decimal point) are in value_int;
+      // real values (with decimal point) are in value_real.
+      if csvValIsReal(row.valueStr) {
+        const csvVal = csvValToReal64(row.valueStr);
+        if abs(csvVal - pqValueReal[i]) > 1e-9 {
+          mismatches += 1;
+        }
+      } else {
+        const csvVal = csvValToInt64(row.valueStr);
+        if csvVal != pqValueInt[i] {
+          mismatches += 1;
+        }
+      }
     }
 
-    // Check the appropriate value column based on the CSV value format.
-    // Integer values (no decimal point) are in value_int;
-    // real values (with decimal point) are in value_real.
-    if csvValIsReal(row.valueStr) {
-      const csvVal = csvValToReal64(row.valueStr);
-      if abs(csvVal - pqValueReal[i]) > 1e-9 {
-        writeln("row ", i, " value_real: CSV=", csvVal, " PQ=", pqValueReal[i]);
-        mismatches += 1;
-      }
-    } else {
-      const csvVal = csvValToInt64(row.valueStr);
-      if csvVal != pqValueInt[i] {
-        writeln("row ", i, " value_int: CSV=", csvVal, " PQ=", pqValueInt[i]);
-        mismatches += 1;
-      }
+    if mismatches > 0 {
+      writeln("    ERROR: ", csvFile, ": ", mismatches, " mismatches in ", lines.size, " rows");
+      totalMismatches += mismatches;
     }
   }
 
-  writeln("numeric parity: ", lines.size, " rows, ", mismatches, " mismatches");
-  test.assertEqual(mismatches, 0);
+  if totalMismatches > 0 then
+    writeln("  total numeric mismatches: ", totalMismatches);
+  test.assertEqual(totalMismatches, 0);
 }
 
 // ---------------------------------------------------------------------------
@@ -185,21 +303,24 @@ proc testMetricsNumericParity(test: borrowed Test) throws {
 // files. Uncomment this test when the Parquet package fixes these functions.
 // ---------------------------------------------------------------------------
 // proc testMetricsColumnSchema(test: borrowed Test) throws {
-//   if !exists(pqPath) {
-//     writeln("SKIP: Parquet file absent (no metric data): ", pqPath);
-//     return;
+//   const (ready, reason) = metricsInputsReady();
+//   test.skipIf(!ready, reason);
+//
+//   const pqFiles = metricsParquetFilesInDir(pqDir);
+//   for pqFile in pqFiles {
+//     const pqPath = pqDir + "/" + pqFile;
+//
+//     const cols = getDatasets(pqPath);
+//     const expectedCols = ["group", "metric_name", "time", "value_int", "value_real"];
+//     for col in expectedCols do
+//       test.assertTrue(cols.contains(col));
+//
+//     test.assertEqual(getArrType(pqPath, "group"),       ArrowTypes.stringArr);
+//     test.assertEqual(getArrType(pqPath, "metric_name"), ArrowTypes.stringArr);
+//     test.assertEqual(getArrType(pqPath, "time"),        ArrowTypes.real64);
+//     test.assertEqual(getArrType(pqPath, "value_int"),   ArrowTypes.int64);
+//     test.assertEqual(getArrType(pqPath, "value_real"),  ArrowTypes.real64);
 //   }
-//
-//   const cols = getDatasets(pqPath);
-//   const expectedCols = ["group", "metric_name", "time", "value_int", "value_real"];
-//   for col in expectedCols do
-//     test.assertTrue(cols.contains(col));
-//
-//   test.assertEqual(getArrType(pqPath, "group"),       ArrowTypes.stringArr);
-//   test.assertEqual(getArrType(pqPath, "metric_name"), ArrowTypes.stringArr);
-//   test.assertEqual(getArrType(pqPath, "time"),        ArrowTypes.real64);
-//   test.assertEqual(getArrType(pqPath, "value_int"),    ArrowTypes.int64);
-//   test.assertEqual(getArrType(pqPath, "value_real"),   ArrowTypes.real64);
 // }
 
 // ---------------------------------------------------------------------------
@@ -208,28 +329,43 @@ proc testMetricsNumericParity(test: borrowed Test) throws {
 // string reader is available).
 // ---------------------------------------------------------------------------
 // proc testMetricsStringParity(test: borrowed Test) throws {
-//   if !exists(csvPath) { writeln("SKIP: CSV not found"); return; }
-//   if !exists(pqPath)  { writeln("SKIP: Parquet file absent (no metric data)"); return; }
+//   const (ready, reason) = metricsInputsReady();
+//   test.skipIf(!ready, reason);
 //
-//   const n = getArrSize(pqPath);
-//   if n == 0 { writeln("SKIP: no data rows"); return; }
+//   const csvFiles = metricsCSVFilesInDir(csvDir);
+//   const pqFiles = metricsParquetFilesInDir(pqDir);
 //
-//   var pqGroup:      [0..<n] string;
-//   var pqMetricName: [0..<n] string;
-//   readColumn(filename=pqPath, colName="group",       Arr=pqGroup);
-//   readColumn(filename=pqPath, colName="metric_name", Arr=pqMetricName);
+//   var totalMismatches = 0;
+//   for csvFile in csvFiles {
+//     const baseName = csvFile[0..csvFile.size-5];
+//     const pqFile = baseName + ".parquet";
+//     if !pqFiles.contains(pqFile) then continue;
 //
-//   const lines = readCSVDataLines(csvPath);
-//   var mismatches = 0;
+//     const csvPath = csvDir + "/" + csvFile;
+//     const pqPath = pqDir + "/" + pqFile;
+//     const n = getArrSize(pqPath);
+//     if n == 0 then continue;
 //
-//   for i in 0..<lines.size {
-//     const row = parseMetLine(lines[i]);
-//     if row.group      != pqGroup[i]      { mismatches += 1; }
-//     if row.metricName != pqMetricName[i]  { mismatches += 1; }
+//     var pqGroup:      [0..<n] string;
+//     var pqMetricName: [0..<n] string;
+//     readColumn(filename=pqPath, colName="group",       Arr=pqGroup);
+//     readColumn(filename=pqPath, colName="metric_name", Arr=pqMetricName);
+//
+//     const lines = readCSVDataLines(csvPath);
+//     var mismatches = 0;
+//     for i in 0..<lines.size {
+//       const row = parseMetLine(lines[i]);
+//       if row.group      != pqGroup[i]     { mismatches += 1; }
+//       if row.metricName != pqMetricName[i] { mismatches += 1; }
+//     }
+//
+//     if mismatches > 0 {
+//       writeln("string mismatches in ", csvFile, ": ", mismatches);
+//       totalMismatches += mismatches;
+//     }
 //   }
 //
-//   writeln("string parity: ", lines.size, " rows, ", mismatches, " mismatches");
-//   test.assertEqual(mismatches, 0);
+//   test.assertEqual(totalMismatches, 0);
 // }
 
 // NOTE: exit(0) is NOT needed here. The teardown segfault previously seen was

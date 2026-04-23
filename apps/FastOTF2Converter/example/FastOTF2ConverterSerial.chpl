@@ -2,8 +2,8 @@
 
 module FastOTF2ConverterSerial {
   use FastOTF2;
-  use FastOTF2ConverterCommon;
-  use FastOTF2ConverterWriters;
+  use ConverterCommon;
+  use ConverterWriters;
   use CallGraphModule;
   use Time;
   use List;
@@ -278,7 +278,7 @@ module FastOTF2ConverterSerial {
       } else {
         for thread in threads.keysToArray() {
           const callGraph = try! threads[thread];
-          FastOTF2ConverterCommon.writeCallgraph(callGraph, group, thread, format, outputDir);
+          ConverterWriters.writeCallgraph(callGraph, group, thread, format, outputDir);
         }
       }
     }
@@ -287,7 +287,7 @@ module FastOTF2ConverterSerial {
       if !evtCtx.evtArgs.processesToTrack.isEmpty() && !evtCtx.evtArgs.processesToTrack.contains(group) {
         logInfo("Skipping group ", group, " as it is not in the processes to track.");
       } else {
-        FastOTF2ConverterCommon.writeMetrics(group, threadMetrics, format, outputDir);
+        ConverterWriters.writeMetrics(group, threadMetrics, format, outputDir);
       }
     }
   }

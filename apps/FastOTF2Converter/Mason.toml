@@ -17,4 +17,4 @@ Parquet = { git = "https://github.com/e-kayrakli/Parquet" }
 examples = ["FastOTF2ConverterSerial.chpl"]
 
 [tests]
-tests = ["CallgraphParityTest.chpl", "MetricsParityTest.chpl"]
+tests = ["StrategyParquetParityTest.chpl", "CallgraphParityTest.chpl", "MetricsParityTest.chpl"]
