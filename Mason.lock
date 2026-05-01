@@ -9,4 +9,12 @@ source = "https://github.com/hpc-ai-adv-dev/fastotf2"
 type = "library"
 version = "0.1.0"
 
+[system]
+
+[system.otf2]
+includes = "-I/opt/otf2/include"
+libs = "-L/opt/otf2/lib -lotf2"
+name = "otf2"
+version = "3.1.1"
+
 
