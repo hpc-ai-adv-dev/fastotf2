@@ -3,15 +3,15 @@
 
 #include <sys/resource.h>
 
-static inline long get_peak_rss_kb(void) {
+static inline long get_peak_rss_kib(void) {
   struct rusage usage;
   if (getrusage(RUSAGE_SELF, &usage) != 0) {
     return -1;  // Error case
   }
 #ifdef __APPLE__
-  return usage.ru_maxrss / 1024;  // macOS: bytes -> KB
+  return usage.ru_maxrss / 1024;  // macOS: bytes -> KiB
 #else
-  return usage.ru_maxrss;         // Linux: already in KB
+  return usage.ru_maxrss;         // Linux: already in KiB
 #endif
 }
 

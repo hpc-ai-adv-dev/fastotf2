@@ -16,19 +16,19 @@ module FastOTF2Converter {
   // use Strategy_LocGroupDistBalanced;
 
   require "helpers/memtrack_helper.h";
-  extern proc get_peak_rss_kb(): c_long;
+  extern proc get_peak_rss_kib(): c_long;
 
-  param KB_PER_GB = 1024.0 * 1024.0;
+  param KiB_PER_GiB = 1024.0 * 1024.0;
 
   proc main(args: [] string) throws {
     const conf = parseConverterArgs(args);
     validatePaths(conf);
 
     // Capture baseline RSS per locale (before work)
-    var baselineKB: [0..#numLocales] int;
+    var baselineKiB: [0..#numLocales] int;
     if memTrack {
       coforall loc in Locales do on loc {
-        baselineKB[here.id] = get_peak_rss_kb(): int;
+        baselineKiB[here.id] = get_peak_rss_kib(): int;
       }
     }
 
@@ -61,13 +61,13 @@ module FastOTF2Converter {
       writeln();
       writeln("=== Memory Report ===");
       coforall loc in Locales do on loc {
-        var peakKB = get_peak_rss_kb(): int;
-        var deltaKB = peakKB - baselineKB[here.id];
-        var peakGB = peakKB: real / KB_PER_GB;
-        var deltaGB = deltaKB: real / KB_PER_GB;
+        var peakKiB = get_peak_rss_kib(): int;
+        var deltaKiB = peakKiB - baselineKiB[here.id];
+        var peakGiB = peakKiB: real / KiB_PER_GiB;
+        var deltaGiB = deltaKiB: real / KiB_PER_GiB;
         writeln("  Locale ", here.id,
-                ": peak RSS=", peakGB, " GB",
-                "  delta RSS (OTF2+parquet memory usage)=", deltaGB, " GB");
+                ": peak RSS=", peakGiB, " GiB",
+                "  delta RSS (OTF2+parquet memory usage)=", deltaGiB, " GiB");
         printMemAllocStats();
       }
       writeln("=== End Memory Report ===");
