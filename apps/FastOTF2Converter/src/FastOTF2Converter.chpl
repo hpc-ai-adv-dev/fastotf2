@@ -18,6 +18,8 @@ module FastOTF2Converter {
   require "helpers/memtrack_helper.h";
   extern proc get_peak_rss_kb(): c_long;
 
+  param KB_PER_GB = 1024.0 * 1024.0;
+
   proc main(args: [] string) throws {
     const conf = parseConverterArgs(args);
     validatePaths(conf);
@@ -61,11 +63,11 @@ module FastOTF2Converter {
       coforall loc in Locales do on loc {
         var peakKB = get_peak_rss_kb(): int;
         var deltaKB = peakKB - baselineKB[here.id];
-        var peakGB = peakKB: real / (1024.0*1024.0);
-        var deltaGB = deltaKB: real / (1024.0*1024.0);
+        var peakGB = peakKB: real / KB_PER_GB;
+        var deltaGB = deltaKB: real / KB_PER_GB;
         writeln("  Locale ", here.id,
                 ": peak RSS=", peakGB, " GB",
-                "  extern C (delta)=", deltaGB, " GB");
+                "  delta RSS (OTF2+parquet memory usage)=", deltaGB, " GB");
         printMemAllocStats();
       }
       writeln("=== End Memory Report ===");
