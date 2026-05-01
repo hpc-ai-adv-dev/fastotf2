@@ -1,13 +1,15 @@
 [brick]
 authors = ["Shreyas Khandekar"]
-chplVersion = "2.8.0..2.9.0"
-compopts = ["-I/opt/otf2/include", "-L/opt/otf2/lib", "-lotf2"]
+chplVersion = "2.9.0..2.9.0"
 copyrightYear = "2026"
 license = "Apache-2.0"
 name = "FastOTF2"
 source = "https://github.com/hpc-ai-adv-dev/fastotf2"
 type = "library"
 version = "0.1.0"
+
+[system]
+otf2 = "3.1.1"
 
 [examples]
 examples = [
