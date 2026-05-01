@@ -6,15 +6,29 @@ module FastOTF2Converter {
   use Strategy_LocBlock;
   use Strategy_LocGroupBlock;
   use Strategy_LocGroupDistBlock;
+  use CTypes;
+  use MemDiagnostics;
+  private use MemTracking;
   // Future strategies:
   // use Strategy_LocDynamic;
   // use Strategy_LocGroupDynamic;
   // use Strategy_LocGroupBlockDistDynamic;
   // use Strategy_LocGroupDistBalanced;
 
+  require "helpers/memtrack_helper.h";
+  extern proc get_peak_rss_kb(): c_long;
+
   proc main(args: [] string) throws {
     const conf = parseConverterArgs(args);
     validatePaths(conf);
+
+    // Capture baseline RSS per locale (before work)
+    var baselineKB: [0..#numLocales] int;
+    if memTrack {
+      coforall loc in Locales do on loc {
+        baselineKB[here.id] = get_peak_rss_kb(): int;
+      }
+    }
 
     select conf.strategy {
       when "serial" do
@@ -38,6 +52,23 @@ module FastOTF2Converter {
              ". Use one of: serial, loc_block, loc_dynamic, locgroup_block, ",
              "locgroup_dynamic, locgroup_dist_block, ",
              "locgroup_blockdist_dynamic, locgroup_dist_balanced");
+    }
+
+    // Report memory stats if --memTrack was passed
+    if memTrack {
+      writeln();
+      writeln("=== Memory Report ===");
+      coforall loc in Locales do on loc {
+        var peakKB = get_peak_rss_kb(): int;
+        var deltaKB = peakKB - baselineKB[here.id];
+        var peakGB = peakKB: real / (1024.0*1024.0);
+        var deltaGB = deltaKB: real / (1024.0*1024.0);
+        writeln("  Locale ", here.id,
+                ": peak RSS=", peakGB, " GB",
+                "  extern C (delta)=", deltaGB, " GB");
+        printMemAllocStats();
+      }
+      writeln("=== End Memory Report ===");
     }
   }
 }
