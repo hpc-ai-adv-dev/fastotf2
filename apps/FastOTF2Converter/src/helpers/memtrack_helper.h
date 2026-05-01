@@ -5,7 +5,9 @@
 
 static inline long get_peak_rss_kb(void) {
   struct rusage usage;
-  getrusage(RUSAGE_SELF, &usage);
+  if (getrusage(RUSAGE_SELF, &usage) != 0) {
+    return -1;  // Error case
+  }
 #ifdef __APPLE__
   return usage.ru_maxrss / 1024;  // macOS: bytes -> KB
 #else
