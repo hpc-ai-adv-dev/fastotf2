@@ -6,15 +6,31 @@ module FastOTF2Converter {
   use Strategy_LocBlock;
   use Strategy_LocGroupBlock;
   use Strategy_LocGroupDistBlock;
+  use CTypes;
+  use MemDiagnostics;
+  private use MemTracking;
   // Future strategies:
   // use Strategy_LocDynamic;
   // use Strategy_LocGroupDynamic;
   // use Strategy_LocGroupBlockDistDynamic;
   // use Strategy_LocGroupDistBalanced;
 
+  require "helpers/memtrack_helper.h";
+  extern proc get_peak_rss_kib(): c_long;
+
+  param KiB_PER_GiB = 1024.0 * 1024.0;
+
   proc main(args: [] string) throws {
     const conf = parseConverterArgs(args);
     validatePaths(conf);
+
+    // Capture baseline RSS per locale (before work)
+    var baselineKiB: [0..#numLocales] int;
+    if memTrack {
+      coforall loc in Locales do on loc {
+        baselineKiB[here.id] = get_peak_rss_kib(): int;
+      }
+    }
 
     select conf.strategy {
       when "serial" do
@@ -38,6 +54,23 @@ module FastOTF2Converter {
              ". Use one of: serial, loc_block, loc_dynamic, locgroup_block, ",
              "locgroup_dynamic, locgroup_dist_block, ",
              "locgroup_blockdist_dynamic, locgroup_dist_balanced");
+    }
+
+    // Report memory stats if --memTrack was passed
+    if memTrack {
+      writeln();
+      writeln("=== Memory Report ===");
+      coforall loc in Locales do on loc {
+        var peakKiB = get_peak_rss_kib(): int;
+        var deltaKiB = peakKiB - baselineKiB[here.id];
+        var peakGiB = peakKiB: real / KiB_PER_GiB;
+        var deltaGiB = deltaKiB: real / KiB_PER_GiB;
+        writeln("  Locale ", here.id,
+                ": peak RSS=", peakGiB, " GiB",
+                "  delta RSS (OTF2+parquet memory usage)=", deltaGiB, " GiB");
+        printMemAllocStats();
+      }
+      writeln("=== End Memory Report ===");
     }
   }
 }
