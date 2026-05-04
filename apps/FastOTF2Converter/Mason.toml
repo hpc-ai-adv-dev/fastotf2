@@ -1,7 +1,7 @@
 [brick]
 authors = ["Shreyas Khandekar"]
-chplVersion = "2.8.0..2.9.0"
-compopts = ["-M../../src", "-I/opt/otf2/include", "-L/opt/otf2/lib", "-lotf2"]
+chplVersion = "2.9.0..2.9.0"
+compopts = ["-M../../src"]
 copyrightYear = "2026"
 license = "Apache-2.0"
 name = "FastOTF2Converter"
@@ -12,6 +12,9 @@ version = "0.1.0"
 [dependencies]
 Parquet = { git = "https://github.com/e-kayrakli/Parquet" }
 # FastOTF2 = { git = "../../" }
+
+[system]
+otf2 = "3.1.1"
 
 [examples]
 examples = ["FastOTF2ConverterSerial.chpl"]

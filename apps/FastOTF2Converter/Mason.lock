@@ -1,8 +1,8 @@
 
 [root]
 authors = ["Shreyas Khandekar"]
-chplVersion = "2.8.0..2.8.0"
-compopts = ["-M../../src", "-I/opt/otf2/include", "-L/opt/otf2/lib", "-lotf2"]
+chplVersion = "2.9.0..2.9.0"
+compopts = ["-M../../src"]
 copyrightYear = "2026"
 dependencies = ["Parquet -1 https://github.com/e-kayrakli/Parquet"]
 license = "Apache-2.0"
@@ -12,9 +12,9 @@ type = "application"
 version = "0.1.0"
 
 [Parquet]
-chplVersion = "2.8.0..2.8.0"
+chplVersion = "2.9.0..2.9.0"
 name = "Parquet"
-rev = "c3c3b0ed142187594fc552ef1077bee55a147426"
+rev = "cfa584adf55462ed7bb148d9b93ab656565006f6"
 source = "https://github.com/e-kayrakli/Parquet"
 version = "-1"
 
@@ -31,5 +31,13 @@ include = "/opt/arrow/include"
 libs = "-L/opt/arrow/lib -lparquet -larrow"
 name = "parquet"
 version = "19.0.1"
+
+[system]
+
+[system.otf2]
+includes = "-I/opt/otf2/include"
+libs = "-L/opt/otf2/lib -lotf2"
+name = "otf2"
+version = "3.1.1"
 
 
