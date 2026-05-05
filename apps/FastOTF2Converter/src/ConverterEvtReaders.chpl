@@ -14,25 +14,36 @@ module ConverterEvtReaders {
   use Map;
 
   // -------------------------------------------------------------------------
+  // ReadResult — returned by readEventsForLocations with timing breakdown
+  // -------------------------------------------------------------------------
+
+  record ReadResult {
+    var eventsRead: c_uint64;
+    var openTime: real;   // time to open reader + select locations + open evt files
+    var setupTime: real;  // time to register callbacks and mark for reading
+    var readTime: real;   // time in ReadAllGlobalEvents (includes callgraph building)
+  }
+
+  // -------------------------------------------------------------------------
   // readEventsForLocations — the key abstraction
   //
   // Opens a fresh OTF2 reader, selects the given locations, registers
   // Enter/Leave/Metric callbacks, reads all events, then closes.
-  // Returns the number of events read.
+  // Returns a ReadResult with event count and timing breakdown.
   // -------------------------------------------------------------------------
 
   proc readEventsForLocations(
     trace: string,
     locations: [] OTF2_LocationRef,
     ref evtCtx: EvtCallbackContext
-  ): c_uint64 {
+  ): ReadResult {
     var sw: stopwatch;
     sw.start();
 
     var reader = OTF2_Reader_Open(trace.c_str());
     if reader == nil {
       logError("Failed to open trace file for event reading");
-      return 0;
+      return new ReadResult();
     }
 
     OTF2_Reader_SetSerialCollectiveCallbacks(reader);
@@ -71,6 +82,10 @@ module ConverterEvtReaders {
         c_ptrTo(evtCtx): c_ptr(void));
       OTF2_GlobalEvtReaderCallbacks_Delete(evtCallbacks);
 
+      const setupTime = sw.elapsed();
+      logDebug("Evt reader registered callbacks in ", setupTime, " seconds");
+      sw.clear();
+
       OTF2_Reader_ReadAllGlobalEvents(
         reader, globalEvtReader, c_ptrTo(eventsRead));
 
@@ -78,6 +93,11 @@ module ConverterEvtReaders {
       logDebug("Evt reader read events in ", readTime, " seconds");
 
       OTF2_Reader_CloseGlobalEvtReader(reader, globalEvtReader);
+
+      OTF2_Reader_CloseEvtFiles(reader);
+      OTF2_Reader_Close(reader);
+
+      return new ReadResult(eventsRead, openTime, setupTime, readTime);
     } else {
       logError("Failed to create global event reader");
     }
@@ -85,7 +105,7 @@ module ConverterEvtReaders {
     OTF2_Reader_CloseEvtFiles(reader);
     OTF2_Reader_Close(reader);
 
-    return eventsRead;
+    return new ReadResult(eventsRead, openTime, 0.0, 0.0);
   }
 
   // -------------------------------------------------------------------------

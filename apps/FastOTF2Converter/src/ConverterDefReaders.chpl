@@ -10,10 +10,22 @@ module ConverterDefReaders {
   use Time;
 
   // -------------------------------------------------------------------------
+  // DefReadResult — returned by readGlobalDefinitions with timing breakdown
+  // -------------------------------------------------------------------------
+
+  record DefReadResult {
+    var defCtx: DefCallbackContext;
+    var numberOfLocations: c_uint64;
+    var openTime: real;   // time to open OTF2 archive
+    var setupTime: real;  // time to set up callbacks and context
+    var readTime: real;   // time to read all global definitions
+  }
+
+  // -------------------------------------------------------------------------
   // readGlobalDefinitions — open reader, register callbacks, read defs, close
   // -------------------------------------------------------------------------
 
-  proc readGlobalDefinitions(trace: string): (DefCallbackContext, c_uint64) {
+  proc readGlobalDefinitions(trace: string): DefReadResult {
     var sw: stopwatch;
     sw.start();
 
@@ -24,7 +36,7 @@ module ConverterDefReaders {
     }
 
     const openTime = sw.elapsed();
-    logInfo("Time to open OTF2 archive: ", openTime, " seconds");
+    logDebug("Time to open OTF2 archive: ", openTime, " seconds");
     sw.clear();
 
     OTF2_Reader_SetSerialCollectiveCallbacks(reader);
@@ -59,18 +71,21 @@ module ConverterDefReaders {
     OTF2_Reader_RegisterGlobalDefCallbacks(
       reader, globalDefReader, defCallbacks, c_ptrTo(defCtx): c_ptr(void));
     OTF2_GlobalDefReaderCallbacks_Delete(defCallbacks);
+    const setupTime = sw.elapsed();
+    logDebug("Time to set up definition callbacks and context: ", setupTime, " seconds");
 
+    sw.clear();
     var definitionsRead: c_uint64 = 0;
     OTF2_Reader_ReadAllGlobalDefinitions(
       reader, globalDefReader, c_ptrTo(definitionsRead));
-    logTrace("Global definitions read: ", definitionsRead);
-
     const defReadTime = sw.elapsed();
-    logInfo("Time to read global definitions: ", defReadTime, " seconds");
+
+    logTrace("Global definitions read: ", definitionsRead);
+    logDebug("Time to read global definitions: ", defReadTime, " seconds");
 
     OTF2_Reader_Close(reader);
 
-    return (defCtx, numberOfLocations);
+    return new DefReadResult(defCtx, numberOfLocations, openTime, setupTime, defReadTime);
   }
 
   // ---------------------------------------------------------------------------
