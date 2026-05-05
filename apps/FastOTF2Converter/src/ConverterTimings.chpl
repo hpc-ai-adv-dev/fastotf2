@@ -17,12 +17,14 @@ module ConverterTimings {
     var openTime: real;          // from ReadResult
     var setupTime: real;         // from ReadResult
     var readTime: real;          // from ReadResult
+    // Write times only for strategies that write per-task (e.g., locgroup_block)
+    // for others, these will be 0 and the total write time will be in writeTime in the report
     var writeTime: real;         // from WriteResult
     var callgraphWriteTime: real; // from WriteResult
     var metricsWriteTime: real;  // from WriteResult
     var totalTime: real;         // wall-clock for the entire task body
   }
-  
+
 
   // -------------------------------------------------------------------------
   // TimingReport — aggregates all timing data for the final report
@@ -37,6 +39,8 @@ module ConverterTimings {
     var groupMapTime: real;
     var groupDistributionTime: real; // only for strategies with a group distribution phase
     var eventReadWriteTime: real;  // combined time for event reading + callgraph writing
+    var evtReadTime: real;        // only for strategies that separate event read from write
+    var writeTime: real;          // only for strategies that separate event read from write
     var mergeTime: real;        // only for strategies with a merge phase
 
     // Per-task data
@@ -74,7 +78,12 @@ module ConverterTimings {
       printPhase("Build group/location map", groupMapTime);
     if groupDistributionTime > 0.0 then
       printPhase("Distribute groups to readers", groupDistributionTime);
-    printPhase("Read events + write output", eventReadWriteTime);
+    if evtReadTime > 0.0 then
+      printPhase("Read events", evtReadTime);
+    if writeTime > 0.0 then
+      printPhase("Write output", writeTime);
+    if eventReadWriteTime > 0.0 then
+      printPhase("Read events + write output", eventReadWriteTime);
     if mergeTime > 0.0 then
       printPhase("Merge contexts", mergeTime);
     if otherTime > 0.0 then

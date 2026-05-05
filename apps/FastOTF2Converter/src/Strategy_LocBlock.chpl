@@ -12,6 +12,7 @@ module Strategy_LocBlock {
   use ConverterDefReaders;
   use ConverterEvtReaders;
   use ConverterWriters;
+  use ConverterTimings;
   use FastOTF2;
   use Time;
   use RangeChunk;
@@ -21,7 +22,9 @@ module Strategy_LocBlock {
     var global_sw: stopwatch;
     global_sw.start();
 
-    const (defCtx, numberOfLocations) = readGlobalDefinitions(conf.trace);
+    const defResult = readGlobalDefinitions(conf.trace);
+    const ref defCtx = defResult.defCtx;
+    const numberOfLocations = defResult.numberOfLocations;
     const evtArgs = buildEvtCallbackArgs(conf);
     sw.start();
 
@@ -35,9 +38,10 @@ module Strategy_LocBlock {
     // Prepare per-reader contexts
     var evtContexts = [0..<numberOfReaders] new EvtCallbackContext(evtArgs, defCtx);
     var totalEventsRead: c_uint64 = 0;
+    var taskTimings: [0..<numberOfReaders] TaskTiming;
 
     coforall i in 0..<numberOfReaders
-      with (+ reduce totalEventsRead, ref evtContexts) {
+      with (+ reduce totalEventsRead, ref evtContexts, ref taskTimings) {
       const myRange = chunk(0..<totalLocs, numberOfReaders, i);
 
       logTrace("Reader ", i, " assigned locations [", myRange.low, "..", myRange.high, "]");
@@ -45,11 +49,25 @@ module Strategy_LocBlock {
       const myLocs: [0..<myRange.size] OTF2_LocationRef =
         for idx in myRange do locationArray[idx];
 
-      totalEventsRead += readEventsForLocations(conf.trace, myLocs, evtContexts[i]);
+      var taskSw: stopwatch;
+      taskSw.start();
+
+      const readResult = readEventsForLocations(conf.trace, myLocs, evtContexts[i]);
+      totalEventsRead += readResult.eventsRead;
+
+      taskTimings[i] = new TaskTiming(
+        taskId=i,
+        locations=myLocs.size,
+        eventsRead=readResult.eventsRead,
+        openTime=readResult.openTime,
+        setupTime=readResult.setupTime,
+        readTime=readResult.readTime,
+        totalTime=taskSw.elapsed()
+      );
     }
 
     const evtReadTime = sw.elapsed();
-    logInfo("Time to setup + read events: ", evtReadTime, " seconds");
+    logDebug("Time to setup + read events: ", evtReadTime, " seconds");
     sw.clear();
 
     logDebug("Total events read: ", totalEventsRead);
@@ -63,8 +81,23 @@ module Strategy_LocBlock {
 
     logInfo("Trace loaded in ", global_sw.elapsed(), " seconds");
     logInfo("Writing ", conf.outputFormat: string, " files to directory: ", conf.outputDir);
-    writeOutputForContext(mergedCtx, conf.outputFormat, conf.outputDir);
-    logInfo("Finished writing to ", conf.outputDir, " in ", sw.elapsed(), " seconds");
+
+    const writeResult = writeOutputForContext(mergedCtx, conf.outputFormat, conf.outputDir);
+    logInfo("Finished writing to ", conf.outputDir, " in ", writeResult.writeTime, " seconds");
     logInfo("Finished converting trace in ", global_sw.elapsed(), " seconds");
+
+    if conf.timings {
+      var report = new TimingReport(numTasks=numberOfReaders);
+      report.strategy = conf.strategy;
+      report.totalTime = global_sw.elapsed();
+      report.defOpenTime = defResult.openTime;
+      report.defSetupTime = defResult.setupTime;
+      report.defReadTime = defResult.readTime;
+      report.evtReadTime = evtReadTime;
+      report.writeTime = writeResult.writeTime;
+      report.mergeTime = mergeTime;
+      report.setTaskTimings(taskTimings);
+      report.print();
+    }
   }
 }
