@@ -23,6 +23,7 @@ module ConverterArgs {
     var outputFormat: OutputFormat;
     var excludeMPI: bool;
     var excludeHIP: bool;
+    var timings: bool;
   }
 
   // -------------------------------------------------------------------------
@@ -93,6 +94,13 @@ module ConverterArgs {
       help="Exclude HIP functions from the callgraph output"
     );
 
+    var timingsArg = parser.addFlag(
+      name="timings",
+      defaultValue=false,
+      numArgs=0,
+      help="Print a performance timing report at the end of conversion"
+    );
+
     var logArg = parser.addOption(
       name="log",
       defaultValue="INFO",
@@ -109,6 +117,7 @@ module ConverterArgs {
     conf.outputDir = outputDirArg.value();
     conf.excludeMPI = excludeMPIArg.valueAsBool();
     conf.excludeHIP = excludeHIPArg.valueAsBool();
+    conf.timings = timingsArg.valueAsBool();
 
     try {
       log = logArg.value(): LogLevel;
