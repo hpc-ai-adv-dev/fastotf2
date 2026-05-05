@@ -61,7 +61,7 @@ module Strategy_Serial {
         totalTime=taskTotalTime
       );
 
-      var report = new TimingReport(numTasks=1);
+      var report = new TimingReport();
       report.strategy = conf.strategy;
       report.totalTime = totalConversionTime;
       report.defOpenTime = defResult.openTime;

@@ -87,7 +87,7 @@ module Strategy_LocBlock {
     logInfo("Finished converting trace in ", global_sw.elapsed(), " seconds");
 
     if conf.timings {
-      var report = new TimingReport(numTasks=numberOfReaders);
+      var report = new TimingReport();
       report.strategy = conf.strategy;
       report.totalTime = global_sw.elapsed();
       report.defOpenTime = defResult.openTime;

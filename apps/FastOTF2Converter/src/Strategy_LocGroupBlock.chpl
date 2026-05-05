@@ -114,7 +114,7 @@ module Strategy_LocGroupBlock {
     logInfo("Finished converting trace in ", totalConversionTime, " seconds");
 
     if conf.timings {
-      var report = new TimingReport(numTasks=numberOfReaders);
+      var report = new TimingReport();
       report.strategy = conf.strategy;
       report.totalTime = totalConversionTime;
       report.defOpenTime = defResult.openTime;
