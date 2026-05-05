@@ -12,6 +12,7 @@ module Strategy_Serial {
   use ConverterDefReaders;
   use ConverterEvtReaders;
   use ConverterWriters;
+  use ConverterTimings;
   use FastOTF2;
   use Time;
 
@@ -20,7 +21,9 @@ module Strategy_Serial {
     var global_sw: stopwatch;
     global_sw.start();
 
-    const (defCtx, numberOfLocations) = readGlobalDefinitions(conf.trace);
+    const defResult = readGlobalDefinitions(conf.trace);
+    const ref defCtx = defResult.defCtx;
+    const numberOfLocations = defResult.numberOfLocations;
     const evtArgs = buildEvtCallbackArgs(conf);
     sw.start();
 
@@ -29,16 +32,44 @@ module Strategy_Serial {
     logInfo("Using serial strategy with ", locationArray.size, " locations");
 
     var evtCtx = new EvtCallbackContext(evtArgs, defCtx);
-    const totalEventsRead = readEventsForLocations(conf.trace, locationArray, evtCtx);
-
-    const evtReadTime = sw.elapsed();
-    logInfo("Time to setup + read events: ", evtReadTime, " seconds");
-    sw.clear();
+    var taskSw: stopwatch;
+    taskSw.start();
+    const readResult = readEventsForLocations(conf.trace, locationArray, evtCtx);
+    const totalEventsRead = readResult.eventsRead;
 
     logDebug("Total events read: ", totalEventsRead);
     logInfo("Writing ", conf.outputFormat: string, " files to directory: ", conf.outputDir);
-    writeOutputForContext(evtCtx, conf.outputFormat, conf.outputDir);
+    const writeResult = writeOutputForContext(evtCtx, conf.outputFormat, conf.outputDir);
     logInfo("Finished writing to ", conf.outputDir, " in ", sw.elapsed(), " seconds");
-    logInfo("Finished converting trace in ", global_sw.elapsed(), " seconds");
+    const taskTotalTime = taskSw.elapsed();
+    const evtReadWriteTime = sw.elapsed();
+    const totalConversionTime = global_sw.elapsed();
+    logInfo("Finished converting trace in ", totalConversionTime, " seconds");
+
+    if conf.timings {
+      var taskTimings: [0..0] TaskTiming;
+      taskTimings[0] = new TaskTiming(
+        taskId=0,
+        locations=locationArray.size: int,
+        eventsRead=readResult.eventsRead,
+        openTime=readResult.openTime,
+        setupTime=readResult.setupTime,
+        readTime=readResult.readTime,
+        writeTime=writeResult.writeTime,
+        callgraphWriteTime=writeResult.callgraphTime,
+        metricsWriteTime=writeResult.metricsTime,
+        totalTime=taskTotalTime
+      );
+
+      var report = new TimingReport(numTasks=1);
+      report.strategy = conf.strategy;
+      report.totalTime = totalConversionTime;
+      report.defOpenTime = defResult.openTime;
+      report.defSetupTime = defResult.setupTime;
+      report.defReadTime = defResult.readTime;
+      report.eventReadWriteTime = evtReadWriteTime;
+      report.setTaskTimings(taskTimings);
+      report.print();
+    }
   }
 }
