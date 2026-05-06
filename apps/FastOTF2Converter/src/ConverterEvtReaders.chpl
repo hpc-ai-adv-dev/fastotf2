@@ -117,6 +117,7 @@ module ConverterEvtReaders {
                       userData: c_ptr(void),
                       attributes: c_ptr(OTF2_AttributeList),
                       region: OTF2_RegionRef): OTF2_CallbackCode {
+    var cbSw: stopwatch; cbSw.start();
     var ctxPtr = userData: c_ptr(EvtCallbackContext);
     if ctxPtr == nil then return OTF2_CALLBACK_ERROR;
     ref ctx = ctxPtr.deref();
@@ -125,8 +126,10 @@ module ConverterEvtReaders {
     const (locName, locGroup, regionName) = getLocationAndRegionInfo(defCtx, location, region);
     updateMaps(ctx, locGroup, locName);
 
-    if checkEnterLeaveSkipConditions(ctx, locGroup, regionName) then
+    if checkEnterLeaveSkipConditions(ctx, locGroup, regionName) {
+      ctx.callbackTime += cbSw.elapsed();
       return OTF2_CALLBACK_SUCCESS;
+    }
 
     // Get current time in seconds
     const currentTime = timestampToSeconds(time, defCtx.clockProps);
@@ -135,6 +138,7 @@ module ConverterEvtReaders {
     ref callGraph = try! ctx.callGraphs[locGroup][locName];
     callGraph.enter(currentTime, regionName);
 
+    ctx.callbackTime += cbSw.elapsed();
     return OTF2_CALLBACK_SUCCESS;
   }
 
@@ -143,7 +147,7 @@ module ConverterEvtReaders {
                       userData: c_ptr(void),
                       attributes: c_ptr(OTF2_AttributeList),
                       region: OTF2_RegionRef): OTF2_CallbackCode {
-    logTrace("Entering Leave_callback with location=", location, ", region=", region);
+    var cbSw: stopwatch; cbSw.start();
     var ctxPtr = userData: c_ptr(EvtCallbackContext);
     if ctxPtr == nil then return OTF2_CALLBACK_ERROR;
     ref ctx = ctxPtr.deref();
@@ -152,8 +156,10 @@ module ConverterEvtReaders {
     const (locName, locGroup, regionName) = getLocationAndRegionInfo(defCtx, location, region);
     updateMaps(ctx, locGroup, locName);
 
-    if checkEnterLeaveSkipConditions(ctx, locGroup, regionName) then
+    if checkEnterLeaveSkipConditions(ctx, locGroup, regionName) {
+      ctx.callbackTime += cbSw.elapsed();
       return OTF2_CALLBACK_SUCCESS;
+    }
 
     // Get current time in seconds
     const currentTime = timestampToSeconds(time, defCtx.clockProps);
@@ -162,6 +168,7 @@ module ConverterEvtReaders {
     ref callGraph = try! ctx.callGraphs[locGroup][locName];
     callGraph.leave(currentTime); // We ignore regionName here
 
+    ctx.callbackTime += cbSw.elapsed();
     return OTF2_CALLBACK_SUCCESS;
   }
 
@@ -173,7 +180,7 @@ module ConverterEvtReaders {
                        numberOfMetrics: c_uint8,
                        typeIDs: c_ptrConst(OTF2_Type),
                        metricValues: c_ptrConst(OTF2_MetricValue)): OTF2_CallbackCode {
-
+    var cbSw: stopwatch; cbSw.start();
     var ctxPtr = userData: c_ptr(EvtCallbackContext);
     if ctxPtr == nil then return OTF2_CALLBACK_ERROR;
     ref ctx = ctxPtr.deref();
@@ -226,6 +233,7 @@ module ConverterEvtReaders {
       }
     }
 
+    ctx.callbackTime += cbSw.elapsed();
     return OTF2_CALLBACK_SUCCESS;
   }
 

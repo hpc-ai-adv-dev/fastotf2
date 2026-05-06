@@ -74,7 +74,7 @@ module ConverterWriters {
   }
 
   proc writeCallgraphCSV(callGraph: shared CallGraph, group: string, thread: string, outputPath: string) throws {
-    const intervals = callGraph.getIntervalsBetween(-inf, inf);
+    const intervals = callGraph.getAllIntervals();
     if intervals.size == 0 then return;
 
     var outfile = open(outputPath, ioMode.cw);
@@ -127,8 +127,14 @@ module ConverterWriters {
   // Writes all callgraph intervals to a Parquet file with the same columns and
   // values as the CSV output: thread, group, depth, name, start_time, end_time,
   // duration.  Times are real(64) seconds — identical to CSV.
-  proc writeCallgraphParquet(callGraph: shared CallGraph, group: string, thread: string, outputPath: string) throws {
-    const intervals = callGraph.getIntervalsBetween(-inf, inf);
+  proc writeCallgraphParquet(callGraph: shared CallGraph, group: string, thread: string,
+                             outputPath: string, ref getIntervalsSw: stopwatch,
+                             ref fillColumnsSw: stopwatch, ref writeTableSw: stopwatch) throws {
+
+    getIntervalsSw.start();
+    const intervals = callGraph.getAllIntervalsUnsorted();
+    // const intervals = callGraph.getAllIntervals();
+    getIntervalsSw.stop();
     const n = intervals.size;
 
     // [PARQUET-PKG-GUARD] writeTable() crashes on empty arrays.
@@ -143,7 +149,8 @@ module ConverterWriters {
     var endTimeCol:     [0..<n] real(64);
     var durationCol:    [0..<n] real(64);
 
-    for (idx, iv) in zip(0..<n, intervals) {
+    fillColumnsSw.start();
+    forall (idx, iv) in zip(0..<n, intervals) {
       const endSec = if iv.hasEnd then iv.end else inf;
       threadCol[idx]    = thread;
       groupCol[idx]     = group;
@@ -153,12 +160,15 @@ module ConverterWriters {
       endTimeCol[idx]   = endSec;
       durationCol[idx]  = endSec - iv.start;
     }
+    fillColumnsSw.stop();
 
+    writeTableSw.start();
     writeTable(outputPath,
                colNames=("thread", "group", "depth", "name",
                          "start_time", "end_time", "duration"),
                threadCol, groupCol, depthCol, nameCol,
                startTimeCol, endTimeCol, durationCol);
+    writeTableSw.stop();
   }
 
   // Writes all recorded metric samples to a Parquet file.
@@ -167,7 +177,7 @@ module ConverterWriters {
   // INT64/UINT64 metrics populate value_int (value_real is 0.0).
   // DOUBLE metrics populate value_real (value_int is 0).
   // This preserves the native OTF2 type without forced conversions.
-  proc writeMetricsParquet(group: string, threadMetrics: map(string, list((real(64), OTF2_Type, OTF2_MetricValue))), outputPath: string) throws {
+  proc writeMetricsParquet(group: string, threadMetrics: map(string, list((real(64), OTF2_Type, OTF2_MetricValue))), outputPath: string, ref writeTableSw: stopwatch) throws {
     var totalValues = 0;
     for values in threadMetrics.values() do
       totalValues += values.size;
@@ -195,11 +205,15 @@ module ConverterWriters {
       }
     }
 
+    // writeTableSw.start();
+
     writeTable(outputPath,
                colNames=("group", "metric_name", "time",
                          "value_int", "value_real"),
                groupCol, metricNameCol, timeCol,
                valueIntCol, valueRealCol);
+
+    // writeTableSw.stop();
   }
 
   // ---------------------------------------------------------------------------
@@ -207,7 +221,9 @@ module ConverterWriters {
   // ---------------------------------------------------------------------------
 
   proc writeCallgraph(callGraph: shared CallGraph, group: string, thread: string,
-                      format: OutputFormat, outputDir: string) {
+                      format: OutputFormat, outputDir: string,
+                      ref getIntervalsSw: stopwatch, ref fillColumnsSw: stopwatch,
+                      ref writeTableSw: stopwatch) {
     const filename = callgraphFilename(group, thread, format);
     logInfo("Writing to file: ", filename);
 
@@ -224,7 +240,8 @@ module ConverterWriters {
       when OutputFormat.PARQUET {
         try {
           writeCallgraphParquet(callGraph, group, thread,
-                                joinPath(outputDir, filename));
+                                joinPath(outputDir, filename),
+                                getIntervalsSw, fillColumnsSw, writeTableSw);
         } catch e {
           logError("Error writing callgraph to PARQUET: ", e);
           halt("failed to write callgraph parquet");
@@ -235,7 +252,7 @@ module ConverterWriters {
 
   proc writeMetrics(group: string,
                     threadMetrics: map(string, list((real(64), OTF2_Type, OTF2_MetricValue))),
-                    format: OutputFormat, outputDir: string) {
+                    format: OutputFormat, outputDir: string, ref writeTableSw: stopwatch) {
     const filename = metricsFilename(group, format);
     logInfo("Writing to file: ", filename);
 
@@ -252,7 +269,7 @@ module ConverterWriters {
       when OutputFormat.PARQUET {
         try {
           writeMetricsParquet(group, threadMetrics,
-                              joinPath(outputDir, filename));
+                              joinPath(outputDir, filename), writeTableSw);
         } catch e {
           logError("Error writing metrics to PARQUET: ", e);
           halt("failed to write metrics parquet");
@@ -272,8 +289,12 @@ module ConverterWriters {
   ): WriteResult {
     var totalSw: stopwatch;
     var phaseSw: stopwatch;
+    var getIntervalsSw: stopwatch;
+    var fillColumnsSw: stopwatch;
+    var writeTableSw: stopwatch;
     totalSw.start();
     phaseSw.start();
+
 
     for (group, threads) in evtCtx.callGraphs.toArray() {
       if !evtCtx.evtArgs.processesToTrack.isEmpty() &&
@@ -282,10 +303,15 @@ module ConverterWriters {
       } else {
         for thread in threads.keysToArray() {
           const callGraph = try! threads[thread];
-          writeCallgraph(callGraph, group, thread, format, outputDir);
+          writeCallgraph(callGraph, group, thread, format, outputDir,
+                         getIntervalsSw, fillColumnsSw, writeTableSw);
         }
       }
     }
+
+    logDebug("getAllIntervals calls for CG took: ", getIntervalsSw.elapsed());
+    logDebug("Fill column arrays for CG took: ", fillColumnsSw.elapsed());
+    logDebug("Write table calls for CG took: ", writeTableSw.elapsed());
 
     const callgraphTime = phaseSw.elapsed();
     phaseSw.clear();
@@ -295,7 +321,7 @@ module ConverterWriters {
          !evtCtx.evtArgs.processesToTrack.contains(group) {
         logTrace("Skipping group ", group, " (not in processes to track)");
       } else {
-        writeMetrics(group, threadMetrics, format, outputDir);
+        writeMetrics(group, threadMetrics, format, outputDir, writeTableSw);
       }
     }
 

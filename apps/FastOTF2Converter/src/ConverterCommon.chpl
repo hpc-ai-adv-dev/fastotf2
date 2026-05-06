@@ -139,6 +139,8 @@ module ConverterCommon {
     var callGraphs: map(string, map(string, shared CallGraph));
     // Metrics recorded per location group and per location (thread)
     var metrics: map(string, map(string, list((real(64), OTF2_Type, OTF2_MetricValue))));
+    // Accumulated time spent inside Chapel event callbacks (seconds)
+    var callbackTime: real = 0.0;
 
     proc init(evtArgs: EvtCallbackArgs,
               defContext: DefCallbackContext) {
@@ -177,7 +179,7 @@ module ConverterCommon {
       if defCtx.locationGroupIds.contains(lgid) {
         const locationGroup = defCtx.locationGroupTable[lgid];
         // Use creating_location_group if it exists (matching Python behavior)
-        locGroup = if locationGroup.creatingLocationGroup != "None" && locationGroup.creatingLocationGroup != "" 
+        locGroup = if locationGroup.creatingLocationGroup != "None" && locationGroup.creatingLocationGroup != ""
                    then locationGroup.creatingLocationGroup
                    else locationGroup.name;
       }
