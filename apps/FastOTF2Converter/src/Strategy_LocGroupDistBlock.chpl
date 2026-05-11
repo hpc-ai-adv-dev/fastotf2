@@ -94,14 +94,18 @@ module Strategy_LocGroupDistBlock {
           const localTraceName = conf.trace;
           const readResult = readEventsForLocations(localTraceName, myLocs, evtContexts[i]);
           localeEventsRead += readResult.eventsRead;
+          const totalCallbackTime = evtContexts[i].totalCallbackTime();
 
           logDebug("Task ", i, " on locale ", loc.id,
-                  ": readTime=", readResult.readTime,
-                  " callbackTime=", evtContexts[i].callbackTime,
-                  " otf2Time=", readResult.readTime - evtContexts[i].callbackTime,
-                  " cbPct=", if readResult.readTime > 0
-                             then (100.0 * evtContexts[i].callbackTime / readResult.readTime)
-                             else 0.0, "%");
+                   ": readTime=", readResult.readTime,
+                   " metricTime=", evtContexts[i].metricCallbackTime,
+                   " enterTime=", evtContexts[i].enterCallbackTime,
+                   " leaveTime=", evtContexts[i].leaveCallbackTime,
+                   " callbackTotal=", totalCallbackTime,
+                   " otf2Time=", readResult.readTime - totalCallbackTime,
+                   " cbPct=", if readResult.readTime > 0
+                              then (100.0 * totalCallbackTime / readResult.readTime)
+                              else 0.0, "%");
 
           // Write immediately — each reader owns complete groups
           const writeResult = writeOutputForContext(evtContexts[i], conf.outputFormat, conf.outputDir);

@@ -127,7 +127,8 @@ module ConverterEvtReaders {
     updateMaps(ctx, locGroup, locName);
 
     if checkEnterLeaveSkipConditions(ctx, locGroup, regionName) {
-      ctx.callbackTime += cbSw.elapsed();
+      const cbElapsed = cbSw.elapsed();
+      ctx.enterCallbackTime += cbElapsed;
       return OTF2_CALLBACK_SUCCESS;
     }
 
@@ -138,7 +139,8 @@ module ConverterEvtReaders {
     ref callGraph = try! ctx.callGraphs[locGroup][locName];
     callGraph.enter(currentTime, regionName);
 
-    ctx.callbackTime += cbSw.elapsed();
+    const cbElapsed = cbSw.elapsed();
+    ctx.enterCallbackTime += cbElapsed;
     return OTF2_CALLBACK_SUCCESS;
   }
 
@@ -157,7 +159,8 @@ module ConverterEvtReaders {
     updateMaps(ctx, locGroup, locName);
 
     if checkEnterLeaveSkipConditions(ctx, locGroup, regionName) {
-      ctx.callbackTime += cbSw.elapsed();
+      const cbElapsed = cbSw.elapsed();
+      ctx.leaveCallbackTime += cbElapsed;
       return OTF2_CALLBACK_SUCCESS;
     }
 
@@ -168,7 +171,8 @@ module ConverterEvtReaders {
     ref callGraph = try! ctx.callGraphs[locGroup][locName];
     callGraph.leave(currentTime); // We ignore regionName here
 
-    ctx.callbackTime += cbSw.elapsed();
+    const cbElapsed = cbSw.elapsed();
+    ctx.leaveCallbackTime += cbElapsed;
     return OTF2_CALLBACK_SUCCESS;
   }
 
@@ -233,7 +237,8 @@ module ConverterEvtReaders {
       }
     }
 
-    ctx.callbackTime += cbSw.elapsed();
+    const cbElapsed = cbSw.elapsed();
+    ctx.metricCallbackTime += cbElapsed;
     return OTF2_CALLBACK_SUCCESS;
   }
 
