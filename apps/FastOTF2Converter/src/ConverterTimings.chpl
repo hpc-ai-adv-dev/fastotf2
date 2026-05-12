@@ -398,7 +398,7 @@ module ConverterTimings {
 
     // Append to runs.csv manifest
     const runsPath = baseDir + "/" + traceName + "/runs.csv";
-    appendRunsCSV(runsPath);
+    appendRunsCSV(runsPath, ts);
 
     logInfo("Timing CSV written to: ", outDir);
   }
@@ -468,7 +468,7 @@ module ConverterTimings {
     f.close();
   }
 
-  proc const ref TimingReport.appendRunsCSV(path: string) throws {
+  proc const ref TimingReport.appendRunsCSV(path: string, timestamp: string) throws {
     const writeHeader = !exists(path);
     var f = open(path, ioMode.cwr);
     var w = f.writer(locking=false);
@@ -477,15 +477,15 @@ module ConverterTimings {
       // Seek to end for appending
       w.seek(f.size..);
     } else {
-      w.writeln("strategy,numLocales,tracePath,totalTime,throughput");
+      w.writeln("timestamp,strategy,numLocales,tracePath,totalTime,throughput");
     }
 
     var totalEvents: uint(64) = 0;
     for loc in localeTimingData do for t in loc.taskTimings do totalEvents += t.eventsRead;
     const throughput = if totalTime > 0.0 then totalEvents: real / totalTime else 0.0;
 
-    w.writef("%s,%i,%s,%.6dr,%.0dr\n",
-             strategy, numLocales, tracePath, totalTime, throughput);
+    w.writef("%s,%s,%i,%s,%.6dr,%.0dr\n",
+             timestamp, strategy, numLocales, tracePath, totalTime, throughput);
 
     w.close();
     f.close();
