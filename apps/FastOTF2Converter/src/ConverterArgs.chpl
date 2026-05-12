@@ -108,7 +108,7 @@ module ConverterArgs {
       opts=["--timings-csv"],
       defaultValue="",
       numArgs=1,
-      help="Base directory for CSV timing output (auto-organized by trace/strategy)"
+      help="Output directory for CSV timing files (writes run_<ts>.csv, tasks_<ts>.csv, phases_<ts>.csv)"
     );
 
     var noopCallbacksArg = parser.addFlag(

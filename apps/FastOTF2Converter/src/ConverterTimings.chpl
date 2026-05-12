@@ -8,7 +8,6 @@
 module ConverterTimings {
   use IO;
   use FileSystem;
-  use Path;
   use Time;
   use ConverterCommon;
 
@@ -374,44 +373,50 @@ module ConverterTimings {
   // writeCSV — column-driven CSV export with auto-organized output
   // -------------------------------------------------------------------------
 
-  proc const ref TimingReport.writeCSV(baseDir: string) throws {
-    // Derive trace name from tracePath
-    const traceName = deriveTraceName(tracePath);
-    const outDir = baseDir + "/" + traceName + "/" + strategy;
-
-    // Create directory structure
-    if !exists(outDir) {
-      mkdir(outDir, parents=true);
+  proc const ref TimingReport.writeCSV(outputDir: string) throws {
+    // Caller controls the directory structure (e.g. timings/size32_nl16_trial1).
+    // We write exactly 3 files sharing a timestamp into outputDir.
+    if !exists(outputDir) {
+      mkdir(outputDir, parents=true);
     }
 
     // Timestamp for filenames
     const now = dateTime.now();
     const ts = (now: string).replace(":", "-").replace(" ", "_");
 
-    // Write tasks CSV
-    const tasksPath = outDir + "/tasks_" + ts + ".csv";
-    writeTasksCSV(tasksPath);
+    writeRunCSV(outputDir + "/run_" + ts + ".csv", ts);
+    writeTasksCSV(outputDir + "/tasks_" + ts + ".csv");
+    writePhasesCSV(outputDir + "/phases_" + ts + ".csv");
 
-    // Write phases CSV
-    const phasesPath = outDir + "/phases_" + ts + ".csv";
-    writePhasesCSV(phasesPath);
+    logInfo("Timing CSV written to: ", outputDir);
+  }
 
-    // Append to runs.csv manifest
-    const runsPath = baseDir + "/" + traceName + "/runs.csv";
-    appendRunsCSV(runsPath, ts);
+  proc const ref TimingReport.writeRunCSV(path: string, timestamp: string) throws {
+    var f = open(path, ioMode.cw);
+    var w = f.writer(locking=false);
 
-    logInfo("Timing CSV written to: ", outDir);
+    w.writeln("timestamp,strategy,numLocales,tracePath,totalTime,throughput");
+
+    var totalEvents: uint(64) = 0;
+    for loc in localeTimingData do for t in loc.taskTimings do totalEvents += t.eventsRead;
+    const throughput = if totalTime > 0.0 then totalEvents: real / totalTime else 0.0;
+
+    w.writef("%s,%s,%i,%s,%.6dr,%.0dr\n",
+             timestamp, strategy, numLocales, tracePath, totalTime, throughput);
+
+    w.close();
+    f.close();
   }
 
   proc const ref TimingReport.writeTasksCSV(path: string) throws {
     var f = open(path, ioMode.cw);
     var w = f.writer(locking=false);
 
-    // Header: meta columns + timing columns
-    w.write("strategy,numLocales,tracePath");
+    // Header: meta columns + timing columns (no strategy/numLocales/tracePath — those are in run_.csv)
     const mNames = metaColumnNames();
     for param i in 0..<numMetaColumns {
-      w.write(",", mNames(i));
+      if i > 0 then w.write(",");
+      w.write(mNames(i));
     }
     const tNames = timingColumnNames();
     for param i in 0..<numTimingColumns {
@@ -422,10 +427,10 @@ module ConverterTimings {
     // Data rows
     for loc in localeTimingData {
       for t in loc.taskTimings {
-        w.write(strategy, ",", numLocales, ",", tracePath);
         const meta = t.metaColumnValues();
         for param i in 0..<numMetaColumns {
-          w.write(",", meta(i));
+          if i > 0 then w.write(",");
+          w.write(meta(i));
         }
         const vals = t.timingColumnValues();
         for param i in 0..<numTimingColumns {
@@ -443,15 +448,14 @@ module ConverterTimings {
     var f = open(path, ioMode.cw);
     var w = f.writer(locking=false);
 
-    w.writeln("strategy,numLocales,tracePath,phase,time,pctTotal");
+    w.writeln("phase,time,pctTotal");
 
     const defTotal = defOpenTime + defSetupTime + defReadTime;
     const otherTime = totalTime - defTotal - groupMapTime - eventReadWriteTime - mergeTime;
 
     proc writePhaseRow(phaseName: string, phaseTime: real) throws {
       const pct = if totalTime > 0.0 then (phaseTime / totalTime) * 100.0 else 0.0;
-      w.writef("%s,%i,%s,%s,%.6dr,%.2dr\n",
-               strategy, numLocales, tracePath, phaseName, phaseTime, pct);
+      w.writef("%s,%.6dr,%.2dr\n", phaseName, phaseTime, pct);
     }
 
     writePhaseRow("Read global definitions", defTotal);
@@ -466,41 +470,5 @@ module ConverterTimings {
 
     w.close();
     f.close();
-  }
-
-  proc const ref TimingReport.appendRunsCSV(path: string, timestamp: string) throws {
-    const writeHeader = !exists(path);
-    var f = open(path, ioMode.cwr);
-    var w = f.writer(locking=false);
-
-    if !writeHeader {
-      // Seek to end for appending
-      w.seek(f.size..);
-    } else {
-      w.writeln("timestamp,strategy,numLocales,tracePath,totalTime,throughput");
-    }
-
-    var totalEvents: uint(64) = 0;
-    for loc in localeTimingData do for t in loc.taskTimings do totalEvents += t.eventsRead;
-    const throughput = if totalTime > 0.0 then totalEvents: real / totalTime else 0.0;
-
-    w.writef("%s,%s,%i,%s,%.6dr,%.0dr\n",
-             timestamp, strategy, numLocales, tracePath, totalTime, throughput);
-
-    w.close();
-    f.close();
-  }
-
-  // -------------------------------------------------------------------------
-  // deriveTraceName — extract a meaningful trace name from a path
-  // -------------------------------------------------------------------------
-
-  proc deriveTraceName(tracePathStr: string): string {
-    // Given e.g. /path/to/frontier-4-node-single-HPL-run/traces.otf2
-    // Return "frontier-4-node-single-HPL-run"
-    const dir = dirname(tracePathStr);
-    const name = basename(dir);
-    if name == "" || name == "." then return "unknown-trace";
-    return name;
   }
 }
