@@ -2,9 +2,15 @@
 //
 // Timing infrastructure for the converter.
 // Provides records for collecting per-phase and per-task timing data,
-// and a formatted report printer. Opt-in via --timings flag.
+// column-descriptor methods for auto-generated pretty-print and CSV output,
+// and a formatted report printer. Opt-in via --timings / --timings-csv flags.
 
 module ConverterTimings {
+  use IO;
+  use FileSystem;
+  use Path;
+  use Time;
+  use ConverterCommon;
 
   // -------------------------------------------------------------------------
   // TaskTiming — per-task timing data collected inside coforall
@@ -12,18 +18,72 @@ module ConverterTimings {
 
   record TaskTiming {
     var taskId: uint;
+    var localeId: int;
     var locations: uint;
     var eventsRead: uint;
-    var openTime: real;          // from ReadResult
-    var setupTime: real;         // from ReadResult
-    var readTime: real;          // from ReadResult
-    // Write times only for strategies that write per-task (e.g., locgroup_block)
-    // for others, these will be 0 and the total write time will be in writeTime in the report
-    var writeTime: real;         // from WriteResult
-    var callgraphWriteTime: real; // from WriteResult
-    var metricsWriteTime: real;  // from WriteResult
-    var totalTime: real;         // wall-clock for the entire task body
+    var openTime: real;              // from ReadResult
+    var setupTime: real;             // from ReadResult
+    var readTime: real;              // from ReadResult
+    var enterCallbackTime: real;     // from EvtCallbackContext
+    var leaveCallbackTime: real;     // from EvtCallbackContext
+    var metricCallbackTime: real;    // from EvtCallbackContext
+    // Write times only for strategies that write per-task, otherwise 0
+    var writeTime: real;             // from WriteResult (total)
+    var callgraphWriteTime: real;    // from WriteResult
+    var metricsWriteTime: real;      // from WriteResult
+    var totalTime: real;             // wall-clock for the entire task body
   }
+
+  // -------------------------------------------------------------------------
+  // Column descriptors — single source of truth for both CSV and pretty-print
+  // -------------------------------------------------------------------------
+
+  // Number of timing columns (real-valued)
+  param numTimingColumns = 13;
+
+  // Minimum column width for formatted output
+  param minColumnWidth = 10;
+
+  proc timingColumnNames(): numTimingColumns * string {
+    return ("Open (s)", "Setup (s)", "EnterCB (s)", "LeaveCB (s)", "MetricCB (s)",
+            "CBTotal (s)", "libOTF2 (s)", "ReadTotal (s)", "CBPct (%)",
+            "WriteCG (s)", "WriteMet (s)", "WriteTot (s)", "Total (s)");
+  }
+
+  proc TaskTiming.timingColumnValues(): numTimingColumns * real {
+    const cbTotal = enterCallbackTime + leaveCallbackTime + metricCallbackTime;
+    const otf2Time = readTime - cbTotal;
+    const cbPct = if readTime > 0.0 then 100.0 * cbTotal / readTime else 0.0;
+    return (openTime, setupTime, enterCallbackTime, leaveCallbackTime,
+            metricCallbackTime, cbTotal, otf2Time, readTime, cbPct,
+            callgraphWriteTime, metricsWriteTime, writeTime, totalTime);
+  }
+
+  // Meta columns (identifiers, not timing data)
+  param numMetaColumns = 4;
+
+  proc metaColumnNames(): numMetaColumns * string {
+    return ("Task", "Locale", "Locations", "Events");
+  }
+
+  proc TaskTiming.metaColumnValues(): numMetaColumns * uint {
+    return (taskId, localeId: uint, locations, eventsRead);
+  }
+
+  // Compute total display width of meta columns area (excluding leading indent)
+  proc computeMetaColsWidth(): int {
+    const names = metaColumnNames();
+    var w = 0;
+    for param i in 0..<numMetaColumns {
+      if i > 0 then w += 2; // gap between columns
+      w += max(names(i).size + 2, minColumnWidth);
+    }
+    return w;
+  }
+
+  // -------------------------------------------------------------------------
+  // LocaleTiming
+  // -------------------------------------------------------------------------
 
   record LocaleTiming {
     var numTasks: int;
@@ -43,19 +103,19 @@ module ConverterTimings {
     var defReadTime: real;
     var groupMapTime: real;
     var groupDistributionTime: real; // only for strategies with a group distribution phase
-    var eventReadWriteTime: real;  // combined time for event reading + callgraph writing
-    var evtReadTime: real;        // only for strategies that separate event read from write
-    var writeTime: real;          // only for strategies that separate event read from write
-    var mergeTime: real;        // only for strategies with a merge phase
+    var eventReadWriteTime: real;    // combined time for event reading + callgraph writing
+    var evtReadTime: real;           // only for strategies that separate event read from write
+    var writeTime: real;             // only for strategies that separate event read from write
+    var mergeTime: real;             // only for strategies with a merge phase
 
-    // Per-task data
-    // var numTasks: int;
-    // var taskData: [0..<numTasks] TaskTiming;
-    // Replaced with locale breakdown for better clarity in locgroup strategies
-    var localeTimingData : [0..<numLocales] LocaleTiming;
+    // Per-task data per locale
+    var localeTimingData: [0..<numLocales] LocaleTiming;
 
     // Strategy name for the header
     var strategy: string;
+
+    // Trace path (for CSV output)
+    var tracePath: string;
   }
 
   // -------------------------------------------------------------------------
@@ -69,8 +129,9 @@ module ConverterTimings {
     locData.taskTimingDom = {0..<timings.size};
     locData.taskTimings = timings;
   }
+
   // -------------------------------------------------------------------------
-  // print — output the formatted timing report
+  // print — column-driven formatted timing report
   // -------------------------------------------------------------------------
 
   proc const ref TimingReport.print() {
@@ -105,30 +166,64 @@ module ConverterTimings {
     for loc in localeTimingData do globalTaskCount += loc.numTasks;
 
     if globalTaskCount > 0 {
-      const taskHeader = "  Task  Locations  Events      Open (s)  Setup (s)  Read (s)  Write CG (s)  Write Met (s)  Write Tot (s)  Total (s)";
-      const taskSep    = "  ────  ─────────  ──────────  ────────  ─────────  ────────  ────────────  ─────────────  ─────────────  ─────────";
+      // Build header and separator dynamically from column descriptors
+      const mNames = metaColumnNames();
+      const tNames = timingColumnNames();
 
-      // --- Per-locale sections with per-locale stats ---
+      var header = "";
+      var sep = "";
+
+      // Meta columns
+      for param i in 0..<numMetaColumns {
+        header += "  ";
+        sep += "  ";
+        const name = mNames(i);
+        const width = max(name.size + 2, minColumnWidth);
+        const pad = width - name.size;
+        for j in 0..<pad do header += " ";
+        header += name;
+        for j in 0..<width do sep += "─";
+      }
+
+      // Timing columns
+      for param i in 0..<numTimingColumns {
+        header += "  ";
+        sep += "  ";
+        const name = tNames(i);
+        const width = max(name.size + 2, minColumnWidth);
+        const pad = width - name.size;
+        for j in 0..<pad do header += " ";
+        header += name;
+        for j in 0..<width do sep += "─";
+      }
+
+      // --- Per-locale sections ---
       for locId in 0..<numLocales {
         ref loc = localeTimingData[locId];
         if loc.numTasks == 0 then continue;
 
         writeln();
         writeln("┌─ Locale ", locId, " (", loc.numTasks, " tasks) ─────────────────────────────────────────");
-        writeln(taskHeader);
-        writeln(taskSep);
+        writeln(header);
+        writeln(sep);
         for t in loc.taskTimings {
-          writef("  %4u  %9u  %10u  %8.3dr  %9.3dr  %8.3dr  %12.3dr  %13.3dr  %13.3dr  %9.3dr\n",
-                 t.taskId, t.locations, t.eventsRead,
-                 t.openTime, t.setupTime, t.readTime,
-                 t.callgraphWriteTime, t.metricsWriteTime, t.writeTime,
-                 t.totalTime);
+          const meta = t.metaColumnValues();
+          for param i in 0..<numMetaColumns {
+            const width = max(mNames(i).size + 2, minColumnWidth);
+            writef("  %*u", width, meta(i));
+          }
+          const vals = t.timingColumnValues();
+          for param i in 0..<numTimingColumns {
+            const width = max(tNames(i).size + 2, minColumnWidth);
+            writef("  %*.3dr", width, vals(i));
+          }
+          writeln();
         }
-        writeln(taskSep);
+        writeln(sep);
 
         // Per-locale summary stats
         printTaskStats(loc.taskTimings, loc.numTasks, "  ");
-        writeln("└──────────────────────────────────────────────────────────────────────────");
+        writeln("└", sep[2..]);
       }
 
       // --- Global (all-locale) aggregate stats ---
@@ -147,7 +242,7 @@ module ConverterTimings {
         }
         printTaskStats(allTasks, globalTaskCount, "║ ");
 
-        // Per-locale wall times for inter-locale balance
+        // Per-locale wall times
         writeln("║");
         writeln("║  Per-Locale Wall Times (max task total = locale wall time):");
         writeln("║   Locale  Tasks  Events      Wall (s)");
@@ -200,67 +295,70 @@ module ConverterTimings {
   proc printTaskStats(const ref tasks, n: int, prefix: string) {
     if n == 0 then return;
 
-    var minOpen = tasks[0].openTime, maxOpen = tasks[0].openTime, sumOpen = 0.0;
-    var minSetup = tasks[0].setupTime, maxSetup = tasks[0].setupTime, sumSetup = 0.0;
-    var minRead = tasks[0].readTime, maxRead = tasks[0].readTime, sumRead = 0.0;
-    var minCGWrite = tasks[0].callgraphWriteTime, maxCGWrite = tasks[0].callgraphWriteTime, sumCGWrite = 0.0;
-    var minMetWrite = tasks[0].metricsWriteTime, maxMetWrite = tasks[0].metricsWriteTime, sumMetWrite = 0.0;
-    var minWrite = tasks[0].writeTime, maxWrite = tasks[0].writeTime, sumWrite = 0.0;
-    var minTotal = tasks[0].totalTime, maxTotal = tasks[0].totalTime, sumTotal = 0.0;
-    var totalEvents: uint(64) = 0;
+    const tNames = timingColumnNames();
+    const metaWidth = computeMetaColsWidth();
+    var mins: numTimingColumns * real;
+    var maxs: numTimingColumns * real;
+    var sums: numTimingColumns * real;
 
+    // Initialize from first task
+    const firstVals = tasks[0].timingColumnValues();
+    for param i in 0..<numTimingColumns {
+      mins(i) = firstVals(i);
+      maxs(i) = firstVals(i);
+      sums(i) = 0.0;
+    }
+
+    // Accumulate
     for t in tasks {
-      if t.openTime < minOpen then minOpen = t.openTime;
-      if t.openTime > maxOpen then maxOpen = t.openTime;
-      sumOpen += t.openTime;
-      if t.setupTime < minSetup then minSetup = t.setupTime;
-      if t.setupTime > maxSetup then maxSetup = t.setupTime;
-      sumSetup += t.setupTime;
-      if t.readTime < minRead then minRead = t.readTime;
-      if t.readTime > maxRead then maxRead = t.readTime;
-      sumRead += t.readTime;
-      if t.callgraphWriteTime < minCGWrite then minCGWrite = t.callgraphWriteTime;
-      if t.callgraphWriteTime > maxCGWrite then maxCGWrite = t.callgraphWriteTime;
-      sumCGWrite += t.callgraphWriteTime;
-      if t.metricsWriteTime < minMetWrite then minMetWrite = t.metricsWriteTime;
-      if t.metricsWriteTime > maxMetWrite then maxMetWrite = t.metricsWriteTime;
-      sumMetWrite += t.metricsWriteTime;
-      if t.writeTime < minWrite then minWrite = t.writeTime;
-      if t.writeTime > maxWrite then maxWrite = t.writeTime;
-      sumWrite += t.writeTime;
-      if t.totalTime < minTotal then minTotal = t.totalTime;
-      if t.totalTime > maxTotal then maxTotal = t.totalTime;
-      sumTotal += t.totalTime;
-      totalEvents += t.eventsRead;
+      const vals = t.timingColumnValues();
+      for param i in 0..<numTimingColumns {
+        if vals(i) < mins(i) then mins(i) = vals(i);
+        if vals(i) > maxs(i) then maxs(i) = vals(i);
+        sums(i) += vals(i);
+      }
     }
 
     const cnt = n: real;
-    const meanOpen = sumOpen / cnt;
-    const meanSetup = sumSetup / cnt;
-    const meanRead = sumRead / cnt;
-    const meanCGWrite = sumCGWrite / cnt;
-    const meanMetWrite = sumMetWrite / cnt;
-    const meanWrite = sumWrite / cnt;
-    const meanTotal = sumTotal / cnt;
 
-    writef("%s%<27s  %8.3dr  %9.3dr  %8.3dr  %12.3dr  %13.3dr  %13.3dr  %9.3dr\n",
-           prefix, "Min", minOpen, minSetup, minRead, minCGWrite, minMetWrite, minWrite, minTotal);
-    writef("%s%<27s  %8.3dr  %9.3dr  %8.3dr  %12.3dr  %13.3dr  %13.3dr  %9.3dr\n",
-           prefix, "Max", maxOpen, maxSetup, maxRead, maxCGWrite, maxMetWrite, maxWrite, maxTotal);
-    writef("%s%<27s  %8.3dr  %9.3dr  %8.3dr  %12.3dr  %13.3dr  %13.3dr  %9.3dr\n",
-           prefix, "Mean", meanOpen, meanSetup, meanRead, meanCGWrite, meanMetWrite, meanWrite, meanTotal);
-
-    if meanTotal > 0.0 {
-      const imbOpen = if meanOpen > 0.0 then maxOpen / meanOpen else 0.0;
-      const imbSetup = if meanSetup > 0.0 then maxSetup / meanSetup else 0.0;
-      const imbRead = if meanRead > 0.0 then maxRead / meanRead else 0.0;
-      const imbCGWrite = if meanCGWrite > 0.0 then maxCGWrite / meanCGWrite else 0.0;
-      const imbMetWrite = if meanMetWrite > 0.0 then maxMetWrite / meanMetWrite else 0.0;
-      const imbWrite = if meanWrite > 0.0 then maxWrite / meanWrite else 0.0;
-      const imbTotal = maxTotal / meanTotal;
-      writef("%s%<27s  %7.3drx  %8.3drx  %7.3drx  %11.3drx  %12.3drx  %12.3drx  %8.3drx\n",
-             prefix, "Imbalance (max/mean)", imbOpen, imbSetup, imbRead, imbCGWrite, imbMetWrite, imbWrite, imbTotal);
+    // Print Min row
+    write(prefix);
+    writef("%<*s", metaWidth, "Min");
+    for param i in 0..<numTimingColumns {
+      const width = max(tNames(i).size + 2, minColumnWidth);
+      writef("  %*.3dr", width, mins(i));
     }
+    writeln();
+
+    // Print Max row
+    write(prefix);
+    writef("%<*s", metaWidth, "Max");
+    for param i in 0..<numTimingColumns {
+      const width = max(tNames(i).size + 2, minColumnWidth);
+      writef("  %*.3dr", width, maxs(i));
+    }
+    writeln();
+
+    // Print Mean row
+    write(prefix);
+    writef("%<*s", metaWidth, "Mean");
+    for param i in 0..<numTimingColumns {
+      const width = max(tNames(i).size + 2, minColumnWidth);
+      writef("  %*.3dr", width, sums(i) / cnt);
+    }
+    writeln();
+
+    // Print Imbalance row
+    write(prefix);
+    writef("%<*s", metaWidth, "Imbalance (max/mean)");
+    for param i in 0..<numTimingColumns {
+      const width = max(tNames(i).size + 2, minColumnWidth);
+      const mean = sums(i) / cnt;
+      const imb = if mean > 0.0 then maxs(i) / mean else 0.0;
+      writef("  %*.3dr", width - 1, imb);
+      write("x");
+    }
+    writeln();
   }
 
   // -------------------------------------------------------------------------
@@ -270,5 +368,139 @@ module ConverterTimings {
   proc const ref TimingReport.printPhase(name: string, time: real) {
     const pct = if totalTime > 0.0 then (time / totalTime) * 100.0 else 0.0;
     writef("  %<31s  %10.3dr  %5.1dr%%\n", name, time, pct);
+  }
+
+  // -------------------------------------------------------------------------
+  // writeCSV — column-driven CSV export with auto-organized output
+  // -------------------------------------------------------------------------
+
+  proc const ref TimingReport.writeCSV(baseDir: string) throws {
+    // Derive trace name from tracePath
+    const traceName = deriveTraceName(tracePath);
+    const outDir = baseDir + "/" + traceName + "/" + strategy;
+
+    // Create directory structure
+    if !exists(outDir) {
+      mkdir(outDir, parents=true);
+    }
+
+    // Timestamp for filenames
+    const now = dateTime.now();
+    const ts = (now: string).replace(":", "-").replace(" ", "_");
+
+    // Write tasks CSV
+    const tasksPath = outDir + "/tasks_" + ts + ".csv";
+    writeTasksCSV(tasksPath);
+
+    // Write phases CSV
+    const phasesPath = outDir + "/phases_" + ts + ".csv";
+    writePhasesCSV(phasesPath);
+
+    // Append to runs.csv manifest
+    const runsPath = baseDir + "/" + traceName + "/runs.csv";
+    appendRunsCSV(runsPath);
+
+    logInfo("Timing CSV written to: ", outDir);
+  }
+
+  proc const ref TimingReport.writeTasksCSV(path: string) throws {
+    var f = open(path, ioMode.cw);
+    var w = f.writer(locking=false);
+
+    // Header: meta columns + timing columns
+    w.write("strategy,numLocales,tracePath");
+    const mNames = metaColumnNames();
+    for param i in 0..<numMetaColumns {
+      w.write(",", mNames(i));
+    }
+    const tNames = timingColumnNames();
+    for param i in 0..<numTimingColumns {
+      w.write(",", tNames(i));
+    }
+    w.writeln();
+
+    // Data rows
+    for loc in localeTimingData {
+      for t in loc.taskTimings {
+        w.write(strategy, ",", numLocales, ",", tracePath);
+        const meta = t.metaColumnValues();
+        for param i in 0..<numMetaColumns {
+          w.write(",", meta(i));
+        }
+        const vals = t.timingColumnValues();
+        for param i in 0..<numTimingColumns {
+          w.writef(",%.6dr", vals(i));
+        }
+        w.writeln();
+      }
+    }
+
+    w.close();
+    f.close();
+  }
+
+  proc const ref TimingReport.writePhasesCSV(path: string) throws {
+    var f = open(path, ioMode.cw);
+    var w = f.writer(locking=false);
+
+    w.writeln("strategy,numLocales,tracePath,phase,time,pctTotal");
+
+    const defTotal = defOpenTime + defSetupTime + defReadTime;
+    const otherTime = totalTime - defTotal - groupMapTime - eventReadWriteTime - mergeTime;
+
+    proc writePhaseRow(phaseName: string, phaseTime: real) throws {
+      const pct = if totalTime > 0.0 then (phaseTime / totalTime) * 100.0 else 0.0;
+      w.writef("%s,%i,%s,%s,%.6dr,%.2dr\n",
+               strategy, numLocales, tracePath, phaseName, phaseTime, pct);
+    }
+
+    writePhaseRow("Read global definitions", defTotal);
+    if groupMapTime > 0.0 then writePhaseRow("Build group/location map", groupMapTime);
+    if groupDistributionTime > 0.0 then writePhaseRow("Distribute groups", groupDistributionTime);
+    if evtReadTime > 0.0 then writePhaseRow("Read events", evtReadTime);
+    if writeTime > 0.0 then writePhaseRow("Write output", writeTime);
+    if eventReadWriteTime > 0.0 then writePhaseRow("Read events + write output", eventReadWriteTime);
+    if mergeTime > 0.0 then writePhaseRow("Merge contexts", mergeTime);
+    if otherTime > 0.0 then writePhaseRow("Other (overhead)", otherTime);
+    writePhaseRow("Total", totalTime);
+
+    w.close();
+    f.close();
+  }
+
+  proc const ref TimingReport.appendRunsCSV(path: string) throws {
+    const writeHeader = !exists(path);
+    var f = open(path, ioMode.cwr);
+    var w = f.writer(locking=false);
+
+    if !writeHeader {
+      // Seek to end for appending
+      w.seek(f.size..);
+    } else {
+      w.writeln("strategy,numLocales,tracePath,totalTime,throughput");
+    }
+
+    var totalEvents: uint(64) = 0;
+    for loc in localeTimingData do for t in loc.taskTimings do totalEvents += t.eventsRead;
+    const throughput = if totalTime > 0.0 then totalEvents: real / totalTime else 0.0;
+
+    w.writef("%s,%i,%s,%.6dr,%.0dr\n",
+             strategy, numLocales, tracePath, totalTime, throughput);
+
+    w.close();
+    f.close();
+  }
+
+  // -------------------------------------------------------------------------
+  // deriveTraceName — extract a meaningful trace name from a path
+  // -------------------------------------------------------------------------
+
+  proc deriveTraceName(tracePathStr: string): string {
+    // Given e.g. /path/to/frontier-4-node-single-HPL-run/traces.otf2
+    // Return "frontier-4-node-single-HPL-run"
+    const dir = dirname(tracePathStr);
+    const name = basename(dir);
+    if name == "" || name == "." then return "unknown-trace";
+    return name;
   }
 }

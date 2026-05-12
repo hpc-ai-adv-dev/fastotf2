@@ -117,10 +117,11 @@ module ConverterEvtReaders {
                       userData: c_ptr(void),
                       attributes: c_ptr(OTF2_AttributeList),
                       region: OTF2_RegionRef): OTF2_CallbackCode {
-    var cbSw: stopwatch; cbSw.start();
     var ctxPtr = userData: c_ptr(EvtCallbackContext);
     if ctxPtr == nil then return OTF2_CALLBACK_ERROR;
     ref ctx = ctxPtr.deref();
+    if ctx.evtArgs.noopCallbacks then return OTF2_CALLBACK_SUCCESS;
+    var cbSw: stopwatch; cbSw.start();
     ref defCtx = ctx.defContext;
 
     const (locName, locGroup, regionName) = getLocationAndRegionInfo(defCtx, location, region);
@@ -149,10 +150,11 @@ module ConverterEvtReaders {
                       userData: c_ptr(void),
                       attributes: c_ptr(OTF2_AttributeList),
                       region: OTF2_RegionRef): OTF2_CallbackCode {
-    var cbSw: stopwatch; cbSw.start();
     var ctxPtr = userData: c_ptr(EvtCallbackContext);
     if ctxPtr == nil then return OTF2_CALLBACK_ERROR;
     ref ctx = ctxPtr.deref();
+    if ctx.evtArgs.noopCallbacks then return OTF2_CALLBACK_SUCCESS;
+    var cbSw: stopwatch; cbSw.start();
     ref defCtx = ctx.defContext;
 
     const (locName, locGroup, regionName) = getLocationAndRegionInfo(defCtx, location, region);
@@ -184,10 +186,11 @@ module ConverterEvtReaders {
                        numberOfMetrics: c_uint8,
                        typeIDs: c_ptrConst(OTF2_Type),
                        metricValues: c_ptrConst(OTF2_MetricValue)): OTF2_CallbackCode {
-    var cbSw: stopwatch; cbSw.start();
     var ctxPtr = userData: c_ptr(EvtCallbackContext);
     if ctxPtr == nil then return OTF2_CALLBACK_ERROR;
     ref ctx = ctxPtr.deref();
+    if ctx.evtArgs.noopCallbacks then return OTF2_CALLBACK_SUCCESS;
+    var cbSw: stopwatch; cbSw.start();
     ref defCtx = ctx.defContext;
     const (locName, locGroup, _) = getLocationAndRegionInfo(defCtx, location, 0);
     // We only handle single metric members for now

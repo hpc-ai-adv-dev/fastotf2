@@ -39,22 +39,29 @@ module Strategy_Serial {
 
     logDebug("Total events read: ", totalEventsRead);
     logInfo("Writing ", conf.outputFormat: string, " files to directory: ", conf.outputDir);
-    const writeResult = writeOutputForContext(evtCtx, conf.outputFormat, conf.outputDir);
-    logInfo("Finished writing to ", conf.outputDir, " in ", sw.elapsed(), " seconds");
+    const writeResult = if !conf.noopCallbacks
+      then writeOutputForContext(evtCtx, conf.outputFormat, conf.outputDir)
+      else new WriteResult();
+    if !conf.noopCallbacks then
+      logInfo("Finished writing to ", conf.outputDir, " in ", sw.elapsed(), " seconds");
     const taskTotalTime = taskSw.elapsed();
     const evtReadWriteTime = sw.elapsed();
     const totalConversionTime = global_sw.elapsed();
     logInfo("Finished converting trace in ", totalConversionTime, " seconds");
 
-    if conf.timings {
+    if conf.timings || conf.timingsCSV != "" {
       var taskTimings: [0..0] TaskTiming;
       taskTimings[0] = new TaskTiming(
         taskId=0,
-        locations=locationArray.size: int,
+        localeId=here.id,
+        locations=locationArray.size: uint,
         eventsRead=readResult.eventsRead,
         openTime=readResult.openTime,
         setupTime=readResult.setupTime,
         readTime=readResult.readTime,
+        enterCallbackTime=evtCtx.enterCallbackTime,
+        leaveCallbackTime=evtCtx.leaveCallbackTime,
+        metricCallbackTime=evtCtx.metricCallbackTime,
         writeTime=writeResult.writeTime,
         callgraphWriteTime=writeResult.callgraphTime,
         metricsWriteTime=writeResult.metricsTime,
@@ -63,13 +70,15 @@ module Strategy_Serial {
 
       var report = new TimingReport();
       report.strategy = conf.strategy;
+      report.tracePath = conf.trace;
       report.totalTime = totalConversionTime;
       report.defOpenTime = defResult.openTime;
       report.defSetupTime = defResult.setupTime;
       report.defReadTime = defResult.readTime;
       report.eventReadWriteTime = evtReadWriteTime;
       report.setTaskTimings(taskTimings);
-      report.print();
+      if conf.timings then report.print();
+      if conf.timingsCSV != "" then report.writeCSV(conf.timingsCSV);
     }
   }
 }

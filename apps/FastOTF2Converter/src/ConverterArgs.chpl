@@ -24,6 +24,8 @@ module ConverterArgs {
     var excludeMPI: bool;
     var excludeHIP: bool;
     var timings: bool;
+    var timingsCSV: string;
+    var noopCallbacks: bool;
   }
 
   // -------------------------------------------------------------------------
@@ -101,6 +103,22 @@ module ConverterArgs {
       help="Print a performance timing report at the end of conversion"
     );
 
+    var timingsCSVArg = parser.addOption(
+      name="timingsCSV",
+      opts=["--timings-csv"],
+      defaultValue="",
+      numArgs=1,
+      help="Base directory for CSV timing output (auto-organized by trace/strategy)"
+    );
+
+    var noopCallbacksArg = parser.addFlag(
+      name="noopCallbacks",
+      opts=["--noop-callbacks"],
+      defaultValue=false,
+      numArgs=0,
+      help="Disable all callback work to measure pure OTF2 read baseline"
+    );
+
     var logArg = parser.addOption(
       name="log",
       defaultValue="INFO",
@@ -118,6 +136,8 @@ module ConverterArgs {
     conf.excludeMPI = excludeMPIArg.valueAsBool();
     conf.excludeHIP = excludeHIPArg.valueAsBool();
     conf.timings = timingsArg.valueAsBool();
+    conf.timingsCSV = timingsCSVArg.value();
+    conf.noopCallbacks = noopCallbacksArg.valueAsBool();
 
     try {
       log = logArg.value(): LogLevel;
@@ -180,7 +200,8 @@ module ConverterArgs {
       processesToTrack=processesToTrack,
       metricsToTrack=metricsToTrack,
       excludeMPI=conf.excludeMPI,
-      excludeHIP=conf.excludeHIP
+      excludeHIP=conf.excludeHIP,
+      noopCallbacks=conf.noopCallbacks
     );
   }
 }
