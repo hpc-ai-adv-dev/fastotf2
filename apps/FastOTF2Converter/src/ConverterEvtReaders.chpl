@@ -120,7 +120,6 @@ module ConverterEvtReaders {
     var ctxPtr = userData: c_ptr(EvtCallbackContext);
     if ctxPtr == nil then return OTF2_CALLBACK_ERROR;
     ref ctx = ctxPtr.deref();
-    if ctx.evtArgs.noopCallbacks then return OTF2_CALLBACK_SUCCESS;
     var cbSw: stopwatch; cbSw.start();
     ref defCtx = ctx.defContext;
 
@@ -153,7 +152,6 @@ module ConverterEvtReaders {
     var ctxPtr = userData: c_ptr(EvtCallbackContext);
     if ctxPtr == nil then return OTF2_CALLBACK_ERROR;
     ref ctx = ctxPtr.deref();
-    if ctx.evtArgs.noopCallbacks then return OTF2_CALLBACK_SUCCESS;
     var cbSw: stopwatch; cbSw.start();
     ref defCtx = ctx.defContext;
 
@@ -189,7 +187,6 @@ module ConverterEvtReaders {
     var ctxPtr = userData: c_ptr(EvtCallbackContext);
     if ctxPtr == nil then return OTF2_CALLBACK_ERROR;
     ref ctx = ctxPtr.deref();
-    if ctx.evtArgs.noopCallbacks then return OTF2_CALLBACK_SUCCESS;
     var cbSw: stopwatch; cbSw.start();
     ref defCtx = ctx.defContext;
     const (locName, locGroup, _) = getLocationAndRegionInfo(defCtx, location, 0);

@@ -129,7 +129,6 @@ module ConverterCommon {
     const metricsToTrack: domain(string);
     const excludeMPI: bool = false;
     const excludeHIP: bool = false;
-    const noopCallbacks: bool = false;
   }
 
   record EvtCallbackContext {
