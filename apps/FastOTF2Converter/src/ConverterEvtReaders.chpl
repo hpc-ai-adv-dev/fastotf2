@@ -118,9 +118,9 @@ module ConverterEvtReaders {
                       userData: c_ptr(void),
                       attributes: c_ptr(OTF2_AttributeList),
                       region: OTF2_RegionRef): OTF2_CallbackCode {
-    if noopCallbacks then return OTF2_CALLBACK_SUCCESS;
     var ctxPtr = userData: c_ptr(EvtCallbackContext);
     if ctxPtr == nil then return OTF2_CALLBACK_ERROR;
+    if noopCallbacks then return OTF2_CALLBACK_SUCCESS;
     ref ctx = ctxPtr.deref();
     var cbSw: stopwatch; cbSw.start();
     ref defCtx = ctx.defContext;
@@ -151,9 +151,9 @@ module ConverterEvtReaders {
                       userData: c_ptr(void),
                       attributes: c_ptr(OTF2_AttributeList),
                       region: OTF2_RegionRef): OTF2_CallbackCode {
-    if noopCallbacks then return OTF2_CALLBACK_SUCCESS;
     var ctxPtr = userData: c_ptr(EvtCallbackContext);
     if ctxPtr == nil then return OTF2_CALLBACK_ERROR;
+    if noopCallbacks then return OTF2_CALLBACK_SUCCESS;
     ref ctx = ctxPtr.deref();
     var cbSw: stopwatch; cbSw.start();
     ref defCtx = ctx.defContext;
@@ -187,9 +187,9 @@ module ConverterEvtReaders {
                        numberOfMetrics: c_uint8,
                        typeIDs: c_ptrConst(OTF2_Type),
                        metricValues: c_ptrConst(OTF2_MetricValue)): OTF2_CallbackCode {
-    if noopCallbacks then return OTF2_CALLBACK_SUCCESS;
     var ctxPtr = userData: c_ptr(EvtCallbackContext);
     if ctxPtr == nil then return OTF2_CALLBACK_ERROR;
+    if noopCallbacks then return OTF2_CALLBACK_SUCCESS;
     ref ctx = ctxPtr.deref();
     var cbSw: stopwatch; cbSw.start();
     ref defCtx = ctx.defContext;
