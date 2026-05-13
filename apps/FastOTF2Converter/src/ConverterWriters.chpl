@@ -74,7 +74,7 @@ module ConverterWriters {
   }
 
   proc writeCallgraphCSV(callGraph: shared CallGraph, group: string, thread: string, outputPath: string) throws {
-    const intervals = callGraph.getAllIntervals();
+    const intervals = callGraph.getAllIntervalsUnsorted();
     if intervals.size == 0 then return;
 
     var outfile = open(outputPath, ioMode.cw);
@@ -279,12 +279,12 @@ module ConverterWriters {
     phaseSw.start();
 
 
-    for (group, threads) in evtCtx.callGraphs.toArray() {
+    forall (group, threads) in evtCtx.callGraphs.toArray() {
       if !evtCtx.evtArgs.processesToTrack.isEmpty() &&
          !evtCtx.evtArgs.processesToTrack.contains(group) {
         logTrace("Skipping group ", group, " (not in processes to track)");
       } else {
-        for thread in threads.keysToArray() {
+        forall thread in threads.keysToArray() {
           const callGraph = try! threads[thread];
           writeCallgraph(callGraph, group, thread, format, outputDir);
         }
@@ -294,7 +294,7 @@ module ConverterWriters {
     const callgraphTime = phaseSw.elapsed();
     phaseSw.clear();
 
-    for (group, threadMetrics) in evtCtx.metrics.toArray() {
+    forall (group, threadMetrics) in evtCtx.metrics.toArray() {
       if !evtCtx.evtArgs.processesToTrack.isEmpty() &&
          !evtCtx.evtArgs.processesToTrack.contains(group) {
         logTrace("Skipping group ", group, " (not in processes to track)");
