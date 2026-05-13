@@ -2,6 +2,7 @@
 
 module FastOTF2Converter {
   use ConverterArgs;
+  use ConverterParams;
   use Strategy_Serial;
   use Strategy_LocBlock;
   use Strategy_LocGroupBlock;
@@ -23,6 +24,8 @@ module FastOTF2Converter {
   proc main(args: [] string) throws {
     const conf = parseConverterArgs(args);
     validatePaths(conf);
+    if noopCallbacks then
+      logWarn("Compiled with noopCallbacks=true — event callbacks are no-ops");
 
     // Capture baseline RSS per locale (before work)
     var baselineKiB: [0..#numLocales] int;

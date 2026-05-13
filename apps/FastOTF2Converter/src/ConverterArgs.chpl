@@ -25,7 +25,6 @@ module ConverterArgs {
     var excludeHIP: bool;
     var timings: bool;
     var timingsCSV: string;
-    var noopCallbacks: bool;
   }
 
   // -------------------------------------------------------------------------
@@ -111,14 +110,6 @@ module ConverterArgs {
       help="Output directory for CSV timing files (writes run_<ts>.csv, tasks_<ts>.csv, phases_<ts>.csv)"
     );
 
-    var noopCallbacksArg = parser.addFlag(
-      name="noopCallbacks",
-      opts=["--noop-callbacks"],
-      defaultValue=false,
-      numArgs=0,
-      help="Disable all callback work to measure pure OTF2 read baseline"
-    );
-
     var logArg = parser.addOption(
       name="log",
       defaultValue="INFO",
@@ -137,7 +128,6 @@ module ConverterArgs {
     conf.excludeHIP = excludeHIPArg.valueAsBool();
     conf.timings = timingsArg.valueAsBool();
     conf.timingsCSV = timingsCSVArg.value();
-    conf.noopCallbacks = noopCallbacksArg.valueAsBool();
 
     try {
       log = logArg.value(): LogLevel;
@@ -200,8 +190,7 @@ module ConverterArgs {
       processesToTrack=processesToTrack,
       metricsToTrack=metricsToTrack,
       excludeMPI=conf.excludeMPI,
-      excludeHIP=conf.excludeHIP,
-      noopCallbacks=conf.noopCallbacks
+      excludeHIP=conf.excludeHIP
     );
   }
 }
