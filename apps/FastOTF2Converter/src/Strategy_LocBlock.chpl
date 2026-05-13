@@ -57,11 +57,15 @@ module Strategy_LocBlock {
 
       taskTimings[i] = new TaskTiming(
         taskId=i,
+        localeId=here.id,
         locations=myLocs.size,
         eventsRead=readResult.eventsRead,
         openTime=readResult.openTime,
         setupTime=readResult.setupTime,
         readTime=readResult.readTime,
+        enterCallbackTime=evtContexts[i].enterCallbackTime,
+        leaveCallbackTime=evtContexts[i].leaveCallbackTime,
+        metricCallbackTime=evtContexts[i].metricCallbackTime,
         totalTime=taskSw.elapsed()
       );
     }
@@ -82,13 +86,17 @@ module Strategy_LocBlock {
     logInfo("Trace loaded in ", global_sw.elapsed(), " seconds");
     logInfo("Writing ", conf.outputFormat: string, " files to directory: ", conf.outputDir);
 
-    const writeResult = writeOutputForContext(mergedCtx, conf.outputFormat, conf.outputDir);
-    logInfo("Finished writing to ", conf.outputDir, " in ", writeResult.writeTime, " seconds");
+    const writeResult = if !conf.noopCallbacks
+      then writeOutputForContext(mergedCtx, conf.outputFormat, conf.outputDir)
+      else new WriteResult();
+    if !conf.noopCallbacks then
+      logInfo("Finished writing to ", conf.outputDir, " in ", writeResult.writeTime, " seconds");
     logInfo("Finished converting trace in ", global_sw.elapsed(), " seconds");
 
-    if conf.timings {
+    if conf.timings || conf.timingsCSV != "" {
       var report = new TimingReport();
       report.strategy = conf.strategy;
+      report.tracePath = conf.trace;
       report.totalTime = global_sw.elapsed();
       report.defOpenTime = defResult.openTime;
       report.defSetupTime = defResult.setupTime;
@@ -97,7 +105,8 @@ module Strategy_LocBlock {
       report.writeTime = writeResult.writeTime;
       report.mergeTime = mergeTime;
       report.setTaskTimings(taskTimings);
-      report.print();
+      if conf.timings then report.print();
+      if conf.timingsCSV != "" then report.writeCSV(conf.timingsCSV);
     }
   }
 }

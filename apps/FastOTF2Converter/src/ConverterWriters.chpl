@@ -74,7 +74,7 @@ module ConverterWriters {
   }
 
   proc writeCallgraphCSV(callGraph: shared CallGraph, group: string, thread: string, outputPath: string) throws {
-    const intervals = callGraph.getIntervalsBetween(-inf, inf);
+    const intervals = callGraph.getAllIntervalsUnsorted();
     if intervals.size == 0 then return;
 
     var outfile = open(outputPath, ioMode.cw);
@@ -127,8 +127,11 @@ module ConverterWriters {
   // Writes all callgraph intervals to a Parquet file with the same columns and
   // values as the CSV output: thread, group, depth, name, start_time, end_time,
   // duration.  Times are real(64) seconds — identical to CSV.
-  proc writeCallgraphParquet(callGraph: shared CallGraph, group: string, thread: string, outputPath: string) throws {
-    const intervals = callGraph.getIntervalsBetween(-inf, inf);
+  proc writeCallgraphParquet(callGraph: shared CallGraph, group: string, thread: string,
+                             outputPath: string) throws {
+
+    const intervals = callGraph.getAllIntervalsUnsorted();
+    // const intervals = callGraph.getAllIntervals();
     const n = intervals.size;
 
     // [PARQUET-PKG-GUARD] writeTable() crashes on empty arrays.
@@ -143,7 +146,7 @@ module ConverterWriters {
     var endTimeCol:     [0..<n] real(64);
     var durationCol:    [0..<n] real(64);
 
-    for (idx, iv) in zip(0..<n, intervals) {
+    forall (idx, iv) in zip(0..<n, intervals) {
       const endSec = if iv.hasEnd then iv.end else inf;
       threadCol[idx]    = thread;
       groupCol[idx]     = group;
@@ -275,12 +278,13 @@ module ConverterWriters {
     totalSw.start();
     phaseSw.start();
 
-    for (group, threads) in evtCtx.callGraphs.toArray() {
+
+    forall (group, threads) in evtCtx.callGraphs.toArray() {
       if !evtCtx.evtArgs.processesToTrack.isEmpty() &&
          !evtCtx.evtArgs.processesToTrack.contains(group) {
         logTrace("Skipping group ", group, " (not in processes to track)");
       } else {
-        for thread in threads.keysToArray() {
+        forall thread in threads.keysToArray() {
           const callGraph = try! threads[thread];
           writeCallgraph(callGraph, group, thread, format, outputDir);
         }
@@ -290,7 +294,7 @@ module ConverterWriters {
     const callgraphTime = phaseSw.elapsed();
     phaseSw.clear();
 
-    for (group, threadMetrics) in evtCtx.metrics.toArray() {
+    forall (group, threadMetrics) in evtCtx.metrics.toArray() {
       if !evtCtx.evtArgs.processesToTrack.isEmpty() &&
          !evtCtx.evtArgs.processesToTrack.contains(group) {
         logTrace("Skipping group ", group, " (not in processes to track)");

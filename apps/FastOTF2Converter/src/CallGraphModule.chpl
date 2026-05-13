@@ -115,11 +115,39 @@ module CallGraphModule {
       const n = tmp.size;
       var A: [0..#n] interval;
       var i = 0;
-      for v in tmp { A[i] = v; i += 1; }
+      for v in tmp {
+        A[i] = v;
+        i += 1;
+      }
 
       // Sort by (start, end, depth)
       sort(A, comparator = new intervalComparator());
 
+      return A;
+    }
+
+    // Returns all intervals (finished + live) sorted, without clipping.
+    // Live intervals are returned with hasEnd=false (original form).
+    proc getAllIntervals(): [] interval {
+      var A = getAllIntervalsUnsorted();
+      sort(A, comparator = new intervalComparator());
+      return A;
+    }
+
+    // Returns all intervals (finished + live) without clipping or sorting.
+    // Live intervals are returned with hasEnd=false (original form).
+    proc getAllIntervalsUnsorted(): [] interval {
+      const n = finished.size + live.size;
+      var A: [0..#n] interval;
+      var i = 0;
+      for iv in finished {
+        A[i] = iv;
+        i += 1;
+      }
+      for iv in live {
+        A[i] = iv;
+        i += 1;
+      }
       return A;
     }
   }

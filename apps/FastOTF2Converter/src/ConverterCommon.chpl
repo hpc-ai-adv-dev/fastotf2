@@ -129,6 +129,7 @@ module ConverterCommon {
     const metricsToTrack: domain(string);
     const excludeMPI: bool = false;
     const excludeHIP: bool = false;
+    const noopCallbacks: bool = false;
   }
 
   record EvtCallbackContext {
@@ -139,6 +140,10 @@ module ConverterCommon {
     var callGraphs: map(string, map(string, shared CallGraph));
     // Metrics recorded per location group and per location (thread)
     var metrics: map(string, map(string, list((real(64), OTF2_Type, OTF2_MetricValue))));
+    // Per-callback accumulated timings (seconds)
+    var enterCallbackTime: real = 0.0;
+    var leaveCallbackTime: real = 0.0;
+    var metricCallbackTime: real = 0.0;
 
     proc init(evtArgs: EvtCallbackArgs,
               defContext: DefCallbackContext) {
@@ -147,6 +152,10 @@ module ConverterCommon {
       this.seenGroups = new map(string, domain(string));
       this.callGraphs = new map(string, map(string, shared CallGraph));
       this.metrics = new map(string, map(string, list((real(64), OTF2_Type, OTF2_MetricValue))));
+    }
+
+    proc totalCallbackTime(): real {
+      return enterCallbackTime + leaveCallbackTime + metricCallbackTime;
     }
   }
 
@@ -177,7 +186,7 @@ module ConverterCommon {
       if defCtx.locationGroupIds.contains(lgid) {
         const locationGroup = defCtx.locationGroupTable[lgid];
         // Use creating_location_group if it exists (matching Python behavior)
-        locGroup = if locationGroup.creatingLocationGroup != "None" && locationGroup.creatingLocationGroup != "" 
+        locGroup = if locationGroup.creatingLocationGroup != "None" && locationGroup.creatingLocationGroup != ""
                    then locationGroup.creatingLocationGroup
                    else locationGroup.name;
       }

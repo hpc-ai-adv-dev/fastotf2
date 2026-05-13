@@ -94,17 +94,35 @@ module Strategy_LocGroupDistBlock {
           const localTraceName = conf.trace;
           const readResult = readEventsForLocations(localTraceName, myLocs, evtContexts[i]);
           localeEventsRead += readResult.eventsRead;
+          const totalCallbackTime = evtContexts[i].totalCallbackTime();
+
+          logDebug("Task ", i, " on locale ", loc.id,
+                   ": readTime=", readResult.readTime,
+                   " metricTime=", evtContexts[i].metricCallbackTime,
+                   " enterTime=", evtContexts[i].enterCallbackTime,
+                   " leaveTime=", evtContexts[i].leaveCallbackTime,
+                   " callbackTotal=", totalCallbackTime,
+                   " otf2Time=", readResult.readTime - totalCallbackTime,
+                   " cbPct=", if readResult.readTime > 0
+                              then (100.0 * totalCallbackTime / readResult.readTime)
+                              else 0.0, "%");
 
           // Write immediately — each reader owns complete groups
-          const writeResult = writeOutputForContext(evtContexts[i], conf.outputFormat, conf.outputDir);
+          const writeResult = if !conf.noopCallbacks
+            then writeOutputForContext(evtContexts[i], conf.outputFormat, conf.outputDir)
+            else new WriteResult();
 
           taskTimings[i] = new TaskTiming(
             taskId=i,
+            localeId=loc.id,
             locations=myLocs.size,
             eventsRead=readResult.eventsRead,
             openTime=readResult.openTime,
             setupTime=readResult.setupTime,
             readTime=readResult.readTime,
+            enterCallbackTime=evtContexts[i].enterCallbackTime,
+            leaveCallbackTime=evtContexts[i].leaveCallbackTime,
+            metricCallbackTime=evtContexts[i].metricCallbackTime,
             writeTime=writeResult.writeTime,
             callgraphWriteTime=writeResult.callgraphTime,
             metricsWriteTime=writeResult.metricsTime,
@@ -128,18 +146,19 @@ module Strategy_LocGroupDistBlock {
     logInfo("Finished converting trace in ", totalConversionTime, " seconds");
 
 
-    if conf.timings {
+    if conf.timings || conf.timingsCSV != "" {
       report.strategy = conf.strategy;
+      report.tracePath = conf.trace;
       report.totalTime = totalConversionTime;
       report.defOpenTime = defResult.openTime;
       report.defSetupTime = defResult.setupTime;
       report.defReadTime = defResult.readTime;
       report.groupMapTime = groupMapTime;
-      report.groupMapTime = groupMapTime;
       report.groupDistributionTime = groupDistributionTime;
       report.eventReadWriteTime = evtReadWriteTime;
 
-      report.print();
+      if conf.timings then report.print();
+      if conf.timingsCSV != "" then report.writeCSV(conf.timingsCSV);
     }
   }
 }

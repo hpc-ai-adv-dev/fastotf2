@@ -90,15 +90,21 @@ module Strategy_LocGroupBlock {
       totalEventsRead += readResult.eventsRead;
 
       // Write immediately — each reader owns complete groups
-      const writeResult = writeOutputForContext(evtContexts[i], conf.outputFormat, conf.outputDir);
+      const writeResult = if !conf.noopCallbacks
+        then writeOutputForContext(evtContexts[i], conf.outputFormat, conf.outputDir)
+        else new WriteResult();
 
       taskTimings[i] = new TaskTiming(
         taskId=i,
+        localeId=here.id,
         locations=myLocs.size,
         eventsRead=readResult.eventsRead,
         openTime=readResult.openTime,
         setupTime=readResult.setupTime,
         readTime=readResult.readTime,
+        enterCallbackTime=evtContexts[i].enterCallbackTime,
+        leaveCallbackTime=evtContexts[i].leaveCallbackTime,
+        metricCallbackTime=evtContexts[i].metricCallbackTime,
         writeTime=writeResult.writeTime,
         callgraphWriteTime=writeResult.callgraphTime,
         metricsWriteTime=writeResult.metricsTime,
@@ -113,9 +119,10 @@ module Strategy_LocGroupBlock {
     logDebug("Total events read: ", totalEventsRead);
     logInfo("Finished converting trace in ", totalConversionTime, " seconds");
 
-    if conf.timings {
+    if conf.timings || conf.timingsCSV != "" {
       var report = new TimingReport();
       report.strategy = conf.strategy;
+      report.tracePath = conf.trace;
       report.totalTime = totalConversionTime;
       report.defOpenTime = defResult.openTime;
       report.defSetupTime = defResult.setupTime;
@@ -124,7 +131,8 @@ module Strategy_LocGroupBlock {
       report.groupDistributionTime = groupDistributionTime;
       report.eventReadWriteTime = evtReadWriteTime;
       report.setTaskTimings(taskTimings);
-      report.print();
+      if conf.timings then report.print();
+      if conf.timingsCSV != "" then report.writeCSV(conf.timingsCSV);
     }
   }
 }
