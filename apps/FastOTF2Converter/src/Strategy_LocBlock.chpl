@@ -27,7 +27,7 @@ module Strategy_LocBlock {
     const ref defCtx = defResult.defCtx;
     const numberOfLocations = defResult.numberOfLocations;
     const evtArgs = buildEvtCallbackArgs(conf);
-    sw.start();
+    if enableTimers then sw.start();
 
     // Convert locationIds to array for partitioning
     const locationArray: [0..<numberOfLocations] OTF2_LocationRef =
@@ -51,10 +51,12 @@ module Strategy_LocBlock {
         for idx in myRange do locationArray[idx];
 
       var taskSw: stopwatch;
-      taskSw.start();
+      if enableTimers then taskSw.start();
 
       const readResult = readEventsForLocations(conf.trace, myLocs, evtContexts[i]);
       totalEventsRead += readResult.eventsRead;
+
+      const taskTotalTime = if enableTimers then taskSw.elapsed() else 0.0;
 
       taskTimings[i] = new TaskTiming(
         taskId=i,
@@ -67,22 +69,26 @@ module Strategy_LocBlock {
         enterCallbackTime=evtContexts[i].enterCallbackTime,
         leaveCallbackTime=evtContexts[i].leaveCallbackTime,
         metricCallbackTime=evtContexts[i].metricCallbackTime,
-        totalTime=taskSw.elapsed()
+        totalTime=taskTotalTime
       );
     }
 
-    const evtReadTime = sw.elapsed();
-    logDebug("Time to setup + read events: ", evtReadTime, " seconds");
-    sw.clear();
+    const evtReadTime = if enableTimers then sw.elapsed() else 0.0;
+    if enableTimers {
+      logDebug("Time to setup + read events: ", evtReadTime, " seconds");
+      sw.clear();
+    }
 
     logDebug("Total events read: ", totalEventsRead);
 
     // Merge contexts (required for location partitioning)
     logDebug("Merging event contexts...");
     var mergedCtx = mergeEvtContexts(evtContexts);
-    const mergeTime = sw.elapsed();
-    logInfo("Time to merge contexts: ", mergeTime, " seconds");
-    sw.clear();
+    const mergeTime = if enableTimers then sw.elapsed() else 0.0;
+    if enableTimers {
+      logInfo("Time to merge contexts: ", mergeTime, " seconds");
+      sw.clear();
+    }
 
     logInfo("Trace loaded in ", global_sw.elapsed(), " seconds");
     logInfo("Writing ", conf.outputFormat: string, " files to directory: ", conf.outputDir);
@@ -90,7 +96,7 @@ module Strategy_LocBlock {
     const writeResult = if !noopCallbacks
       then writeOutputForContext(mergedCtx, conf.outputFormat, conf.outputDir)
       else new WriteResult();
-    if !noopCallbacks then
+    if !noopCallbacks && enableTimers then
       logInfo("Finished writing to ", conf.outputDir, " in ", writeResult.writeTime, " seconds");
     logInfo("Finished converting trace in ", global_sw.elapsed(), " seconds");
 

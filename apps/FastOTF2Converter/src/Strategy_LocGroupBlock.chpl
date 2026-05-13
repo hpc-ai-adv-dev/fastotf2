@@ -30,12 +30,12 @@ module Strategy_LocGroupBlock {
     const ref defCtx = defResult.defCtx;
     const numberOfLocations = defResult.numberOfLocations;
     const evtArgs = buildEvtCallbackArgs(conf);
-    sw.start();
+    if enableTimers then sw.start();
 
     // Build output-group ownership map (resolves HIP contexts to parent MPI ranks)
     const groupLocationMap = buildGroupLocationMap(defCtx);
-    const groupMapTime = sw.elapsed();
-    sw.clear();
+    const groupMapTime = if enableTimers then sw.elapsed() else 0.0;
+    if enableTimers then sw.clear();
 
     const groupNames = orderedOutputGroups(defCtx, groupLocationMap);
     const totalGroups = groupNames.size;
@@ -51,8 +51,8 @@ module Strategy_LocGroupBlock {
       }
     }
 
-    const groupDistributionTime = sw.elapsed();
-    sw.clear();
+    const groupDistributionTime = if enableTimers then sw.elapsed() else 0.0;
+    if enableTimers then sw.clear();
 
     if log >= LogLevel.TRACE {
       logTrace("Reader group distribution:");
@@ -85,7 +85,7 @@ module Strategy_LocGroupBlock {
                " groups with ", myLocs.size, " total locations");
 
       var taskSw: stopwatch;
-      taskSw.start();
+      if enableTimers then taskSw.start();
 
       const readResult = readEventsForLocations(conf.trace, myLocs, evtContexts[i]);
       totalEventsRead += readResult.eventsRead;
@@ -94,6 +94,8 @@ module Strategy_LocGroupBlock {
       const writeResult = if !noopCallbacks
         then writeOutputForContext(evtContexts[i], conf.outputFormat, conf.outputDir)
         else new WriteResult();
+
+      const taskTotalTime = if enableTimers then taskSw.elapsed() else 0.0;
 
       taskTimings[i] = new TaskTiming(
         taskId=i,
@@ -109,11 +111,11 @@ module Strategy_LocGroupBlock {
         writeTime=writeResult.writeTime,
         callgraphWriteTime=writeResult.callgraphTime,
         metricsWriteTime=writeResult.metricsTime,
-        totalTime=taskSw.elapsed()
+        totalTime=taskTotalTime
       );
     }
 
-    const evtReadWriteTime = sw.elapsed();
+    const evtReadWriteTime = if enableTimers then sw.elapsed() else 0.0;
     const totalConversionTime = global_sw.elapsed();
     logDebug("Time to setup + read events + write output: ", evtReadWriteTime, " seconds");
 

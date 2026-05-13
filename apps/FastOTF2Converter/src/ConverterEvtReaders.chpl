@@ -39,7 +39,7 @@ module ConverterEvtReaders {
     ref evtCtx: EvtCallbackContext
   ): ReadResult {
     var sw: stopwatch;
-    sw.start();
+    if enableTimers then sw.start();
 
     var reader = OTF2_Reader_Open(trace.c_str());
     if reader == nil {
@@ -56,9 +56,11 @@ module ConverterEvtReaders {
 
     OTF2_Reader_OpenEvtFiles(reader);
 
-    const openTime = sw.elapsed();
-    logDebug("Evt reader opened trace in ", openTime, " seconds");
-    sw.clear();
+    const openTime: real = if enableTimers then sw.elapsed() else 0.0;
+    if enableTimers {
+      logDebug("Evt reader opened trace in ", openTime, " seconds");
+      sw.clear();
+    }
 
     // Mark event files for reading
     for loc in locations {
@@ -83,15 +85,18 @@ module ConverterEvtReaders {
         c_ptrTo(evtCtx): c_ptr(void));
       OTF2_GlobalEvtReaderCallbacks_Delete(evtCallbacks);
 
-      const setupTime = sw.elapsed();
-      logDebug("Evt reader registered callbacks in ", setupTime, " seconds");
-      sw.clear();
+      const setupTime: real = if enableTimers then sw.elapsed() else 0.0;
+      if enableTimers {
+        logDebug("Evt reader registered callbacks in ", setupTime, " seconds");
+        sw.clear();
+      }
 
       OTF2_Reader_ReadAllGlobalEvents(
         reader, globalEvtReader, c_ptrTo(eventsRead));
 
-      const readTime = sw.elapsed();
-      logDebug("Evt reader read events in ", readTime, " seconds");
+      const readTime: real = if enableTimers then sw.elapsed() else 0.0;
+      if enableTimers then
+        logDebug("Evt reader read events in ", readTime, " seconds");
 
       OTF2_Reader_CloseGlobalEvtReader(reader, globalEvtReader);
 

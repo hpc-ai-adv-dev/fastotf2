@@ -26,7 +26,7 @@ module Strategy_Serial {
     const ref defCtx = defResult.defCtx;
     const numberOfLocations = defResult.numberOfLocations;
     const evtArgs = buildEvtCallbackArgs(conf);
-    sw.start();
+    if enableTimers then sw.start();
 
     const locationArray: [0..<numberOfLocations] OTF2_LocationRef =
       for l in defCtx.locationIds do l;
@@ -34,7 +34,7 @@ module Strategy_Serial {
 
     var evtCtx = new EvtCallbackContext(evtArgs, defCtx);
     var taskSw: stopwatch;
-    taskSw.start();
+    if enableTimers then taskSw.start();
     const readResult = readEventsForLocations(conf.trace, locationArray, evtCtx);
     const totalEventsRead = readResult.eventsRead;
 
@@ -43,10 +43,10 @@ module Strategy_Serial {
     const writeResult = if !noopCallbacks
       then writeOutputForContext(evtCtx, conf.outputFormat, conf.outputDir)
       else new WriteResult();
-    if !noopCallbacks then
+    if !noopCallbacks && enableTimers then
       logInfo("Finished writing to ", conf.outputDir, " in ", sw.elapsed(), " seconds");
-    const taskTotalTime = taskSw.elapsed();
-    const evtReadWriteTime = sw.elapsed();
+    const taskTotalTime = if enableTimers then taskSw.elapsed() else 0.0;
+    const evtReadWriteTime = if enableTimers then sw.elapsed() else 0.0;
     const totalConversionTime = global_sw.elapsed();
     logInfo("Finished converting trace in ", totalConversionTime, " seconds");
 
