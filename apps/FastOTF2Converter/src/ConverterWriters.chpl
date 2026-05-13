@@ -9,8 +9,19 @@ module ConverterWriters {
   use Path;
   use CallGraphModule;
   use Parquet;
+  use Time;
 
   import Math.inf;
+
+  // -------------------------------------------------------------------------
+  // WriteResult — returned by writeOutputForContext with timing breakdown
+  // -------------------------------------------------------------------------
+
+  record WriteResult {
+    var writeTime: real;       // total time in writeOutputForContext
+    var callgraphTime: real;   // time writing callgraph files
+    var metricsTime: real;     // time writing metrics files
+  }
 
   enum OutputFormat {
     CSV,
@@ -258,7 +269,12 @@ module ConverterWriters {
     ref evtCtx: EvtCallbackContext,
     format: OutputFormat,
     outputDir: string
-  ) {
+  ): WriteResult {
+    var totalSw: stopwatch;
+    var phaseSw: stopwatch;
+    totalSw.start();
+    phaseSw.start();
+
     for (group, threads) in evtCtx.callGraphs.toArray() {
       if !evtCtx.evtArgs.processesToTrack.isEmpty() &&
          !evtCtx.evtArgs.processesToTrack.contains(group) {
@@ -271,6 +287,9 @@ module ConverterWriters {
       }
     }
 
+    const callgraphTime = phaseSw.elapsed();
+    phaseSw.clear();
+
     for (group, threadMetrics) in evtCtx.metrics.toArray() {
       if !evtCtx.evtArgs.processesToTrack.isEmpty() &&
          !evtCtx.evtArgs.processesToTrack.contains(group) {
@@ -279,5 +298,8 @@ module ConverterWriters {
         writeMetrics(group, threadMetrics, format, outputDir);
       }
     }
+
+    const metricsTime = phaseSw.elapsed();
+    return new WriteResult(totalSw.elapsed(), callgraphTime, metricsTime);
   }
 }
