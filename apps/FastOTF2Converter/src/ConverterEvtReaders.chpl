@@ -8,6 +8,7 @@
 module ConverterEvtReaders {
   use FastOTF2;
   use ConverterCommon;
+  use ConverterParams;
   use Time;
   use CallGraphModule;
   use List;
@@ -117,6 +118,7 @@ module ConverterEvtReaders {
                       userData: c_ptr(void),
                       attributes: c_ptr(OTF2_AttributeList),
                       region: OTF2_RegionRef): OTF2_CallbackCode {
+    if noopCallbacks then return OTF2_CALLBACK_SUCCESS;
     var ctxPtr = userData: c_ptr(EvtCallbackContext);
     if ctxPtr == nil then return OTF2_CALLBACK_ERROR;
     ref ctx = ctxPtr.deref();
@@ -149,6 +151,7 @@ module ConverterEvtReaders {
                       userData: c_ptr(void),
                       attributes: c_ptr(OTF2_AttributeList),
                       region: OTF2_RegionRef): OTF2_CallbackCode {
+    if noopCallbacks then return OTF2_CALLBACK_SUCCESS;
     var ctxPtr = userData: c_ptr(EvtCallbackContext);
     if ctxPtr == nil then return OTF2_CALLBACK_ERROR;
     ref ctx = ctxPtr.deref();
@@ -184,6 +187,7 @@ module ConverterEvtReaders {
                        numberOfMetrics: c_uint8,
                        typeIDs: c_ptrConst(OTF2_Type),
                        metricValues: c_ptrConst(OTF2_MetricValue)): OTF2_CallbackCode {
+    if noopCallbacks then return OTF2_CALLBACK_SUCCESS;
     var ctxPtr = userData: c_ptr(EvtCallbackContext);
     if ctxPtr == nil then return OTF2_CALLBACK_ERROR;
     ref ctx = ctxPtr.deref();

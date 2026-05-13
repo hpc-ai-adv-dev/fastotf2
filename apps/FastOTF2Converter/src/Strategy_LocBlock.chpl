@@ -9,6 +9,7 @@
 module Strategy_LocBlock {
   use ConverterArgs;
   use ConverterCommon;
+  use ConverterParams;
   use ConverterDefReaders;
   use ConverterEvtReaders;
   use ConverterWriters;
@@ -86,10 +87,10 @@ module Strategy_LocBlock {
     logInfo("Trace loaded in ", global_sw.elapsed(), " seconds");
     logInfo("Writing ", conf.outputFormat: string, " files to directory: ", conf.outputDir);
 
-    const writeResult = if !conf.noopCallbacks
+    const writeResult = if !noopCallbacks
       then writeOutputForContext(mergedCtx, conf.outputFormat, conf.outputDir)
       else new WriteResult();
-    if !conf.noopCallbacks then
+    if !noopCallbacks then
       logInfo("Finished writing to ", conf.outputDir, " in ", writeResult.writeTime, " seconds");
     logInfo("Finished converting trace in ", global_sw.elapsed(), " seconds");
 

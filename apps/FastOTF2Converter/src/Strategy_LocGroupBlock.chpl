@@ -9,6 +9,7 @@
 module Strategy_LocGroupBlock {
   use ConverterArgs;
   use ConverterCommon;
+  use ConverterParams;
   use ConverterDefReaders;
   use ConverterEvtReaders;
   use ConverterGroupMap;
@@ -90,7 +91,7 @@ module Strategy_LocGroupBlock {
       totalEventsRead += readResult.eventsRead;
 
       // Write immediately — each reader owns complete groups
-      const writeResult = if !conf.noopCallbacks
+      const writeResult = if !noopCallbacks
         then writeOutputForContext(evtContexts[i], conf.outputFormat, conf.outputDir)
         else new WriteResult();
 

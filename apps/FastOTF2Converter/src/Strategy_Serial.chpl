@@ -9,6 +9,7 @@
 module Strategy_Serial {
   use ConverterArgs;
   use ConverterCommon;
+  use ConverterParams;
   use ConverterDefReaders;
   use ConverterEvtReaders;
   use ConverterWriters;
@@ -39,10 +40,10 @@ module Strategy_Serial {
 
     logDebug("Total events read: ", totalEventsRead);
     logInfo("Writing ", conf.outputFormat: string, " files to directory: ", conf.outputDir);
-    const writeResult = if !conf.noopCallbacks
+    const writeResult = if !noopCallbacks
       then writeOutputForContext(evtCtx, conf.outputFormat, conf.outputDir)
       else new WriteResult();
-    if !conf.noopCallbacks then
+    if !noopCallbacks then
       logInfo("Finished writing to ", conf.outputDir, " in ", sw.elapsed(), " seconds");
     const taskTotalTime = taskSw.elapsed();
     const evtReadWriteTime = sw.elapsed();
