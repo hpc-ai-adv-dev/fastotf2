@@ -8,6 +8,7 @@
 module ConverterEvtReaders {
   use FastOTF2;
   use ConverterCommon;
+  use ConverterParams;
   use Time;
   use CallGraphModule;
   use List;
@@ -119,8 +120,8 @@ module ConverterEvtReaders {
                       region: OTF2_RegionRef): OTF2_CallbackCode {
     var ctxPtr = userData: c_ptr(EvtCallbackContext);
     if ctxPtr == nil then return OTF2_CALLBACK_ERROR;
+    if noopCallbacks then return OTF2_CALLBACK_SUCCESS;
     ref ctx = ctxPtr.deref();
-    if ctx.evtArgs.noopCallbacks then return OTF2_CALLBACK_SUCCESS;
     var cbSw: stopwatch; cbSw.start();
     ref defCtx = ctx.defContext;
 
@@ -152,8 +153,8 @@ module ConverterEvtReaders {
                       region: OTF2_RegionRef): OTF2_CallbackCode {
     var ctxPtr = userData: c_ptr(EvtCallbackContext);
     if ctxPtr == nil then return OTF2_CALLBACK_ERROR;
+    if noopCallbacks then return OTF2_CALLBACK_SUCCESS;
     ref ctx = ctxPtr.deref();
-    if ctx.evtArgs.noopCallbacks then return OTF2_CALLBACK_SUCCESS;
     var cbSw: stopwatch; cbSw.start();
     ref defCtx = ctx.defContext;
 
@@ -188,8 +189,8 @@ module ConverterEvtReaders {
                        metricValues: c_ptrConst(OTF2_MetricValue)): OTF2_CallbackCode {
     var ctxPtr = userData: c_ptr(EvtCallbackContext);
     if ctxPtr == nil then return OTF2_CALLBACK_ERROR;
+    if noopCallbacks then return OTF2_CALLBACK_SUCCESS;
     ref ctx = ctxPtr.deref();
-    if ctx.evtArgs.noopCallbacks then return OTF2_CALLBACK_SUCCESS;
     var cbSw: stopwatch; cbSw.start();
     ref defCtx = ctx.defContext;
     const (locName, locGroup, _) = getLocationAndRegionInfo(defCtx, location, 0);
