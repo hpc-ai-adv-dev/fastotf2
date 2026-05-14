@@ -31,6 +31,10 @@ module FastOTF2Converter {
       halt("--timings/--timings-csv requires enableTimers=true. "
            + "Recompile with: mason build -- --set enableTimers=true");
 
+    if !enableVerboseLogging && (log >= LogLevel.DEBUG) then
+      halt("--log=DEBUG/TRACE requires enableVerboseLogging=true. "
+           + "Recompile with: mason build -- --set enableVerboseLogging=true");
+
     // Capture baseline RSS per locale (before work)
     var baselineKiB: [0..#numLocales] int;
     if memTrack {

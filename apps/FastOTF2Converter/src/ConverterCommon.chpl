@@ -5,6 +5,7 @@
 
 module ConverterCommon {
   use FastOTF2;
+  use ConverterParams;
   use List;
   use Map;
   use CallGraphModule;
@@ -50,13 +51,13 @@ module ConverterCommon {
   }
 
   proc logDebug(args ...?n) {
-    if log >= LogLevel.DEBUG {
+    if enableVerboseLogging && log >= LogLevel.DEBUG {
       writeln(BLUE, "[DEBUG] ", ENDC, (...args));
     }
   }
 
   proc logTrace(args ...?n) {
-    if log >= LogLevel.TRACE {
+    if enableVerboseLogging && log >= LogLevel.TRACE {
       writeln(RED, "[TRACE] ", ENDC, (...args));
     }
   }
