@@ -2,6 +2,7 @@
 
 module FastOTF2Converter {
   use ConverterArgs;
+  use ConverterCommon;
   use ConverterParams;
   use Strategy_Serial;
   use Strategy_LocBlock;
