@@ -31,12 +31,12 @@ module Strategy_LocGroupDistBlock {
     const ref defCtx = defResult.defCtx;
     const numberOfLocations = defResult.numberOfLocations;
     const evtArgs = buildEvtCallbackArgs(conf);
-    sw.start();
+    if enableTimers then sw.start();
 
     // Build output-group ownership map (resolves HIP contexts to parent MPI ranks)
     const groupLocationMap = buildGroupLocationMap(defCtx);
-    const groupMapTime = sw.elapsed();
-    sw.clear();
+    const groupMapTime = if enableTimers then sw.elapsed() else 0.0;
+    if enableTimers then sw.clear();
 
     const groupNames = orderedOutputGroups(defCtx, groupLocationMap);
     const totalGroups = groupNames.size;
@@ -47,8 +47,8 @@ module Strategy_LocGroupDistBlock {
     const groupDom = blockDist.createDomain(0..<totalGroups);
     var totalEventsRead: c_uint64 = 0;
 
-    const groupDistributionTime = sw.elapsed();
-    sw.clear();
+    const groupDistributionTime = if enableTimers then sw.elapsed() else 0.0;
+    if enableTimers then sw.clear();
 
     logInfo("Writing ", conf.outputFormat: string, " files to directory: ",
             conf.outputDir, " as each reader completes (no merge needed)");
@@ -90,7 +90,7 @@ module Strategy_LocGroupDistBlock {
                     readerGroups[i].size, " groups with ", myLocs.size, " locations");
 
           var taskSw: stopwatch;
-          taskSw.start();
+          if enableTimers then taskSw.start();
 
           const localTraceName = conf.trace;
           const readResult = readEventsForLocations(localTraceName, myLocs, evtContexts[i]);
@@ -113,6 +113,8 @@ module Strategy_LocGroupDistBlock {
             then writeOutputForContext(evtContexts[i], conf.outputFormat, conf.outputDir)
             else new WriteResult();
 
+          const taskTotalTime = if enableTimers then taskSw.elapsed() else 0.0;
+
           taskTimings[i] = new TaskTiming(
             taskId=i,
             localeId=loc.id,
@@ -127,7 +129,7 @@ module Strategy_LocGroupDistBlock {
             writeTime=writeResult.writeTime,
             callgraphWriteTime=writeResult.callgraphTime,
             metricsWriteTime=writeResult.metricsTime,
-            totalTime=taskSw.elapsed()
+            totalTime=taskTotalTime
           );
 
         }
@@ -139,7 +141,7 @@ module Strategy_LocGroupDistBlock {
     }
 
 
-    const evtReadWriteTime = sw.elapsed();
+    const evtReadWriteTime = if enableTimers then sw.elapsed() else 0.0;
     const totalConversionTime = global_sw.elapsed();
     logInfo("Time to setup + read events + write output: ", evtReadWriteTime, " seconds");
 

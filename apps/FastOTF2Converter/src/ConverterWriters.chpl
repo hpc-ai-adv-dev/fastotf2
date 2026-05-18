@@ -3,6 +3,7 @@
 module ConverterWriters {
   use FastOTF2;
   use ConverterCommon;
+  use ConverterParams;
   use List;
   use Map;
   use IO;
@@ -275,8 +276,10 @@ module ConverterWriters {
   ): WriteResult {
     var totalSw: stopwatch;
     var phaseSw: stopwatch;
-    totalSw.start();
-    phaseSw.start();
+    if enableTimers {
+      totalSw.start();
+      phaseSw.start();
+    }
 
 
     forall (group, threads) in evtCtx.callGraphs.toArray() {
@@ -291,8 +294,8 @@ module ConverterWriters {
       }
     }
 
-    const callgraphTime = phaseSw.elapsed();
-    phaseSw.clear();
+    const callgraphTime = if enableTimers then phaseSw.elapsed() else 0.0;
+    if enableTimers then phaseSw.clear();
 
     forall (group, threadMetrics) in evtCtx.metrics.toArray() {
       if !evtCtx.evtArgs.processesToTrack.isEmpty() &&
@@ -303,7 +306,8 @@ module ConverterWriters {
       }
     }
 
-    const metricsTime = phaseSw.elapsed();
-    return new WriteResult(totalSw.elapsed(), callgraphTime, metricsTime);
+    const metricsTime = if enableTimers then phaseSw.elapsed() else 0.0;
+    const totalTime = if enableTimers then totalSw.elapsed() else 0.0;
+    return new WriteResult(totalTime, callgraphTime, metricsTime);
   }
 }

@@ -27,6 +27,10 @@ module FastOTF2Converter {
     if noopCallbacks then
       logWarn("Compiled with noopCallbacks=true — event callbacks are no-ops");
 
+    if !enableTimers && (conf.timings || conf.timingsCSV != "") then
+      halt("--timings/--timings-csv requires enableTimers=true. "
+           + "Recompile with: mason build -- --set enableTimers=true");
+
     // Capture baseline RSS per locale (before work)
     var baselineKiB: [0..#numLocales] int;
     if memTrack {

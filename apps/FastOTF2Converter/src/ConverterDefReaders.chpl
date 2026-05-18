@@ -7,6 +7,7 @@
 module ConverterDefReaders {
   use FastOTF2;
   use ConverterCommon;
+  use ConverterParams;
   use Time;
 
   // -------------------------------------------------------------------------
@@ -27,7 +28,7 @@ module ConverterDefReaders {
 
   proc readGlobalDefinitions(trace: string): DefReadResult {
     var sw: stopwatch;
-    sw.start();
+    if enableTimers then sw.start();
 
     var reader = OTF2_Reader_Open(trace.c_str());
     if reader == nil {
@@ -35,9 +36,11 @@ module ConverterDefReaders {
       halt("failed to open trace");
     }
 
-    const openTime = sw.elapsed();
-    logDebug("Time to open OTF2 archive: ", openTime, " seconds");
-    sw.clear();
+    const openTime: real = if enableTimers then sw.elapsed() else 0.0;
+    if enableTimers {
+      logDebug("Time to open OTF2 archive: ", openTime, " seconds");
+      sw.clear();
+    }
 
     OTF2_Reader_SetSerialCollectiveCallbacks(reader);
 
@@ -71,17 +74,18 @@ module ConverterDefReaders {
     OTF2_Reader_RegisterGlobalDefCallbacks(
       reader, globalDefReader, defCallbacks, c_ptrTo(defCtx): c_ptr(void));
     OTF2_GlobalDefReaderCallbacks_Delete(defCallbacks);
-    const setupTime = sw.elapsed();
-    logDebug("Time to set up definition callbacks and context: ", setupTime, " seconds");
-
-    sw.clear();
+    const setupTime = if enableTimers then sw.elapsed() else 0.0;
+    if enableTimers {
+      logDebug("Time to set up definition callbacks and context: ", setupTime, " seconds");
+      sw.clear();
+    }
     var definitionsRead: c_uint64 = 0;
     OTF2_Reader_ReadAllGlobalDefinitions(
       reader, globalDefReader, c_ptrTo(definitionsRead));
-    const defReadTime = sw.elapsed();
+    const defReadTime = if enableTimers then sw.elapsed() else 0.0;
 
     logTrace("Global definitions read: ", definitionsRead);
-    logDebug("Time to read global definitions: ", defReadTime, " seconds");
+    if enableTimers then logDebug("Time to read global definitions: ", defReadTime, " seconds");
 
     OTF2_Reader_Close(reader);
 
