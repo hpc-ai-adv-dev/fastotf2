@@ -94,7 +94,7 @@ module Strategy_LocBlock {
     logInfo("Writing ", conf.outputFormat: string, " files to directory: ", conf.outputDir);
 
     const writeResult = if !noopCallbacks
-      then writeOutputForContext(mergedCtx, conf.outputFormat, conf.outputDir)
+      then writeOutputForContext(mergedCtx, conf.outputFormat, conf.outputDir, conf.sortCallgraph)
       else new WriteResult();
     if !noopCallbacks && enableTimers then
       logInfo("Finished writing to ", conf.outputDir, " in ", writeResult.writeTime, " seconds");

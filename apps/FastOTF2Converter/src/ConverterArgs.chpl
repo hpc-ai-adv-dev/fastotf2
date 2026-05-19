@@ -23,6 +23,7 @@ module ConverterArgs {
     var outputFormat: OutputFormat;
     var excludeMPI: bool;
     var excludeHIP: bool;
+    var sortCallgraph: bool;
     var timings: bool;
     var timingsCSV: string;
   }
@@ -95,6 +96,13 @@ module ConverterArgs {
       help="Exclude HIP functions from the callgraph output"
     );
 
+    var sortCallgraphArg = parser.addFlag(
+      name="sortCallgraph",
+      defaultValue=false,
+      numArgs=0,
+      help="Sort callgraph intervals by start time before writing output"
+    );
+
     var timingsArg = parser.addFlag(
       name="timings",
       defaultValue=false,
@@ -126,6 +134,7 @@ module ConverterArgs {
     conf.outputDir = outputDirArg.value();
     conf.excludeMPI = excludeMPIArg.valueAsBool();
     conf.excludeHIP = excludeHIPArg.valueAsBool();
+    conf.sortCallgraph = sortCallgraphArg.valueAsBool();
     conf.timings = timingsArg.valueAsBool();
     conf.timingsCSV = timingsCSVArg.value();
 

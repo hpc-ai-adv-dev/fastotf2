@@ -74,8 +74,9 @@ module ConverterWriters {
     return group + "_metrics" + outputExtension(format);
   }
 
-  proc writeCallgraphCSV(callGraph: shared CallGraph, group: string, thread: string, outputPath: string) throws {
-    const intervals = callGraph.getAllIntervalsUnsorted();
+  proc writeCallgraphCSV(callGraph: shared CallGraph, group: string, thread: string, outputPath: string, sorted: bool = false) throws {
+    const intervals = if sorted then callGraph.getAllIntervals()
+                                else callGraph.getAllIntervalsUnsorted();
     if intervals.size == 0 then return;
 
     var outfile = open(outputPath, ioMode.cw);
@@ -129,10 +130,10 @@ module ConverterWriters {
   // values as the CSV output: thread, group, depth, name, start_time, end_time,
   // duration.  Times are real(64) seconds — identical to CSV.
   proc writeCallgraphParquet(callGraph: shared CallGraph, group: string, thread: string,
-                             outputPath: string) throws {
+                             outputPath: string, sorted: bool = false) throws {
 
-    const intervals = callGraph.getAllIntervalsUnsorted();
-    // const intervals = callGraph.getAllIntervals();
+    const intervals = if sorted then callGraph.getAllIntervals()
+                                else callGraph.getAllIntervalsUnsorted();
     const n = intervals.size;
 
     // [PARQUET-PKG-GUARD] writeTable() crashes on empty arrays.
@@ -211,7 +212,7 @@ module ConverterWriters {
   // ---------------------------------------------------------------------------
 
   proc writeCallgraph(callGraph: shared CallGraph, group: string, thread: string,
-                      format: OutputFormat, outputDir: string) {
+                      format: OutputFormat, outputDir: string, sorted: bool = false) {
     const filename = callgraphFilename(group, thread, format);
     logInfo("Writing to file: ", filename);
 
@@ -219,7 +220,7 @@ module ConverterWriters {
       when OutputFormat.CSV {
         try {
           writeCallgraphCSV(callGraph, group, thread,
-                            joinPath(outputDir, filename));
+                            joinPath(outputDir, filename), sorted);
         } catch e {
           logError("Error writing callgraph to CSV: ", e);
           halt("failed to write callgraph CSV");
@@ -228,7 +229,7 @@ module ConverterWriters {
       when OutputFormat.PARQUET {
         try {
           writeCallgraphParquet(callGraph, group, thread,
-                                joinPath(outputDir, filename));
+                                joinPath(outputDir, filename), sorted);
         } catch e {
           logError("Error writing callgraph to PARQUET: ", e);
           halt("failed to write callgraph parquet");
@@ -272,7 +273,8 @@ module ConverterWriters {
   proc writeOutputForContext(
     ref evtCtx: EvtCallbackContext,
     format: OutputFormat,
-    outputDir: string
+    outputDir: string,
+    sortCallgraph: bool = false
   ): WriteResult {
     var totalSw: stopwatch;
     var phaseSw: stopwatch;
@@ -289,7 +291,7 @@ module ConverterWriters {
       } else {
         forall thread in threads.keysToArray() {
           const callGraph = try! threads[thread];
-          writeCallgraph(callGraph, group, thread, format, outputDir);
+          writeCallgraph(callGraph, group, thread, format, outputDir, sortCallgraph);
         }
       }
     }

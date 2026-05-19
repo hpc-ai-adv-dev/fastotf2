@@ -110,7 +110,7 @@ module Strategy_LocGroupDistBlock {
 
           // Write immediately — each reader owns complete groups
           const writeResult = if !noopCallbacks
-            then writeOutputForContext(evtContexts[i], conf.outputFormat, conf.outputDir)
+            then writeOutputForContext(evtContexts[i], conf.outputFormat, conf.outputDir, conf.sortCallgraph)
             else new WriteResult();
 
           const taskTotalTime = if enableTimers then taskSw.elapsed() else 0.0;
