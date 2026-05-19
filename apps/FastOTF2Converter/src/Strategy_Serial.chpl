@@ -41,7 +41,7 @@ module Strategy_Serial {
     logDebug("Total events read: ", totalEventsRead);
     logInfo("Writing ", conf.outputFormat: string, " files to directory: ", conf.outputDir);
     const writeResult = if !noopCallbacks
-      then writeOutputForContext(evtCtx, conf.outputFormat, conf.outputDir)
+      then writeOutputForContext(evtCtx, conf.outputFormat, conf.outputDir, conf.sortCallgraph)
       else new WriteResult();
     if !noopCallbacks && enableTimers then
       logInfo("Finished writing to ", conf.outputDir, " in ", sw.elapsed(), " seconds");
