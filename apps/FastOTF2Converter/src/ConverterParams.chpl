@@ -15,4 +15,8 @@ module ConverterParams {
   // The single global_sw per strategy (total program wall-clock time) is exempt.
   config param enableTimers: bool = true;
 
+  // When false, logDebug and logTrace calls are compiled out.
+  // logError, logWarn, and logInfo are always available.
+  config param enableVerboseLogging: bool = true;
+
 }
