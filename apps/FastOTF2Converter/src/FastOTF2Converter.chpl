@@ -2,6 +2,7 @@
 
 module FastOTF2Converter {
   use ConverterArgs;
+  use ConverterCommon;
   use ConverterParams;
   use Strategy_Serial;
   use Strategy_LocBlock;
@@ -30,6 +31,10 @@ module FastOTF2Converter {
     if !enableTimers && (conf.timings || conf.timingsCSV != "") then
       halt("--timings/--timings-csv requires enableTimers=true. "
            + "Recompile with: mason build -- --set enableTimers=true");
+
+    if !enableVerboseLogging && (log >= LogLevel.DEBUG) then
+      halt("--log=DEBUG/TRACE requires enableVerboseLogging=true. "
+           + "Recompile with: mason build -- --set enableVerboseLogging=true");
 
     // Capture baseline RSS per locale (before work)
     var baselineKiB: [0..#numLocales] int;
