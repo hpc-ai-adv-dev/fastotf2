@@ -7,7 +7,6 @@ This guide covers pulling and running the FastOTF2Converter container on HPC clu
 If the HPC login or compute nodes can reach `ghcr.io`:
 
 ```bash
-module load apptainer
 apptainer pull fastotf2-converter.sif docker://ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:latest
 ```
 
@@ -50,8 +49,8 @@ If the HPC system cannot reach the internet, export the image on a connected mac
 
 ```bash
 podman save --format oci-archive \
-  -o fastotf2-converter.tar \
-  ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter:latest
+  -o fastotf2-converter-ofi.tar \
+  ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter-ofi:latest
 ```
 
 <details>
@@ -83,8 +82,7 @@ docker save -o fastotf2-converter.tar ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-c
 3. Convert the OCI archive to a SIF file:
 
 ```bash
-module load apptainer
-apptainer build fastotf2-converter.sif oci-archive://fastotf2-converter.tar
+apptainer build fastotf2-converter-ofi.sif oci-archive://fastotf2-converter-ofi.tar
 ```
 
 ## Cross-Platform Notes
@@ -98,6 +96,32 @@ podman build --platform linux/amd64 \
 ```
 
 Then export that tagged image instead.
+
+## Building the OFI Image for HPC Fabric Support
+
+The default container image uses the standard Chapel runtime. For multi-node execution on HPC systems with libfabric/CXI network fabrics (e.g., HPE Slingshot), you need an OFI-enabled image built with the appropriate Chapel base image.
+
+Build the OFI variant by passing `--build-arg` to select the libfabric-enabled Chapel base:
+
+```bash
+# For systems with libfabric >= 2.3.1 (e.g., HPE systems with newer Slingshot)
+podman build \
+  --build-arg CHAPEL_BASE_IMAGE=docker.io/arezaiihpe/chapel-2.8.0-libfabric-2.3.1-cxi:latest \
+  -f container/Containerfile \
+  -t ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter-ofi:latest \
+  .
+```
+
+```bash
+# For Frontier (libfabric 1.22.0)
+podman build \
+  --build-arg CHAPEL_BASE_IMAGE=docker.io/arezaiihpe/chapel-2.8.0-libfabric-1.22.0-cxi:latest \
+  -f container/Containerfile \
+  -t ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter-ofi:latest \
+  .
+```
+
+Then export and convert to SIF as described in the [Offline / Air-Gapped](#offline--air-gapped-hpc-systems) section, using the `-ofi` tagged image.
 
 ## Multi-Locale (Multi-Node) Support
 
