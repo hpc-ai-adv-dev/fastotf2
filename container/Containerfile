@@ -4,8 +4,14 @@
 #
 # See container/README.md for details and usage instructions.
 
-# Start from official Chapel image
-FROM docker.io/chapel/chapel:2.8.0
+# Start from official Chapel image (default: portable, no fabric dependencies)
+ARG CHAPEL_BASE_IMAGE=docker.io/chapel/chapel:2.8.0
+# For Frontier (libfabric 1.22.0), pass --build-arg:
+#   --build-arg CHAPEL_BASE_IMAGE=docker.io/arezaiihpe/chapel-2.8.0-libfabric-1.22.0-cxi:latest
+# For HPC systems with libfabric 2.3.1, pass --build-arg:
+#   --build-arg CHAPEL_BASE_IMAGE=docker.io/arezaiihpe/chapel-2.8.0-libfabric-2.3.1-cxi:latest
+
+FROM ${CHAPEL_BASE_IMAGE} AS builder
 
 # ---------------------------------------------------------------
 # System dependencies for building OTF2, Arrow, and the converter
@@ -75,12 +81,38 @@ ENV LD_LIBRARY_PATH=/opt/otf2/lib:/opt/arrow/lib
 ENV PATH=/opt/otf2/bin:$PATH
 
 # ---------------------------------------------------------------
-# Copy the repository and build the converter
+# Copy only the sources needed to build the converter
 # ---------------------------------------------------------------
-COPY . /workspace/fastotf2
+WORKDIR /workspace/fastotf2
+COPY src /workspace/fastotf2/src
+COPY apps/FastOTF2Converter /workspace/fastotf2/apps/FastOTF2Converter
 WORKDIR /workspace/fastotf2/apps/FastOTF2Converter
 RUN rm -f Mason.lock && mason build --release
 RUN rm -rf /tmp/*
+
+# ---------------------------------------------------------------
+# Lean runtime image
+# ---------------------------------------------------------------
+FROM ${CHAPEL_BASE_IMAGE} AS runtime
+
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    ca-certificates \
+    libbrotli1 \
+    libbz2-1.0 \
+    liblz4-1 \
+    libsnappy1v5 \
+    libssl3 \
+    libzstd1 \
+    zlib1g \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV PKG_CONFIG_PATH=/opt/arrow/lib/pkgconfig:/opt/otf2/lib/pkgconfig
+ENV LD_LIBRARY_PATH=/opt/otf2/lib:/opt/arrow/lib
+ENV PATH=/opt/otf2/bin:$PATH
+
+COPY --from=builder /opt/otf2 /opt/otf2
+COPY --from=builder /opt/arrow /opt/arrow
+COPY --from=builder /workspace/fastotf2/apps/FastOTF2Converter/target/release/FastOTF2Converter* /workspace/fastotf2/apps/FastOTF2Converter/target/release/
 
 # ---------------------------------------------------------------
 # Entrypoint: detects shell requests, otherwise runs the built
