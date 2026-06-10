@@ -3,3 +3,5 @@
 .venv*/
 target/
 apps/*/target/
+scorep-traces/*
+*.tar.gz
