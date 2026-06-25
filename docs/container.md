@@ -2,6 +2,8 @@
 
 Pre-built container images are published to the GitHub Container Registry (GHCR) at `ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter`. Every merge to `main` publishes a `:latest` image, and pull-request builds are available with `pr-<number>` tags.
 
+For HPC systems with libfabric/CXI network fabrics, OFI variants are also published: `fastotf2-converter-frontier` (libfabric 1.22.0) and `fastotf2-converter-libfabric2.3.1` (libfabric 2.3.1). See the [HPC Apptainer guide](hpc-apptainer.md) for how to choose and run them.
+
 - [Complete Working Example](#complete-working-example)
 - [Building the Container from Source](#building-the-container-from-source)
 - [Container Layout](#container-layout)

@@ -145,3 +145,64 @@ jobs:
           docker buildx imagetools create \
             $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
             $(printf '${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@sha256:%s ' *)
+
+  # -----------------------------------------------------------
+  # OFI (libfabric/CXI) variants for HPC fabrics.
+  # Single-platform (linux/amd64) builds that differ from the
+  # default image only by the Chapel base image. The libfabric/CXI
+  # Chapel bases target x86_64 HPC systems, so there is no arm64
+  # variant to merge — tags are pushed directly.
+  # -----------------------------------------------------------
+  build-ofi:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Frontier (libfabric 1.22.0)
+          - image_suffix: fastotf2-converter-frontier
+            base_image: docker.io/arezaiihpe/chapel-2.8.0-libfabric-1.22.0-cxi:latest
+          # HPC systems with libfabric 2.3.1
+          - image_suffix: fastotf2-converter-libfabric2.3.1
+            base_image: docker.io/arezaiihpe/chapel-2.8.0-libfabric-2.3.1-cxi:latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository }}/${{ matrix.image_suffix }}
+          tags: |
+            type=ref,event=pr
+            type=sha,prefix=
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: container/Containerfile
+          platforms: linux/amd64
+          build-args: |
+            CHAPEL_BASE_IMAGE=${{ matrix.base_image }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          push: true

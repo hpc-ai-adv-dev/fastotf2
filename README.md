@@ -37,6 +37,8 @@ docker run --rm \
 
 For more container details (building from source, troubleshooting): [docs/container.md](docs/container.md)
 
+Running on an HPC cluster? OFI images with HPC fabric support (libfabric/CXI) are published for use with Apptainer: [docs/hpc-apptainer.md](docs/hpc-apptainer.md)
+
 ## Output Formats
 
 | Format | Flag | Description |
