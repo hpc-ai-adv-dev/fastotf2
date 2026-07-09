@@ -4,7 +4,7 @@ authors = ["Shreyas Khandekar"]
 chplVersion = "2.9.0..2.9.0"
 compopts = ["-M../../src"]
 copyrightYear = "2026"
-dependencies = ["Parquet -1 https://github.com/e-kayrakli/Parquet"]
+dependencies = ["Parquet -1 https://github.com/chapel-lang/Parquet"]
 license = "Apache-2.0"
 name = "FastOTF2Converter"
 source = "https://github.com/hpc-ai-adv-dev/fastotf2"
@@ -14,8 +14,8 @@ version = "0.1.0"
 [Parquet]
 chplVersion = "2.9.0..2.9.0"
 name = "Parquet"
-rev = "cfa584adf55462ed7bb148d9b93ab656565006f6"
-source = "https://github.com/e-kayrakli/Parquet"
+rev = "95d4fac87aada97d314eba8af05b21027e6704e6"
+source = "https://github.com/chapel-lang/Parquet"
 version = "-1"
 
 [Parquet.system]

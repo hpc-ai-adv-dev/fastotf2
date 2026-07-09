@@ -10,8 +10,10 @@ type = "application"
 version = "0.1.0"
 
 [dependencies]
-Parquet = { git = "https://github.com/e-kayrakli/Parquet" }
-# FastOTF2 = { git = "../../" }
+Parquet = { git = "https://github.com/chapel-lang/Parquet" }
+# Waiting on https://github.com/chapel-lang/chapel/issues/28745 so we can depend on the local FastOTF2 mason library
+# Till then we hack it using the -M../../src option in compopts
+# FastOTF2 = { path = "../../" }
 
 [system]
 otf2 = "3.1.1"
