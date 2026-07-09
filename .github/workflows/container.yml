@@ -166,10 +166,10 @@ jobs:
         include:
           # Frontier (libfabric 1.22.0)
           - image_suffix: fastotf2-converter-frontier
-            base_image: docker.io/arezaiihpe/chapel-2.8.0-libfabric-1.22.0-cxi:latest
+            base_image: docker.io/arezaiihpe/chapel-2.9.0-libfabric-1.22.0-cxi-pic:latest
           # HPC systems with libfabric 2.3.1
           - image_suffix: fastotf2-converter-libfabric2.3.1
-            base_image: docker.io/arezaiihpe/chapel-2.8.0-libfabric-2.3.1-cxi:latest
+            base_image: docker.io/arezaiihpe/chapel-2.9.0-libfabric-2.3.1-cxi-pic:latest
 
     steps:
       - name: Checkout repository

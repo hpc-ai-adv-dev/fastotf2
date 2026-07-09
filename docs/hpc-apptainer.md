@@ -146,7 +146,7 @@ base, and tag it with the matching published name:
 ```bash
 # Frontier (libfabric 1.22.0)
 podman build \
-  --build-arg CHAPEL_BASE_IMAGE=docker.io/arezaiihpe/chapel-2.8.0-libfabric-1.22.0-cxi:latest \
+  --build-arg CHAPEL_BASE_IMAGE=docker.io/arezaiihpe/chapel-2.9.0-libfabric-1.22.0-cxi-pic:latest \
   -f container/Containerfile \
   -t ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter-frontier:latest \
   .
@@ -155,7 +155,7 @@ podman build \
 ```bash
 # HPC systems with libfabric 2.3.1
 podman build \
-  --build-arg CHAPEL_BASE_IMAGE=docker.io/arezaiihpe/chapel-2.8.0-libfabric-2.3.1-cxi:latest \
+  --build-arg CHAPEL_BASE_IMAGE=docker.io/arezaiihpe/chapel-2.9.0-libfabric-2.3.1-cxi-pic:latest \
   -f container/Containerfile \
   -t ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter-libfabric2.3.1:latest \
   .

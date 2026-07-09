@@ -5,12 +5,12 @@
 # See container/README.md for details and usage instructions.
 
 # Start from official Chapel image (default: portable, no fabric dependencies)
-ARG CHAPEL_BASE_IMAGE=docker.io/chapel/chapel:2.8.0
+ARG CHAPEL_BASE_IMAGE=docker.io/chapel/chapel:2.9.0
 # OFI variants for HPC fabrics are published by CI from this same Containerfile.
 # For Frontier (libfabric 1.22.0) -> fastotf2-converter-frontier, pass --build-arg:
-#   --build-arg CHAPEL_BASE_IMAGE=docker.io/arezaiihpe/chapel-2.8.0-libfabric-1.22.0-cxi:latest
+#   --build-arg CHAPEL_BASE_IMAGE=docker.io/arezaiihpe/chapel-2.9.0-libfabric-1.22.0-cxi-pic:latest
 # For HPC systems with libfabric 2.3.1 -> fastotf2-converter-libfabric2.3.1, pass --build-arg:
-#   --build-arg CHAPEL_BASE_IMAGE=docker.io/arezaiihpe/chapel-2.8.0-libfabric-2.3.1-cxi:latest
+#   --build-arg CHAPEL_BASE_IMAGE=docker.io/arezaiihpe/chapel-2.9.0-libfabric-2.3.1-cxi-pic:latest
 
 FROM ${CHAPEL_BASE_IMAGE} AS builder
 
