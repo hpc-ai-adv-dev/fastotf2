@@ -5,3 +5,7 @@ target/
 apps/*/target/
 scorep-traces/*
 *.tar.gz
+**/copilot/
+fastotf2-out/
+apps/*/out/
+workflows/scaling/out/
