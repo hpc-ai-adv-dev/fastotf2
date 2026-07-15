@@ -9,3 +9,4 @@ scorep-traces/*
 fastotf2-out/
 apps/*/out/
 workflows/scaling/out/
+**/__pycache__/
