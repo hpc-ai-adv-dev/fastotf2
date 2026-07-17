@@ -121,12 +121,25 @@ def cd(dir):
     log(f'> cd {dir}')
     os.chdir(dir)
 
-def download_custom_container(container_uri, force=False):
+def download_custom_container(container_uri, force=False, method="podman"):
+    """Fetch container_uri as a local .sif file.
+
+    method="podman" (default) converts via podman + convert-to-sif.sh -- needs a working
+    podman install. method="apptainer" pulls directly with `apptainer pull`, no podman
+    required (e.g. on systems like Frontier where podman isn't usable)."""
     containerName = generate_filename(container_uri) + '.sif'
-    if force or not os.path.exists(containerName):
-        run_cmd(f"{workflowScriptDir}/convert-to-sif.sh {container_uri}")
-    else:
+    if not force and os.path.exists(containerName):
         print(f"Container {containerName} already exists, skipping download.")
+        return containerName
+    if method == "apptainer":
+        pull_uri = container_uri if "://" in container_uri else f"docker://{container_uri}"
+        cmd = ["apptainer", "pull"]
+        if force:
+            cmd.append("--force")
+        cmd += [containerName, pull_uri]
+        run_cmd(cmd)
+    else:
+        run_cmd(f"{workflowScriptDir}/convert-to-sif.sh {container_uri}")
     return containerName
 
 def download_sst_container(version, force=False):

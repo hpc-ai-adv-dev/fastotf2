@@ -2,11 +2,12 @@
 .otf2venv/
 .venv*/
 target/
-apps/*/target/
+***/target/
 scorep-traces/*
 *.tar.gz
 **/copilot/
 fastotf2-out/
-apps/*/out/
+***/out/
 workflows/scaling/out/
 **/__pycache__/
+workflows/scaling/local_secrets.py
