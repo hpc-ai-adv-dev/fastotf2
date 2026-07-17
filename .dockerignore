@@ -6,6 +6,9 @@
 
 # Build artifacts
 **/target
+**/.venv
+**/__pycache__
+**/.pytest_cache
 
 # Object files
 **/*.o
@@ -13,3 +16,21 @@
 
 # Container outputs
 container/*.tar
+
+# Large local container images/archives at repo root
+*.sif
+*.tar
+
+# Large generated converter outputs
+apps/FastOTF2Converter/out/
+
+# Large trace datasets not needed for build
+scorep-traces/
+
+# Analysis outputs (not required to compile converter)
+comparisons/
+
+# Local app outputs and profiling artifacts
+apps/FastOTF2Converter/mem.log
+apps/FastOTF2Converter/perf.data
+apps/FastOTF2Converter/perf.data.old
