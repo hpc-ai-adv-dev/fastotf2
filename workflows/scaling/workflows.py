@@ -571,4 +571,38 @@ def _load_user_workflows():
             globals()[name] = getattr(module, name)
 
 
+# --- Shared trace-size measurement -----------------------------------------------------
+# Used by BOTH the scaling and benchmark notebooks so they ALWAYS compute an identical
+# on-disk size (du -sb, GiB = 1024**3). Keep this implementation byte-identical to the copy
+# in the fastotf2-bench repo's workflows.py.
+_TRACE_GIB = 1024 ** 3
+
+
+def measure_trace_sizes_gib(trace_inputs, cache_path):
+    """du -sb each trace dir -> GiB (1024**3), cached to JSON (trace sizes are fixed).
+
+    trace_inputs: a {key: path} dict; returns {key: gib} with the same keys. Uncached
+    entries print progress + elapsed time -- du -sb has to stat() every file under each
+    trace's traces/ subdir (tens of thousands for the largest traces), which is slow on
+    Lustre and would otherwise look hung with no output for several minutes."""
+    import json as _json
+    from pathlib import Path as _Path
+    cache_path = _Path(cache_path)
+    cache = _json.loads(cache_path.read_text()) if cache_path.exists() else {}
+    sizes = {}
+    for key, path in trace_inputs.items():
+        ckey = str(key)
+        if ckey not in cache:
+            print(f"  measuring size of trace {key} ({path}) -- du -sb over many files "
+                  f"on Lustre, may take a while...")
+            t0 = time.monotonic()
+            out = subprocess.run(["du", "-sb", path], capture_output=True, text=True, check=True)
+            cache[ckey] = int(out.stdout.split()[0]) / _TRACE_GIB
+            print(f"    -> {cache[ckey]:.2f} GiB ({time.monotonic() - t0:.0f}s)")
+        sizes[key] = cache[ckey]
+    cache_path.parent.mkdir(parents=True, exist_ok=True)
+    cache_path.write_text(_json.dumps(cache, indent=2, sort_keys=True))
+    return sizes
+
+
 _load_user_workflows()
