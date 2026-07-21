@@ -14,7 +14,8 @@ contributes its own results under its own `<system>/` label.
 analysis-data/
   README.md                     # this file
   tools/
-    build_converter_merged.py   # builds the converter (B) merged run from raw out/ runs
+    build_converter_merged.py   # builds the converter (B) merged run from TWO raw out/ runs
+    build_converter_single.py   # builds the converter (B) run from ONE complete out/ run
   <system>/                     # neutral machine label: "other-ex", "frontier", ...
     ampere/                     # analysis A (ampere-workflows-new.ipynb)
       <run>/end_to_end_results.csv, plan.json, plots/
@@ -24,8 +25,10 @@ analysis-data/
   # (bench C lives in the SEPARATE fastotf2-bench repo under its own analysis-data/)
 ```
 
-`<system>` is a **neutral** label (never the real cluster name). Today: `other-ex`. A Frontier
-upload would add a sibling `frontier/` with the same shape — analyses can then compare systems.
+`<system>` is a **neutral** label (never the real cluster name). Today: `other-ex` (its
+converter data is the two-run *merge*, see below) and `frontier` (a single complete STRONG
+sweep, built with `build_converter_single.py`). Same shape either way — analyses can compare
+systems.
 
 ## How to re-run each analysis from here
 
@@ -84,8 +87,10 @@ serial version. (Does not block re-graphing.)
 2. **converter (B):** edit the paths + `SYSTEM = "frontier"` at the top of
    `tools/build_converter_merged.py` (or generalize via args) and run it → writes
    `analysis-data/frontier/converter/run_converter_merged/`. If that system's runs aren't split
-   across two notebook versions, point both NEW/OLD at the single run (or simplify to a plain
-   aggregation of one run).
+   across two notebook versions, use `tools/build_converter_single.py` instead — point its
+   `SRC_RUN` at the one complete run and set `SYSTEM` → it writes
+   `analysis-data/<system>/converter/<run_tag>/` (this is how the existing `frontier/converter/`
+   data was built from a single STRONG sweep).
 3. **ampere (A):** run the notebook's §4 combine **while the conversion runs still exist on that
    system** to bake `end_to_end_results.csv`, then copy it (+ `plan.json`, `plots/`) to
    `analysis-data/frontier/ampere/<run>/`.

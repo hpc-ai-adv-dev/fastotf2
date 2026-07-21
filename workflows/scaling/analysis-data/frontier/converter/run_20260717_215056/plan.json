@@ -1,0 +1,42 @@
+{
+  "collection_mode": "STRONG",
+  "traces": [
+    16,
+    32,
+    128,
+    384
+  ],
+  "node_counts": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256
+  ],
+  "weak_targets": [
+    2.2741,
+    2.33,
+    4.5482,
+    5.92,
+    5.9215,
+    9.0964,
+    11.01,
+    11.843,
+    18.1929,
+    23.686
+  ],
+  "weak_tolerance": 0.05,
+  "min_traces_per_curve": 3,
+  "weak_required_traces": [
+    128,
+    384
+  ],
+  "weak_curves": {},
+  "num_trials": 5,
+  "sample_run": false,
+  "dry_run": false
+}
