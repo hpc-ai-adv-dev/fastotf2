@@ -1,0 +1,158 @@
+{
+  "system": "other-ex",
+  "metric": "A2rocm_smi:::energy_count:device=6",
+  "strategy": "exclusive",
+  "ranks_per_node": 8,
+  "num_trials": 1,
+  "sample_run": false,
+  "dry_run": false,
+  "traces_head_to_head": [
+    2,
+    4,
+    8,
+    16
+  ],
+  "traces_arkouda_only": [
+    32,
+    128,
+    384
+  ],
+  "analysis_nodes": {
+    "2": [
+      1
+    ],
+    "4": [
+      1
+    ],
+    "8": [
+      1
+    ],
+    "16": [
+      1,
+      4
+    ],
+    "32": [
+      1,
+      8
+    ],
+    "128": [
+      16,
+      32
+    ],
+    "384": [
+      16,
+      64
+    ]
+  },
+  "arkouda_configs": [
+    {
+      "trace_traced_nodes": 2,
+      "analysis_nodes": 1,
+      "size_gib": 0.682,
+      "pq_dir": "/lus/bnchlu1/khandeka/dev/hpc-ai-adv-dev/fastotf2/workflows/scaling/out/run_20260714_043638_save/pq/size2_nl1_trial1",
+      "conversion_nl": 1,
+      "conversion_nl_exact": true
+    },
+    {
+      "trace_traced_nodes": 4,
+      "analysis_nodes": 1,
+      "size_gib": 1.899,
+      "pq_dir": "/lus/bnchlu1/khandeka/dev/hpc-ai-adv-dev/fastotf2/workflows/scaling/out/run_20260714_043638_save/pq/size4_nl1_trial1",
+      "conversion_nl": 1,
+      "conversion_nl_exact": true
+    },
+    {
+      "trace_traced_nodes": 8,
+      "analysis_nodes": 1,
+      "size_gib": 5.544,
+      "pq_dir": "/lus/bnchlu1/khandeka/dev/hpc-ai-adv-dev/fastotf2/workflows/scaling/out/run_20260714_043638_save/pq/size8_nl1_trial1",
+      "conversion_nl": 1,
+      "conversion_nl_exact": true
+    },
+    {
+      "trace_traced_nodes": 16,
+      "analysis_nodes": 1,
+      "size_gib": 11.563,
+      "pq_dir": "/lus/bnchlu1/khandeka/dev/hpc-ai-adv-dev/fastotf2/workflows/scaling/out/run_20260717_203803_save/pq/size16_nl1",
+      "conversion_nl": 1,
+      "conversion_nl_exact": true
+    },
+    {
+      "trace_traced_nodes": 16,
+      "analysis_nodes": 4,
+      "size_gib": 11.563,
+      "pq_dir": "/lus/bnchlu1/khandeka/dev/hpc-ai-adv-dev/fastotf2/workflows/scaling/out/run_20260717_203803_save/pq/size16_nl1",
+      "conversion_nl": 4,
+      "conversion_nl_exact": true
+    },
+    {
+      "trace_traced_nodes": 32,
+      "analysis_nodes": 1,
+      "size_gib": 32.669,
+      "pq_dir": "/lus/bnchlu1/khandeka/dev/hpc-ai-adv-dev/fastotf2/workflows/scaling/out/run_20260717_203803_save/pq/size32_nl1",
+      "conversion_nl": 1,
+      "conversion_nl_exact": true
+    },
+    {
+      "trace_traced_nodes": 32,
+      "analysis_nodes": 8,
+      "size_gib": 32.669,
+      "pq_dir": "/lus/bnchlu1/khandeka/dev/hpc-ai-adv-dev/fastotf2/workflows/scaling/out/run_20260717_203803_save/pq/size32_nl1",
+      "conversion_nl": 8,
+      "conversion_nl_exact": true
+    },
+    {
+      "trace_traced_nodes": 128,
+      "analysis_nodes": 16,
+      "size_gib": 291.081,
+      "pq_dir": "/lus/bnchlu1/khandeka/dev/hpc-ai-adv-dev/fastotf2/workflows/scaling/out/run_20260717_203803_save/pq/size128_nl16",
+      "conversion_nl": 16,
+      "conversion_nl_exact": true
+    },
+    {
+      "trace_traced_nodes": 128,
+      "analysis_nodes": 32,
+      "size_gib": 291.081,
+      "pq_dir": "/lus/bnchlu1/khandeka/dev/hpc-ai-adv-dev/fastotf2/workflows/scaling/out/run_20260717_203803_save/pq/size128_nl16",
+      "conversion_nl": 32,
+      "conversion_nl_exact": true
+    },
+    {
+      "trace_traced_nodes": 384,
+      "analysis_nodes": 16,
+      "size_gib": 1515.89,
+      "pq_dir": "/lus/bnchlu1/khandeka/dev/hpc-ai-adv-dev/fastotf2/workflows/scaling/out/run_20260717_203803_save/pq/size384_nl64",
+      "conversion_nl": 64,
+      "conversion_nl_exact": false
+    },
+    {
+      "trace_traced_nodes": 384,
+      "analysis_nodes": 64,
+      "size_gib": 1515.89,
+      "pq_dir": "/lus/bnchlu1/khandeka/dev/hpc-ai-adv-dev/fastotf2/workflows/scaling/out/run_20260717_203803_save/pq/size384_nl64",
+      "conversion_nl": 64,
+      "conversion_nl_exact": true
+    }
+  ],
+  "pandas_traces": [
+    2,
+    4,
+    8
+  ],
+  "pandas_oom_traces": [
+    16
+  ],
+  "pandas_max_trace": 8,
+  "trace_sizes_gib": {
+    "128": 291.08059518877417,
+    "16": 11.563274732790887,
+    "2": 0.6815962251275778,
+    "32": 32.669452173635364,
+    "384": 1515.8897516615689,
+    "4": 1.899056663736701,
+    "8": 5.544019534252584
+  },
+  "fastotf2_run": "/lus/bnchlu1/khandeka/dev/hpc-ai-adv-dev/fastotf2/workflows/scaling/out/run_20260717_203803_save",
+  "fastotf2_run_extra": "/lus/bnchlu1/khandeka/dev/hpc-ai-adv-dev/fastotf2/workflows/scaling/out/run_20260714_043638_save",
+  "python_run": "/lus/bnchlu1/khandeka/dev/hpc-ai-adv-dev/fastotf2-bench/out/run_20260717_203326_save"
+}
