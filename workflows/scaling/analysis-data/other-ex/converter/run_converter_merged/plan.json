@@ -1,0 +1,28 @@
+{
+  "synthetic": true,
+  "note": "Merged analysis-only run; see SOURCES.md.",
+  "system": "other-ex",
+  "node_counts": [
+    1,
+    2,
+    3,
+    4,
+    7,
+    8,
+    13,
+    16,
+    23,
+    32,
+    64,
+    128,
+    256
+  ],
+  "num_trials": 5,
+  "traces_from_old_run": [
+    2,
+    4,
+    8
+  ],
+  "old_run": "run_20260714_043638_save",
+  "new_run": "run_20260717_203803_save"
+}

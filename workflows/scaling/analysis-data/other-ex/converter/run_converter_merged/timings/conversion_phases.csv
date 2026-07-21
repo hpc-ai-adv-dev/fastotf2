@@ -1,0 +1,1171 @@
+traced_nodes,nl,trial,phase,time,pctTotal,source_run
+128,128,1,Read global definitions,0.066875,0.03,run_20260717_203803_save
+128,128,1,Build group/location map,0.00489,0.0,run_20260717_203803_save
+128,128,1,Distribute groups,0.005213,0.0,run_20260717_203803_save
+128,128,1,Read events + write output,222.911328,99.97,run_20260717_203803_save
+128,128,1,Other (overhead),0.005841,0.0,run_20260717_203803_save
+128,128,1,Total,222.988934,100.0,run_20260717_203803_save
+128,128,2,Read global definitions,0.014977,0.01,run_20260717_203803_save
+128,128,2,Build group/location map,0.00452,0.0,run_20260717_203803_save
+128,128,2,Distribute groups,0.015005,0.01,run_20260717_203803_save
+128,128,2,Read events + write output,218.219535,99.98,run_20260717_203803_save
+128,128,2,Other (overhead),0.015243,0.01,run_20260717_203803_save
+128,128,2,Total,218.254275,100.0,run_20260717_203803_save
+128,128,3,Read global definitions,0.014853,0.01,run_20260717_203803_save
+128,128,3,Build group/location map,0.00464,0.0,run_20260717_203803_save
+128,128,3,Distribute groups,0.004693,0.0,run_20260717_203803_save
+128,128,3,Read events + write output,218.512755,99.99,run_20260717_203803_save
+128,128,3,Other (overhead),0.004951,0.0,run_20260717_203803_save
+128,128,3,Total,218.537199,100.0,run_20260717_203803_save
+128,128,4,Read global definitions,0.015132,0.01,run_20260717_203803_save
+128,128,4,Build group/location map,0.004359,0.0,run_20260717_203803_save
+128,128,4,Distribute groups,0.006121,0.0,run_20260717_203803_save
+128,128,4,Read events + write output,218.821459,99.99,run_20260717_203803_save
+128,128,4,Other (overhead),0.00637,0.0,run_20260717_203803_save
+128,128,4,Total,218.84732,100.0,run_20260717_203803_save
+128,128,5,Read global definitions,0.06927,0.03,run_20260717_203803_save
+128,128,5,Build group/location map,0.004424,0.0,run_20260717_203803_save
+128,128,5,Distribute groups,0.005246,0.0,run_20260717_203803_save
+128,128,5,Read events + write output,220.457906,99.96,run_20260717_203803_save
+128,128,5,Other (overhead),0.005466,0.0,run_20260717_203803_save
+128,128,5,Total,220.537066,100.0,run_20260717_203803_save
+128,16,1,Read global definitions,0.061857,0.01,run_20260717_203803_save
+128,16,1,Build group/location map,0.004245,0.0,run_20260717_203803_save
+128,16,1,Distribute groups,0.003012,0.0,run_20260717_203803_save
+128,16,1,Read events + write output,440.50226,99.98,run_20260717_203803_save
+128,16,1,Other (overhead),0.003233,0.0,run_20260717_203803_save
+128,16,1,Total,440.571595,100.0,run_20260717_203803_save
+128,16,2,Read global definitions,0.103118,0.02,run_20260717_203803_save
+128,16,2,Build group/location map,0.005163,0.0,run_20260717_203803_save
+128,16,2,Distribute groups,0.014112,0.0,run_20260717_203803_save
+128,16,2,Read events + write output,446.865303,99.97,run_20260717_203803_save
+128,16,2,Other (overhead),0.014339,0.0,run_20260717_203803_save
+128,16,2,Total,446.987923,100.0,run_20260717_203803_save
+128,16,3,Read global definitions,0.079329,0.02,run_20260717_203803_save
+128,16,3,Build group/location map,0.004235,0.0,run_20260717_203803_save
+128,16,3,Distribute groups,0.002978,0.0,run_20260717_203803_save
+128,16,3,Read events + write output,502.0188,99.98,run_20260717_203803_save
+128,16,3,Other (overhead),0.00365,0.0,run_20260717_203803_save
+128,16,3,Total,502.106014,100.0,run_20260717_203803_save
+128,16,4,Read global definitions,0.077821,0.02,run_20260717_203803_save
+128,16,4,Build group/location map,0.004147,0.0,run_20260717_203803_save
+128,16,4,Distribute groups,0.002879,0.0,run_20260717_203803_save
+128,16,4,Read events + write output,441.549954,99.98,run_20260717_203803_save
+128,16,4,Other (overhead),0.003426,0.0,run_20260717_203803_save
+128,16,4,Total,441.635348,100.0,run_20260717_203803_save
+128,16,5,Read global definitions,0.078734,0.02,run_20260717_203803_save
+128,16,5,Build group/location map,0.004305,0.0,run_20260717_203803_save
+128,16,5,Distribute groups,0.018137,0.0,run_20260717_203803_save
+128,16,5,Read events + write output,438.141479,99.98,run_20260717_203803_save
+128,16,5,Other (overhead),0.018721,0.0,run_20260717_203803_save
+128,16,5,Total,438.243239,100.0,run_20260717_203803_save
+128,32,1,Read global definitions,0.071561,0.02,run_20260717_203803_save
+128,32,1,Build group/location map,0.004342,0.0,run_20260717_203803_save
+128,32,1,Distribute groups,0.003319,0.0,run_20260717_203803_save
+128,32,1,Read events + write output,296.964104,99.97,run_20260717_203803_save
+128,32,1,Other (overhead),0.003858,0.0,run_20260717_203803_save
+128,32,1,Total,297.043865,100.0,run_20260717_203803_save
+128,32,2,Read global definitions,0.073907,0.02,run_20260717_203803_save
+128,32,2,Build group/location map,0.004367,0.0,run_20260717_203803_save
+128,32,2,Distribute groups,0.014004,0.0,run_20260717_203803_save
+128,32,2,Read events + write output,318.165542,99.97,run_20260717_203803_save
+128,32,2,Other (overhead),0.014679,0.0,run_20260717_203803_save
+128,32,2,Total,318.258495,100.0,run_20260717_203803_save
+128,32,3,Read global definitions,0.071315,0.02,run_20260717_203803_save
+128,32,3,Build group/location map,0.00422,0.0,run_20260717_203803_save
+128,32,3,Distribute groups,0.003283,0.0,run_20260717_203803_save
+128,32,3,Read events + write output,301.868341,99.97,run_20260717_203803_save
+128,32,3,Other (overhead),0.003487,0.0,run_20260717_203803_save
+128,32,3,Total,301.947363,100.0,run_20260717_203803_save
+128,32,4,Read global definitions,0.015373,0.0,run_20260717_203803_save
+128,32,4,Build group/location map,0.004527,0.0,run_20260717_203803_save
+128,32,4,Distribute groups,0.003221,0.0,run_20260717_203803_save
+128,32,4,Read events + write output,307.792342,99.99,run_20260717_203803_save
+128,32,4,Other (overhead),0.003478,0.0,run_20260717_203803_save
+128,32,4,Total,307.81572,100.0,run_20260717_203803_save
+128,32,5,Read global definitions,0.073604,0.03,run_20260717_203803_save
+128,32,5,Build group/location map,0.00442,0.0,run_20260717_203803_save
+128,32,5,Distribute groups,0.003361,0.0,run_20260717_203803_save
+128,32,5,Read events + write output,276.051039,99.97,run_20260717_203803_save
+128,32,5,Other (overhead),0.004001,0.0,run_20260717_203803_save
+128,32,5,Total,276.133064,100.0,run_20260717_203803_save
+128,64,1,Read global definitions,0.082779,0.03,run_20260717_203803_save
+128,64,1,Build group/location map,0.004451,0.0,run_20260717_203803_save
+128,64,1,Distribute groups,0.003547,0.0,run_20260717_203803_save
+128,64,1,Read events + write output,239.056351,99.96,run_20260717_203803_save
+128,64,1,Other (overhead),0.003805,0.0,run_20260717_203803_save
+128,64,1,Total,239.147386,100.0,run_20260717_203803_save
+128,64,2,Read global definitions,0.077242,0.03,run_20260717_203803_save
+128,64,2,Build group/location map,0.004453,0.0,run_20260717_203803_save
+128,64,2,Distribute groups,0.003742,0.0,run_20260717_203803_save
+128,64,2,Read events + write output,261.823987,99.97,run_20260717_203803_save
+128,64,2,Other (overhead),0.004401,0.0,run_20260717_203803_save
+128,64,2,Total,261.910083,100.0,run_20260717_203803_save
+128,64,3,Read global definitions,0.067392,0.03,run_20260717_203803_save
+128,64,3,Build group/location map,0.00476,0.0,run_20260717_203803_save
+128,64,3,Distribute groups,0.003815,0.0,run_20260717_203803_save
+128,64,3,Read events + write output,232.060275,99.97,run_20260717_203803_save
+128,64,3,Other (overhead),0.004344,0.0,run_20260717_203803_save
+128,64,3,Total,232.136771,100.0,run_20260717_203803_save
+128,64,4,Read global definitions,0.015175,0.01,run_20260717_203803_save
+128,64,4,Build group/location map,0.004482,0.0,run_20260717_203803_save
+128,64,4,Distribute groups,0.004247,0.0,run_20260717_203803_save
+128,64,4,Read events + write output,231.151235,99.99,run_20260717_203803_save
+128,64,4,Other (overhead),0.004481,0.0,run_20260717_203803_save
+128,64,4,Total,231.175373,100.0,run_20260717_203803_save
+128,64,5,Read global definitions,0.01507,0.01,run_20260717_203803_save
+128,64,5,Build group/location map,0.004472,0.0,run_20260717_203803_save
+128,64,5,Distribute groups,0.003571,0.0,run_20260717_203803_save
+128,64,5,Read events + write output,262.586326,99.99,run_20260717_203803_save
+128,64,5,Other (overhead),0.003815,0.0,run_20260717_203803_save
+128,64,5,Total,262.609683,100.0,run_20260717_203803_save
+16,16,1,Read global definitions,0.004126,0.01,run_20260717_203803_save
+16,16,1,Build group/location map,0.000398,0.0,run_20260717_203803_save
+16,16,1,Distribute groups,0.001325,0.0,run_20260717_203803_save
+16,16,1,Read events + write output,53.950731,99.99,run_20260717_203803_save
+16,16,1,Other (overhead),0.001491,0.0,run_20260717_203803_save
+16,16,1,Total,53.956746,100.0,run_20260717_203803_save
+16,16,2,Read global definitions,0.002033,0.0,run_20260717_203803_save
+16,16,2,Build group/location map,0.000338,0.0,run_20260717_203803_save
+16,16,2,Distribute groups,0.000778,0.0,run_20260717_203803_save
+16,16,2,Read events + write output,52.95494,99.99,run_20260717_203803_save
+16,16,2,Other (overhead),0.000981,0.0,run_20260717_203803_save
+16,16,2,Total,52.958292,100.0,run_20260717_203803_save
+16,16,3,Read global definitions,0.001975,0.0,run_20260717_203803_save
+16,16,3,Build group/location map,0.000341,0.0,run_20260717_203803_save
+16,16,3,Distribute groups,0.000813,0.0,run_20260717_203803_save
+16,16,3,Read events + write output,53.434081,99.99,run_20260717_203803_save
+16,16,3,Other (overhead),0.001002,0.0,run_20260717_203803_save
+16,16,3,Total,53.437399,100.0,run_20260717_203803_save
+16,16,4,Read global definitions,0.004256,0.01,run_20260717_203803_save
+16,16,4,Build group/location map,0.000344,0.0,run_20260717_203803_save
+16,16,4,Distribute groups,0.001248,0.0,run_20260717_203803_save
+16,16,4,Read events + write output,52.671907,99.99,run_20260717_203803_save
+16,16,4,Other (overhead),0.00142,0.0,run_20260717_203803_save
+16,16,4,Total,52.677927,100.0,run_20260717_203803_save
+16,16,5,Read global definitions,0.003596,0.01,run_20260717_203803_save
+16,16,5,Build group/location map,0.000349,0.0,run_20260717_203803_save
+16,16,5,Distribute groups,0.001379,0.0,run_20260717_203803_save
+16,16,5,Read events + write output,54.007338,99.99,run_20260717_203803_save
+16,16,5,Other (overhead),0.001573,0.0,run_20260717_203803_save
+16,16,5,Total,54.012856,100.0,run_20260717_203803_save
+16,1,1,Read global definitions,0.025463,0.02,run_20260717_203803_save
+16,1,1,Build group/location map,0.00035,0.0,run_20260717_203803_save
+16,1,1,Distribute groups,0.000167,0.0,run_20260717_203803_save
+16,1,1,Read events + write output,112.443326,99.98,run_20260717_203803_save
+16,1,1,Other (overhead),0.000366,0.0,run_20260717_203803_save
+16,1,1,Total,112.469505,100.0,run_20260717_203803_save
+16,1,2,Read global definitions,0.003298,0.0,run_20260717_203803_save
+16,1,2,Build group/location map,0.000346,0.0,run_20260717_203803_save
+16,1,2,Distribute groups,0.00013,0.0,run_20260717_203803_save
+16,1,2,Read events + write output,103.35046,99.99,run_20260717_203803_save
+16,1,2,Other (overhead),0.002077,0.0,run_20260717_203803_save
+16,1,2,Total,103.356181,100.0,run_20260717_203803_save
+16,1,3,Read global definitions,0.003727,0.0,run_20260717_203803_save
+16,1,3,Build group/location map,0.000343,0.0,run_20260717_203803_save
+16,1,3,Distribute groups,0.00013,0.0,run_20260717_203803_save
+16,1,3,Read events + write output,108.795496,99.99,run_20260717_203803_save
+16,1,3,Other (overhead),0.001636,0.0,run_20260717_203803_save
+16,1,3,Total,108.801202,100.0,run_20260717_203803_save
+16,1,4,Read global definitions,0.001977,0.0,run_20260717_203803_save
+16,1,4,Build group/location map,0.000336,0.0,run_20260717_203803_save
+16,1,4,Distribute groups,0.00014,0.0,run_20260717_203803_save
+16,1,4,Read events + write output,105.309919,100.0,run_20260717_203803_save
+16,1,4,Other (overhead),0.000332,0.0,run_20260717_203803_save
+16,1,4,Total,105.312564,100.0,run_20260717_203803_save
+16,1,5,Read global definitions,0.002242,0.0,run_20260717_203803_save
+16,1,5,Build group/location map,0.000393,0.0,run_20260717_203803_save
+16,1,5,Distribute groups,0.000133,0.0,run_20260717_203803_save
+16,1,5,Read events + write output,107.280199,99.99,run_20260717_203803_save
+16,1,5,Other (overhead),0.002739,0.0,run_20260717_203803_save
+16,1,5,Total,107.285573,100.0,run_20260717_203803_save
+16,2,1,Read global definitions,0.004461,0.0,run_20260717_203803_save
+16,2,1,Build group/location map,0.000354,0.0,run_20260717_203803_save
+16,2,1,Distribute groups,0.000568,0.0,run_20260717_203803_save
+16,2,1,Read events + write output,118.055008,100.0,run_20260717_203803_save
+16,2,1,Other (overhead),0.000743,0.0,run_20260717_203803_save
+16,2,1,Total,118.060566,100.0,run_20260717_203803_save
+16,2,2,Read global definitions,0.004509,0.0,run_20260717_203803_save
+16,2,2,Build group/location map,0.000345,0.0,run_20260717_203803_save
+16,2,2,Distribute groups,0.000598,0.0,run_20260717_203803_save
+16,2,2,Read events + write output,111.378278,99.99,run_20260717_203803_save
+16,2,2,Other (overhead),0.000773,0.0,run_20260717_203803_save
+16,2,2,Total,111.383905,100.0,run_20260717_203803_save
+16,2,3,Read global definitions,0.004522,0.0,run_20260717_203803_save
+16,2,3,Build group/location map,0.00035,0.0,run_20260717_203803_save
+16,2,3,Distribute groups,0.000571,0.0,run_20260717_203803_save
+16,2,3,Read events + write output,112.579037,99.99,run_20260717_203803_save
+16,2,3,Other (overhead),0.000769,0.0,run_20260717_203803_save
+16,2,3,Total,112.584678,100.0,run_20260717_203803_save
+16,2,4,Read global definitions,0.004109,0.0,run_20260717_203803_save
+16,2,4,Build group/location map,0.000354,0.0,run_20260717_203803_save
+16,2,4,Distribute groups,0.000537,0.0,run_20260717_203803_save
+16,2,4,Read events + write output,110.417422,100.0,run_20260717_203803_save
+16,2,4,Other (overhead),0.000719,0.0,run_20260717_203803_save
+16,2,4,Total,110.422604,100.0,run_20260717_203803_save
+16,2,5,Read global definitions,0.003961,0.0,run_20260717_203803_save
+16,2,5,Build group/location map,0.000366,0.0,run_20260717_203803_save
+16,2,5,Distribute groups,0.000546,0.0,run_20260717_203803_save
+16,2,5,Read events + write output,116.428434,100.0,run_20260717_203803_save
+16,2,5,Other (overhead),0.000725,0.0,run_20260717_203803_save
+16,2,5,Total,116.433486,100.0,run_20260717_203803_save
+16,32,1,Read global definitions,0.004072,0.01,run_20260717_203803_save
+16,32,1,Build group/location map,0.000337,0.0,run_20260717_203803_save
+16,32,1,Distribute groups,0.002515,0.01,run_20260717_203803_save
+16,32,1,Read events + write output,44.475677,99.98,run_20260717_203803_save
+16,32,1,Other (overhead),0.002693,0.01,run_20260717_203803_save
+16,32,1,Total,44.482779,100.0,run_20260717_203803_save
+16,32,2,Read global definitions,0.001987,0.0,run_20260717_203803_save
+16,32,2,Build group/location map,0.000338,0.0,run_20260717_203803_save
+16,32,2,Distribute groups,0.004049,0.01,run_20260717_203803_save
+16,32,2,Read events + write output,44.434241,99.99,run_20260717_203803_save
+16,32,2,Other (overhead),0.004237,0.01,run_20260717_203803_save
+16,32,2,Total,44.440803,100.0,run_20260717_203803_save
+16,32,3,Read global definitions,0.001981,0.0,run_20260717_203803_save
+16,32,3,Build group/location map,0.000358,0.0,run_20260717_203803_save
+16,32,3,Distribute groups,0.008356,0.02,run_20260717_203803_save
+16,32,3,Read events + write output,44.4635,99.98,run_20260717_203803_save
+16,32,3,Other (overhead),0.008533,0.02,run_20260717_203803_save
+16,32,3,Total,44.474372,100.0,run_20260717_203803_save
+16,32,4,Read global definitions,0.002118,0.0,run_20260717_203803_save
+16,32,4,Build group/location map,0.000342,0.0,run_20260717_203803_save
+16,32,4,Distribute groups,0.001146,0.0,run_20260717_203803_save
+16,32,4,Read events + write output,45.434406,99.99,run_20260717_203803_save
+16,32,4,Other (overhead),0.001329,0.0,run_20260717_203803_save
+16,32,4,Total,45.438195,100.0,run_20260717_203803_save
+16,32,5,Read global definitions,0.002167,0.0,run_20260717_203803_save
+16,32,5,Build group/location map,0.000341,0.0,run_20260717_203803_save
+16,32,5,Distribute groups,0.006894,0.02,run_20260717_203803_save
+16,32,5,Read events + write output,44.255962,99.98,run_20260717_203803_save
+16,32,5,Other (overhead),0.007082,0.02,run_20260717_203803_save
+16,32,5,Total,44.265552,100.0,run_20260717_203803_save
+16,4,1,Read global definitions,0.004385,0.01,run_20260717_203803_save
+16,4,1,Build group/location map,0.000503,0.0,run_20260717_203803_save
+16,4,1,Distribute groups,0.000701,0.0,run_20260717_203803_save
+16,4,1,Read events + write output,76.125312,99.99,run_20260717_203803_save
+16,4,1,Other (overhead),0.000911,0.0,run_20260717_203803_save
+16,4,1,Total,76.131111,100.0,run_20260717_203803_save
+16,4,2,Read global definitions,0.004218,0.01,run_20260717_203803_save
+16,4,2,Build group/location map,0.000341,0.0,run_20260717_203803_save
+16,4,2,Distribute groups,0.000976,0.0,run_20260717_203803_save
+16,4,2,Read events + write output,76.597572,99.99,run_20260717_203803_save
+16,4,2,Other (overhead),0.001147,0.0,run_20260717_203803_save
+16,4,2,Total,76.603278,100.0,run_20260717_203803_save
+16,4,3,Read global definitions,0.002126,0.0,run_20260717_203803_save
+16,4,3,Build group/location map,0.00039,0.0,run_20260717_203803_save
+16,4,3,Distribute groups,0.00062,0.0,run_20260717_203803_save
+16,4,3,Read events + write output,72.510468,100.0,run_20260717_203803_save
+16,4,3,Other (overhead),0.000814,0.0,run_20260717_203803_save
+16,4,3,Total,72.513798,100.0,run_20260717_203803_save
+16,4,4,Read global definitions,0.002036,0.0,run_20260717_203803_save
+16,4,4,Build group/location map,0.000345,0.0,run_20260717_203803_save
+16,4,4,Distribute groups,0.000506,0.0,run_20260717_203803_save
+16,4,4,Read events + write output,74.183818,100.0,run_20260717_203803_save
+16,4,4,Other (overhead),0.000702,0.0,run_20260717_203803_save
+16,4,4,Total,74.186901,100.0,run_20260717_203803_save
+16,4,5,Read global definitions,0.010106,0.01,run_20260717_203803_save
+16,4,5,Build group/location map,0.000337,0.0,run_20260717_203803_save
+16,4,5,Distribute groups,0.00079,0.0,run_20260717_203803_save
+16,4,5,Read events + write output,76.496385,99.99,run_20260717_203803_save
+16,4,5,Other (overhead),0.000978,0.0,run_20260717_203803_save
+16,4,5,Total,76.507806,100.0,run_20260717_203803_save
+16,8,1,Read global definitions,0.004162,0.01,run_20260717_203803_save
+16,8,1,Build group/location map,0.000345,0.0,run_20260717_203803_save
+16,8,1,Distribute groups,0.001296,0.0,run_20260717_203803_save
+16,8,1,Read events + write output,58.234948,99.99,run_20260717_203803_save
+16,8,1,Other (overhead),0.001468,0.0,run_20260717_203803_save
+16,8,1,Total,58.240923,100.0,run_20260717_203803_save
+16,8,2,Read global definitions,0.002027,0.0,run_20260717_203803_save
+16,8,2,Build group/location map,0.000341,0.0,run_20260717_203803_save
+16,8,2,Distribute groups,0.000639,0.0,run_20260717_203803_save
+16,8,2,Read events + write output,58.208415,99.99,run_20260717_203803_save
+16,8,2,Other (overhead),0.000838,0.0,run_20260717_203803_save
+16,8,2,Total,58.211621,100.0,run_20260717_203803_save
+16,8,3,Read global definitions,0.001999,0.0,run_20260717_203803_save
+16,8,3,Build group/location map,0.000338,0.0,run_20260717_203803_save
+16,8,3,Distribute groups,0.000726,0.0,run_20260717_203803_save
+16,8,3,Read events + write output,55.432723,99.99,run_20260717_203803_save
+16,8,3,Other (overhead),0.00092,0.0,run_20260717_203803_save
+16,8,3,Total,55.43598,100.0,run_20260717_203803_save
+16,8,4,Read global definitions,0.003652,0.01,run_20260717_203803_save
+16,8,4,Build group/location map,0.000345,0.0,run_20260717_203803_save
+16,8,4,Distribute groups,0.000725,0.0,run_20260717_203803_save
+16,8,4,Read events + write output,56.379641,99.99,run_20260717_203803_save
+16,8,4,Other (overhead),0.000929,0.0,run_20260717_203803_save
+16,8,4,Total,56.384567,100.0,run_20260717_203803_save
+16,8,5,Read global definitions,0.004117,0.01,run_20260717_203803_save
+16,8,5,Build group/location map,0.000343,0.0,run_20260717_203803_save
+16,8,5,Distribute groups,0.000722,0.0,run_20260717_203803_save
+16,8,5,Read events + write output,56.239691,99.99,run_20260717_203803_save
+16,8,5,Other (overhead),0.000906,0.0,run_20260717_203803_save
+16,8,5,Total,56.245057,100.0,run_20260717_203803_save
+32,16,1,Read global definitions,0.004502,0.0,run_20260717_203803_save
+32,16,1,Build group/location map,0.00069,0.0,run_20260717_203803_save
+32,16,1,Distribute groups,0.002021,0.0,run_20260717_203803_save
+32,16,1,Read events + write output,94.601868,99.99,run_20260717_203803_save
+32,16,1,Other (overhead),0.00219,0.0,run_20260717_203803_save
+32,16,1,Total,94.60925,100.0,run_20260717_203803_save
+32,16,2,Read global definitions,0.00493,0.01,run_20260717_203803_save
+32,16,2,Build group/location map,0.00069,0.0,run_20260717_203803_save
+32,16,2,Distribute groups,0.001886,0.0,run_20260717_203803_save
+32,16,2,Read events + write output,91.208635,99.99,run_20260717_203803_save
+32,16,2,Other (overhead),0.002039,0.0,run_20260717_203803_save
+32,16,2,Total,91.216294,100.0,run_20260717_203803_save
+32,16,3,Read global definitions,0.002675,0.0,run_20260717_203803_save
+32,16,3,Build group/location map,0.000751,0.0,run_20260717_203803_save
+32,16,3,Distribute groups,0.00092,0.0,run_20260717_203803_save
+32,16,3,Read events + write output,94.085862,100.0,run_20260717_203803_save
+32,16,3,Other (overhead),0.001118,0.0,run_20260717_203803_save
+32,16,3,Total,94.090406,100.0,run_20260717_203803_save
+32,16,4,Read global definitions,0.004607,0.01,run_20260717_203803_save
+32,16,4,Build group/location map,0.000682,0.0,run_20260717_203803_save
+32,16,4,Distribute groups,0.002005,0.0,run_20260717_203803_save
+32,16,4,Read events + write output,92.088073,99.99,run_20260717_203803_save
+32,16,4,Other (overhead),0.002188,0.0,run_20260717_203803_save
+32,16,4,Total,92.09555,100.0,run_20260717_203803_save
+32,16,5,Read global definitions,0.0048,0.0,run_20260717_203803_save
+32,16,5,Build group/location map,0.000691,0.0,run_20260717_203803_save
+32,16,5,Distribute groups,0.001662,0.0,run_20260717_203803_save
+32,16,5,Read events + write output,106.257275,99.99,run_20260717_203803_save
+32,16,5,Other (overhead),0.001854,0.0,run_20260717_203803_save
+32,16,5,Total,106.26462,100.0,run_20260717_203803_save
+32,1,1,Read global definitions,0.013517,0.0,run_20260717_203803_save
+32,1,1,Build group/location map,0.000679,0.0,run_20260717_203803_save
+32,1,1,Distribute groups,0.000258,0.0,run_20260717_203803_save
+32,1,1,Read events + write output,297.563148,100.0,run_20260717_203803_save
+32,1,1,Other (overhead),0.000455,0.0,run_20260717_203803_save
+32,1,1,Total,297.577799,100.0,run_20260717_203803_save
+32,1,2,Read global definitions,0.004716,0.0,run_20260717_203803_save
+32,1,2,Build group/location map,0.000769,0.0,run_20260717_203803_save
+32,1,2,Distribute groups,0.000267,0.0,run_20260717_203803_save
+32,1,2,Read events + write output,290.09371,100.0,run_20260717_203803_save
+32,1,2,Other (overhead),0.000456,0.0,run_20260717_203803_save
+32,1,2,Total,290.099651,100.0,run_20260717_203803_save
+32,1,3,Read global definitions,0.004692,0.0,run_20260717_203803_save
+32,1,3,Build group/location map,0.000689,0.0,run_20260717_203803_save
+32,1,3,Distribute groups,0.000227,0.0,run_20260717_203803_save
+32,1,3,Read events + write output,292.759828,100.0,run_20260717_203803_save
+32,1,3,Other (overhead),0.000404,0.0,run_20260717_203803_save
+32,1,3,Total,292.765613,100.0,run_20260717_203803_save
+32,1,4,Read global definitions,0.004669,0.0,run_20260717_203803_save
+32,1,4,Build group/location map,0.000722,0.0,run_20260717_203803_save
+32,1,4,Distribute groups,0.00026,0.0,run_20260717_203803_save
+32,1,4,Read events + write output,290.217792,100.0,run_20260717_203803_save
+32,1,4,Other (overhead),0.000457,0.0,run_20260717_203803_save
+32,1,4,Total,290.22364,100.0,run_20260717_203803_save
+32,1,5,Read global definitions,0.004501,0.0,run_20260717_203803_save
+32,1,5,Build group/location map,0.000699,0.0,run_20260717_203803_save
+32,1,5,Distribute groups,0.00025,0.0,run_20260717_203803_save
+32,1,5,Read events + write output,285.876723,100.0,run_20260717_203803_save
+32,1,5,Other (overhead),0.000423,0.0,run_20260717_203803_save
+32,1,5,Total,285.882346,100.0,run_20260717_203803_save
+32,2,1,Read global definitions,0.004813,0.0,run_20260717_203803_save
+32,2,1,Build group/location map,0.000689,0.0,run_20260717_203803_save
+32,2,1,Distribute groups,0.000702,0.0,run_20260717_203803_save
+32,2,1,Read events + write output,267.112909,100.0,run_20260717_203803_save
+32,2,1,Other (overhead),0.000883,0.0,run_20260717_203803_save
+32,2,1,Total,267.119294,100.0,run_20260717_203803_save
+32,2,2,Read global definitions,0.004642,0.0,run_20260717_203803_save
+32,2,2,Build group/location map,0.000784,0.0,run_20260717_203803_save
+32,2,2,Distribute groups,0.000826,0.0,run_20260717_203803_save
+32,2,2,Read events + write output,278.696837,100.0,run_20260717_203803_save
+32,2,2,Other (overhead),0.001024,0.0,run_20260717_203803_save
+32,2,2,Total,278.703287,100.0,run_20260717_203803_save
+32,2,3,Read global definitions,0.004674,0.0,run_20260717_203803_save
+32,2,3,Build group/location map,0.000693,0.0,run_20260717_203803_save
+32,2,3,Distribute groups,0.000661,0.0,run_20260717_203803_save
+32,2,3,Read events + write output,281.82192,100.0,run_20260717_203803_save
+32,2,3,Other (overhead),0.000828,0.0,run_20260717_203803_save
+32,2,3,Total,281.828115,100.0,run_20260717_203803_save
+32,2,4,Read global definitions,0.00467,0.0,run_20260717_203803_save
+32,2,4,Build group/location map,0.000681,0.0,run_20260717_203803_save
+32,2,4,Distribute groups,0.000685,0.0,run_20260717_203803_save
+32,2,4,Read events + write output,275.127348,100.0,run_20260717_203803_save
+32,2,4,Other (overhead),0.000853,0.0,run_20260717_203803_save
+32,2,4,Total,275.133552,100.0,run_20260717_203803_save
+32,2,5,Read global definitions,0.005665,0.0,run_20260717_203803_save
+32,2,5,Build group/location map,0.000962,0.0,run_20260717_203803_save
+32,2,5,Distribute groups,0.001267,0.0,run_20260717_203803_save
+32,2,5,Read events + write output,286.160347,100.0,run_20260717_203803_save
+32,2,5,Other (overhead),0.001469,0.0,run_20260717_203803_save
+32,2,5,Total,286.168443,100.0,run_20260717_203803_save
+32,32,1,Read global definitions,0.004972,0.01,run_20260717_203803_save
+32,32,1,Build group/location map,0.000694,0.0,run_20260717_203803_save
+32,32,1,Distribute groups,0.013353,0.02,run_20260717_203803_save
+32,32,1,Read events + write output,77.755395,99.98,run_20260717_203803_save
+32,32,1,Other (overhead),0.013559,0.02,run_20260717_203803_save
+32,32,1,Total,77.77462,100.0,run_20260717_203803_save
+32,32,2,Read global definitions,0.002646,0.0,run_20260717_203803_save
+32,32,2,Build group/location map,0.000683,0.0,run_20260717_203803_save
+32,32,2,Distribute groups,0.00142,0.0,run_20260717_203803_save
+32,32,2,Read events + write output,72.71753,99.99,run_20260717_203803_save
+32,32,2,Other (overhead),0.001613,0.0,run_20260717_203803_save
+32,32,2,Total,72.722472,100.0,run_20260717_203803_save
+32,32,3,Read global definitions,0.002659,0.0,run_20260717_203803_save
+32,32,3,Build group/location map,0.000678,0.0,run_20260717_203803_save
+32,32,3,Distribute groups,0.003493,0.0,run_20260717_203803_save
+32,32,3,Read events + write output,73.242434,99.99,run_20260717_203803_save
+32,32,3,Other (overhead),0.003685,0.01,run_20260717_203803_save
+32,32,3,Total,73.249456,100.0,run_20260717_203803_save
+32,32,4,Read global definitions,0.03542,0.05,run_20260717_203803_save
+32,32,4,Build group/location map,0.000681,0.0,run_20260717_203803_save
+32,32,4,Distribute groups,0.012212,0.02,run_20260717_203803_save
+32,32,4,Read events + write output,78.030236,99.94,run_20260717_203803_save
+32,32,4,Other (overhead),0.012438,0.02,run_20260717_203803_save
+32,32,4,Total,78.078775,100.0,run_20260717_203803_save
+32,32,5,Read global definitions,0.011562,0.01,run_20260717_203803_save
+32,32,5,Build group/location map,0.000689,0.0,run_20260717_203803_save
+32,32,5,Distribute groups,0.00467,0.01,run_20260717_203803_save
+32,32,5,Read events + write output,80.288456,99.98,run_20260717_203803_save
+32,32,5,Other (overhead),0.004896,0.01,run_20260717_203803_save
+32,32,5,Total,80.305603,100.0,run_20260717_203803_save
+32,4,1,Read global definitions,0.005166,0.0,run_20260717_203803_save
+32,4,1,Build group/location map,0.000701,0.0,run_20260717_203803_save
+32,4,1,Distribute groups,0.001222,0.0,run_20260717_203803_save
+32,4,1,Read events + write output,188.527498,100.0,run_20260717_203803_save
+32,4,1,Other (overhead),0.001422,0.0,run_20260717_203803_save
+32,4,1,Total,188.534787,100.0,run_20260717_203803_save
+32,4,2,Read global definitions,0.00448,0.0,run_20260717_203803_save
+32,4,2,Build group/location map,0.000676,0.0,run_20260717_203803_save
+32,4,2,Distribute groups,0.001098,0.0,run_20260717_203803_save
+32,4,2,Read events + write output,173.648136,100.0,run_20260717_203803_save
+32,4,2,Other (overhead),0.001296,0.0,run_20260717_203803_save
+32,4,2,Total,173.654588,100.0,run_20260717_203803_save
+32,4,3,Read global definitions,0.004513,0.0,run_20260717_203803_save
+32,4,3,Build group/location map,0.000675,0.0,run_20260717_203803_save
+32,4,3,Distribute groups,0.00121,0.0,run_20260717_203803_save
+32,4,3,Read events + write output,172.955714,100.0,run_20260717_203803_save
+32,4,3,Other (overhead),0.00139,0.0,run_20260717_203803_save
+32,4,3,Total,172.962292,100.0,run_20260717_203803_save
+32,4,4,Read global definitions,0.023756,0.01,run_20260717_203803_save
+32,4,4,Build group/location map,0.000683,0.0,run_20260717_203803_save
+32,4,4,Distribute groups,0.001558,0.0,run_20260717_203803_save
+32,4,4,Read events + write output,173.099827,99.98,run_20260717_203803_save
+32,4,4,Other (overhead),0.002123,0.0,run_20260717_203803_save
+32,4,4,Total,173.126389,100.0,run_20260717_203803_save
+32,4,5,Read global definitions,0.002564,0.0,run_20260717_203803_save
+32,4,5,Build group/location map,0.000696,0.0,run_20260717_203803_save
+32,4,5,Distribute groups,0.00068,0.0,run_20260717_203803_save
+32,4,5,Read events + write output,174.952932,100.0,run_20260717_203803_save
+32,4,5,Other (overhead),0.000875,0.0,run_20260717_203803_save
+32,4,5,Total,174.957067,100.0,run_20260717_203803_save
+32,64,1,Read global definitions,0.004739,0.01,run_20260717_203803_save
+32,64,1,Build group/location map,0.000717,0.0,run_20260717_203803_save
+32,64,1,Distribute groups,0.002852,0.0,run_20260717_203803_save
+32,64,1,Read events + write output,64.28618,99.99,run_20260717_203803_save
+32,64,1,Other (overhead),0.003018,0.0,run_20260717_203803_save
+32,64,1,Total,64.294654,100.0,run_20260717_203803_save
+32,64,2,Read global definitions,0.002772,0.0,run_20260717_203803_save
+32,64,2,Build group/location map,0.000679,0.0,run_20260717_203803_save
+32,64,2,Distribute groups,0.002764,0.0,run_20260717_203803_save
+32,64,2,Read events + write output,65.453602,99.99,run_20260717_203803_save
+32,64,2,Other (overhead),0.002964,0.0,run_20260717_203803_save
+32,64,2,Total,65.460017,100.0,run_20260717_203803_save
+32,64,3,Read global definitions,0.002722,0.0,run_20260717_203803_save
+32,64,3,Build group/location map,0.000684,0.0,run_20260717_203803_save
+32,64,3,Distribute groups,0.013907,0.02,run_20260717_203803_save
+32,64,3,Read events + write output,63.126225,99.97,run_20260717_203803_save
+32,64,3,Other (overhead),0.014092,0.02,run_20260717_203803_save
+32,64,3,Total,63.143723,100.0,run_20260717_203803_save
+32,64,4,Read global definitions,0.01982,0.03,run_20260717_203803_save
+32,64,4,Build group/location map,0.000681,0.0,run_20260717_203803_save
+32,64,4,Distribute groups,0.045716,0.07,run_20260717_203803_save
+32,64,4,Read events + write output,64.911261,99.9,run_20260717_203803_save
+32,64,4,Other (overhead),0.045922,0.07,run_20260717_203803_save
+32,64,4,Total,64.977684,100.0,run_20260717_203803_save
+32,64,5,Read global definitions,0.004626,0.01,run_20260717_203803_save
+32,64,5,Build group/location map,0.000697,0.0,run_20260717_203803_save
+32,64,5,Distribute groups,0.004708,0.01,run_20260717_203803_save
+32,64,5,Read events + write output,63.487572,99.98,run_20260717_203803_save
+32,64,5,Other (overhead),0.00488,0.01,run_20260717_203803_save
+32,64,5,Total,63.497775,100.0,run_20260717_203803_save
+32,8,1,Read global definitions,0.013017,0.01,run_20260717_203803_save
+32,8,1,Build group/location map,0.000721,0.0,run_20260717_203803_save
+32,8,1,Distribute groups,0.001574,0.0,run_20260717_203803_save
+32,8,1,Read events + write output,102.834091,99.98,run_20260717_203803_save
+32,8,1,Other (overhead),0.00179,0.0,run_20260717_203803_save
+32,8,1,Total,102.849619,100.0,run_20260717_203803_save
+32,8,2,Read global definitions,0.004683,0.0,run_20260717_203803_save
+32,8,2,Build group/location map,0.000786,0.0,run_20260717_203803_save
+32,8,2,Distribute groups,0.001566,0.0,run_20260717_203803_save
+32,8,2,Read events + write output,105.738004,99.99,run_20260717_203803_save
+32,8,2,Other (overhead),0.001752,0.0,run_20260717_203803_save
+32,8,2,Total,105.745225,100.0,run_20260717_203803_save
+32,8,3,Read global definitions,0.002641,0.0,run_20260717_203803_save
+32,8,3,Build group/location map,0.000776,0.0,run_20260717_203803_save
+32,8,3,Distribute groups,0.001453,0.0,run_20260717_203803_save
+32,8,3,Read events + write output,117.020379,100.0,run_20260717_203803_save
+32,8,3,Other (overhead),0.001642,0.0,run_20260717_203803_save
+32,8,3,Total,117.025438,100.0,run_20260717_203803_save
+32,8,4,Read global definitions,0.023808,0.02,run_20260717_203803_save
+32,8,4,Build group/location map,0.000685,0.0,run_20260717_203803_save
+32,8,4,Distribute groups,0.001453,0.0,run_20260717_203803_save
+32,8,4,Read events + write output,106.908093,99.98,run_20260717_203803_save
+32,8,4,Other (overhead),0.001968,0.0,run_20260717_203803_save
+32,8,4,Total,106.934554,100.0,run_20260717_203803_save
+32,8,5,Read global definitions,0.004896,0.0,run_20260717_203803_save
+32,8,5,Build group/location map,0.000782,0.0,run_20260717_203803_save
+32,8,5,Distribute groups,0.001587,0.0,run_20260717_203803_save
+32,8,5,Read events + write output,112.196218,99.99,run_20260717_203803_save
+32,8,5,Other (overhead),0.001788,0.0,run_20260717_203803_save
+32,8,5,Total,112.203684,100.0,run_20260717_203803_save
+384,128,1,Read global definitions,0.098538,0.02,run_20260717_203803_save
+384,128,1,Build group/location map,0.014325,0.0,run_20260717_203803_save
+384,128,1,Distribute groups,0.007357,0.0,run_20260717_203803_save
+384,128,1,Read events + write output,490.941496,99.98,run_20260717_203803_save
+384,128,1,Other (overhead),0.007628,0.0,run_20260717_203803_save
+384,128,1,Total,491.061987,100.0,run_20260717_203803_save
+384,128,2,Read global definitions,0.12339,0.03,run_20260717_203803_save
+384,128,2,Build group/location map,0.018376,0.0,run_20260717_203803_save
+384,128,2,Distribute groups,0.013392,0.0,run_20260717_203803_save
+384,128,2,Read events + write output,473.435352,99.97,run_20260717_203803_save
+384,128,2,Other (overhead),0.013682,0.0,run_20260717_203803_save
+384,128,2,Total,473.5908,100.0,run_20260717_203803_save
+384,128,3,Read global definitions,0.104989,0.02,run_20260717_203803_save
+384,128,3,Build group/location map,0.013296,0.0,run_20260717_203803_save
+384,128,3,Distribute groups,0.018246,0.0,run_20260717_203803_save
+384,128,3,Read events + write output,496.230832,99.97,run_20260717_203803_save
+384,128,3,Other (overhead),0.018573,0.0,run_20260717_203803_save
+384,128,3,Total,496.36769,100.0,run_20260717_203803_save
+384,128,4,Read global definitions,0.102321,0.02,run_20260717_203803_save
+384,128,4,Build group/location map,0.013358,0.0,run_20260717_203803_save
+384,128,4,Distribute groups,0.014065,0.0,run_20260717_203803_save
+384,128,4,Read events + write output,497.883999,99.97,run_20260717_203803_save
+384,128,4,Other (overhead),0.014351,0.0,run_20260717_203803_save
+384,128,4,Total,498.014029,100.0,run_20260717_203803_save
+384,128,5,Read global definitions,0.106886,0.02,run_20260717_203803_save
+384,128,5,Build group/location map,0.013415,0.0,run_20260717_203803_save
+384,128,5,Distribute groups,0.022262,0.0,run_20260717_203803_save
+384,128,5,Read events + write output,504.849731,99.97,run_20260717_203803_save
+384,128,5,Other (overhead),0.022536,0.0,run_20260717_203803_save
+384,128,5,Total,504.992568,100.0,run_20260717_203803_save
+384,256,1,Read global definitions,0.082847,0.02,run_20260717_203803_save
+384,256,1,Build group/location map,0.013459,0.0,run_20260717_203803_save
+384,256,1,Distribute groups,0.010901,0.0,run_20260717_203803_save
+384,256,1,Read events + write output,488.596367,99.98,run_20260717_203803_save
+384,256,1,Other (overhead),0.011203,0.0,run_20260717_203803_save
+384,256,1,Total,488.703876,100.0,run_20260717_203803_save
+384,256,2,Read global definitions,0.082157,0.02,run_20260717_203803_save
+384,256,2,Build group/location map,0.014252,0.0,run_20260717_203803_save
+384,256,2,Distribute groups,0.015127,0.0,run_20260717_203803_save
+384,256,2,Read events + write output,434.711098,99.97,run_20260717_203803_save
+384,256,2,Other (overhead),0.015414,0.0,run_20260717_203803_save
+384,256,2,Total,434.822921,100.0,run_20260717_203803_save
+384,256,3,Read global definitions,0.098295,0.02,run_20260717_203803_save
+384,256,3,Build group/location map,0.013255,0.0,run_20260717_203803_save
+384,256,3,Distribute groups,0.026885,0.01,run_20260717_203803_save
+384,256,3,Read events + write output,425.362509,99.97,run_20260717_203803_save
+384,256,3,Other (overhead),0.027158,0.01,run_20260717_203803_save
+384,256,3,Total,425.501217,100.0,run_20260717_203803_save
+384,256,4,Read global definitions,0.082646,0.02,run_20260717_203803_save
+384,256,4,Build group/location map,0.014093,0.0,run_20260717_203803_save
+384,256,4,Distribute groups,0.02974,0.01,run_20260717_203803_save
+384,256,4,Read events + write output,478.9708,99.97,run_20260717_203803_save
+384,256,4,Other (overhead),0.030024,0.01,run_20260717_203803_save
+384,256,4,Total,479.097563,100.0,run_20260717_203803_save
+384,256,5,Read global definitions,0.101278,0.02,run_20260717_203803_save
+384,256,5,Build group/location map,0.014054,0.0,run_20260717_203803_save
+384,256,5,Distribute groups,0.136614,0.03,run_20260717_203803_save
+384,256,5,Read events + write output,463.387233,99.95,run_20260717_203803_save
+384,256,5,Other (overhead),0.136904,0.03,run_20260717_203803_save
+384,256,5,Total,463.639469,100.0,run_20260717_203803_save
+384,64,1,Read global definitions,0.099625,0.02,run_20260717_203803_save
+384,64,1,Build group/location map,0.013686,0.0,run_20260717_203803_save
+384,64,1,Distribute groups,0.005943,0.0,run_20260717_203803_save
+384,64,1,Read events + write output,648.876675,99.98,run_20260717_203803_save
+384,64,1,Other (overhead),0.006222,0.0,run_20260717_203803_save
+384,64,1,Total,648.996208,100.0,run_20260717_203803_save
+384,64,2,Read global definitions,0.0986,0.01,run_20260717_203803_save
+384,64,2,Build group/location map,0.013346,0.0,run_20260717_203803_save
+384,64,2,Distribute groups,0.011844,0.0,run_20260717_203803_save
+384,64,2,Read events + write output,689.349179,99.98,run_20260717_203803_save
+384,64,2,Other (overhead),0.012114,0.0,run_20260717_203803_save
+384,64,2,Total,689.473239,100.0,run_20260717_203803_save
+384,64,3,Read global definitions,0.096564,0.01,run_20260717_203803_save
+384,64,3,Build group/location map,0.01345,0.0,run_20260717_203803_save
+384,64,3,Distribute groups,0.017237,0.0,run_20260717_203803_save
+384,64,3,Read events + write output,672.372056,99.98,run_20260717_203803_save
+384,64,3,Other (overhead),0.01752,0.0,run_20260717_203803_save
+384,64,3,Total,672.49959,100.0,run_20260717_203803_save
+384,64,4,Read global definitions,0.152484,0.02,run_20260717_203803_save
+384,64,4,Build group/location map,0.012257,0.0,run_20260717_203803_save
+384,64,4,Distribute groups,0.020218,0.0,run_20260717_203803_save
+384,64,4,Read events + write output,679.946997,99.97,run_20260717_203803_save
+384,64,4,Other (overhead),0.020869,0.0,run_20260717_203803_save
+384,64,4,Total,680.132607,100.0,run_20260717_203803_save
+384,64,5,Read global definitions,0.103285,0.02,run_20260717_203803_save
+384,64,5,Build group/location map,0.014481,0.0,run_20260717_203803_save
+384,64,5,Distribute groups,0.021729,0.0,run_20260717_203803_save
+384,64,5,Read events + write output,654.419254,99.98,run_20260717_203803_save
+384,64,5,Other (overhead),0.022008,0.0,run_20260717_203803_save
+384,64,5,Total,654.559028,100.0,run_20260717_203803_save
+2,1,1,Read global definitions,0.003551,0.03,run_20260714_043638_save
+2,1,1,Build group/location map,5.2e-05,0.0,run_20260714_043638_save
+2,1,1,Distribute groups,6e-05,0.0,run_20260714_043638_save
+2,1,1,Read events + write output,12.516224,99.97,run_20260714_043638_save
+2,1,1,Other (overhead),0.000226,0.0,run_20260714_043638_save
+2,1,1,Total,12.520053,100.0,run_20260714_043638_save
+2,1,2,Read global definitions,0.003706,0.03,run_20260714_043638_save
+2,1,2,Build group/location map,4.2e-05,0.0,run_20260714_043638_save
+2,1,2,Distribute groups,5.6e-05,0.0,run_20260714_043638_save
+2,1,2,Read events + write output,12.315015,99.97,run_20260714_043638_save
+2,1,2,Other (overhead),0.000234,0.0,run_20260714_043638_save
+2,1,2,Total,12.318997,100.0,run_20260714_043638_save
+2,1,3,Read global definitions,0.003196,0.03,run_20260714_043638_save
+2,1,3,Build group/location map,4.4e-05,0.0,run_20260714_043638_save
+2,1,3,Distribute groups,5.6e-05,0.0,run_20260714_043638_save
+2,1,3,Read events + write output,12.537666,99.97,run_20260714_043638_save
+2,1,3,Other (overhead),0.000226,0.0,run_20260714_043638_save
+2,1,3,Total,12.541132,100.0,run_20260714_043638_save
+2,1,4,Read global definitions,0.005112,0.04,run_20260714_043638_save
+2,1,4,Build group/location map,4.4e-05,0.0,run_20260714_043638_save
+2,1,4,Distribute groups,7.1e-05,0.0,run_20260714_043638_save
+2,1,4,Read events + write output,12.426056,99.96,run_20260714_043638_save
+2,1,4,Other (overhead),0.000251,0.0,run_20260714_043638_save
+2,1,4,Total,12.431463,100.0,run_20260714_043638_save
+2,1,5,Read global definitions,0.003293,0.03,run_20260714_043638_save
+2,1,5,Build group/location map,4.9e-05,0.0,run_20260714_043638_save
+2,1,5,Distribute groups,5.7e-05,0.0,run_20260714_043638_save
+2,1,5,Read events + write output,12.464479,99.97,run_20260714_043638_save
+2,1,5,Other (overhead),0.000233,0.0,run_20260714_043638_save
+2,1,5,Total,12.468054,100.0,run_20260714_043638_save
+2,2,1,Read global definitions,0.003453,0.02,run_20260714_043638_save
+2,2,1,Build group/location map,4.3e-05,0.0,run_20260714_043638_save
+2,2,1,Distribute groups,0.000462,0.0,run_20260714_043638_save
+2,2,1,Read events + write output,18.308783,99.98,run_20260714_043638_save
+2,2,1,Other (overhead),0.000633,0.0,run_20260714_043638_save
+2,2,1,Total,18.312912,100.0,run_20260714_043638_save
+2,2,2,Read global definitions,0.003784,0.02,run_20260714_043638_save
+2,2,2,Build group/location map,4.2e-05,0.0,run_20260714_043638_save
+2,2,2,Distribute groups,0.000457,0.0,run_20260714_043638_save
+2,2,2,Read events + write output,18.50902,99.98,run_20260714_043638_save
+2,2,2,Other (overhead),0.000643,0.0,run_20260714_043638_save
+2,2,2,Total,18.513489,100.0,run_20260714_043638_save
+2,2,3,Read global definitions,0.003815,0.02,run_20260714_043638_save
+2,2,3,Build group/location map,4.3e-05,0.0,run_20260714_043638_save
+2,2,3,Distribute groups,0.000544,0.0,run_20260714_043638_save
+2,2,3,Read events + write output,18.903145,99.98,run_20260714_043638_save
+2,2,3,Other (overhead),0.000722,0.0,run_20260714_043638_save
+2,2,3,Total,18.907725,100.0,run_20260714_043638_save
+2,2,4,Read global definitions,0.003906,0.02,run_20260714_043638_save
+2,2,4,Build group/location map,4.4e-05,0.0,run_20260714_043638_save
+2,2,4,Distribute groups,0.000467,0.0,run_20260714_043638_save
+2,2,4,Read events + write output,18.675481,99.98,run_20260714_043638_save
+2,2,4,Other (overhead),0.000648,0.0,run_20260714_043638_save
+2,2,4,Total,18.680079,100.0,run_20260714_043638_save
+2,2,5,Read global definitions,0.004097,0.02,run_20260714_043638_save
+2,2,5,Build group/location map,4.9e-05,0.0,run_20260714_043638_save
+2,2,5,Distribute groups,0.000464,0.0,run_20260714_043638_save
+2,2,5,Read events + write output,18.883664,99.97,run_20260714_043638_save
+2,2,5,Other (overhead),0.000643,0.0,run_20260714_043638_save
+2,2,5,Total,18.888453,100.0,run_20260714_043638_save
+2,3,1,Read global definitions,0.003527,0.02,run_20260714_043638_save
+2,3,1,Build group/location map,4.5e-05,0.0,run_20260714_043638_save
+2,3,1,Distribute groups,0.0005,0.0,run_20260714_043638_save
+2,3,1,Read events + write output,17.323434,99.98,run_20260714_043638_save
+2,3,1,Other (overhead),0.000692,0.0,run_20260714_043638_save
+2,3,1,Total,17.327698,100.0,run_20260714_043638_save
+2,3,2,Read global definitions,0.003805,0.02,run_20260714_043638_save
+2,3,2,Build group/location map,4.9e-05,0.0,run_20260714_043638_save
+2,3,2,Distribute groups,0.00054,0.0,run_20260714_043638_save
+2,3,2,Read events + write output,17.209115,99.97,run_20260714_043638_save
+2,3,2,Other (overhead),0.000723,0.0,run_20260714_043638_save
+2,3,2,Total,17.213692,100.0,run_20260714_043638_save
+2,3,3,Read global definitions,0.003852,0.02,run_20260714_043638_save
+2,3,3,Build group/location map,4.3e-05,0.0,run_20260714_043638_save
+2,3,3,Distribute groups,0.000517,0.0,run_20260714_043638_save
+2,3,3,Read events + write output,16.442545,99.97,run_20260714_043638_save
+2,3,3,Other (overhead),0.000708,0.0,run_20260714_043638_save
+2,3,3,Total,16.447148,100.0,run_20260714_043638_save
+2,3,4,Read global definitions,0.003747,0.02,run_20260714_043638_save
+2,3,4,Build group/location map,4.4e-05,0.0,run_20260714_043638_save
+2,3,4,Distribute groups,0.000487,0.0,run_20260714_043638_save
+2,3,4,Read events + write output,17.85573,99.98,run_20260714_043638_save
+2,3,4,Other (overhead),0.000656,0.0,run_20260714_043638_save
+2,3,4,Total,17.860177,100.0,run_20260714_043638_save
+2,3,5,Read global definitions,0.004043,0.02,run_20260714_043638_save
+2,3,5,Build group/location map,4.6e-05,0.0,run_20260714_043638_save
+2,3,5,Distribute groups,0.000498,0.0,run_20260714_043638_save
+2,3,5,Read events + write output,17.115442,99.97,run_20260714_043638_save
+2,3,5,Other (overhead),0.000675,0.0,run_20260714_043638_save
+2,3,5,Total,17.120206,100.0,run_20260714_043638_save
+2,4,1,Read global definitions,0.003779,0.02,run_20260714_043638_save
+2,4,1,Build group/location map,4.6e-05,0.0,run_20260714_043638_save
+2,4,1,Distribute groups,0.000528,0.0,run_20260714_043638_save
+2,4,1,Read events + write output,20.420605,99.98,run_20260714_043638_save
+2,4,1,Other (overhead),0.000704,0.0,run_20260714_043638_save
+2,4,1,Total,20.425134,100.0,run_20260714_043638_save
+2,4,2,Read global definitions,0.00367,0.02,run_20260714_043638_save
+2,4,2,Build group/location map,4.6e-05,0.0,run_20260714_043638_save
+2,4,2,Distribute groups,0.00053,0.0,run_20260714_043638_save
+2,4,2,Read events + write output,19.886771,99.98,run_20260714_043638_save
+2,4,2,Other (overhead),0.000699,0.0,run_20260714_043638_save
+2,4,2,Total,19.891186,100.0,run_20260714_043638_save
+2,4,3,Read global definitions,0.003692,0.02,run_20260714_043638_save
+2,4,3,Build group/location map,4.5e-05,0.0,run_20260714_043638_save
+2,4,3,Distribute groups,0.00053,0.0,run_20260714_043638_save
+2,4,3,Read events + write output,20.231498,99.98,run_20260714_043638_save
+2,4,3,Other (overhead),0.000712,0.0,run_20260714_043638_save
+2,4,3,Total,20.235947,100.0,run_20260714_043638_save
+2,4,4,Read global definitions,0.003797,0.02,run_20260714_043638_save
+2,4,4,Build group/location map,5.6e-05,0.0,run_20260714_043638_save
+2,4,4,Distribute groups,0.00056,0.0,run_20260714_043638_save
+2,4,4,Read events + write output,20.781512,99.98,run_20260714_043638_save
+2,4,4,Other (overhead),0.000744,0.0,run_20260714_043638_save
+2,4,4,Total,20.786109,100.0,run_20260714_043638_save
+2,4,5,Read global definitions,0.003828,0.02,run_20260714_043638_save
+2,4,5,Build group/location map,4.4e-05,0.0,run_20260714_043638_save
+2,4,5,Distribute groups,0.000588,0.0,run_20260714_043638_save
+2,4,5,Read events + write output,20.155597,99.98,run_20260714_043638_save
+2,4,5,Other (overhead),0.00075,0.0,run_20260714_043638_save
+2,4,5,Total,20.160219,100.0,run_20260714_043638_save
+2,8,1,Read global definitions,0.003616,0.02,run_20260714_043638_save
+2,8,1,Build group/location map,4.9e-05,0.0,run_20260714_043638_save
+2,8,1,Distribute groups,0.000654,0.0,run_20260714_043638_save
+2,8,1,Read events + write output,14.799927,99.97,run_20260714_043638_save
+2,8,1,Other (overhead),0.000828,0.01,run_20260714_043638_save
+2,8,1,Total,14.80442,100.0,run_20260714_043638_save
+2,8,2,Read global definitions,0.003947,0.03,run_20260714_043638_save
+2,8,2,Build group/location map,4.4e-05,0.0,run_20260714_043638_save
+2,8,2,Distribute groups,0.001283,0.01,run_20260714_043638_save
+2,8,2,Read events + write output,15.087878,99.96,run_20260714_043638_save
+2,8,2,Other (overhead),0.001474,0.01,run_20260714_043638_save
+2,8,2,Total,15.093343,100.0,run_20260714_043638_save
+2,8,3,Read global definitions,0.003651,0.02,run_20260714_043638_save
+2,8,3,Build group/location map,4.3e-05,0.0,run_20260714_043638_save
+2,8,3,Distribute groups,0.001351,0.01,run_20260714_043638_save
+2,8,3,Read events + write output,14.874852,99.96,run_20260714_043638_save
+2,8,3,Other (overhead),0.001528,0.01,run_20260714_043638_save
+2,8,3,Total,14.880074,100.0,run_20260714_043638_save
+2,8,4,Read global definitions,0.003793,0.03,run_20260714_043638_save
+2,8,4,Build group/location map,5e-05,0.0,run_20260714_043638_save
+2,8,4,Distribute groups,0.000636,0.0,run_20260714_043638_save
+2,8,4,Read events + write output,14.59882,99.97,run_20260714_043638_save
+2,8,4,Other (overhead),0.00081,0.01,run_20260714_043638_save
+2,8,4,Total,14.603473,100.0,run_20260714_043638_save
+2,8,5,Read global definitions,0.003907,0.03,run_20260714_043638_save
+2,8,5,Build group/location map,4.4e-05,0.0,run_20260714_043638_save
+2,8,5,Distribute groups,0.000645,0.0,run_20260714_043638_save
+2,8,5,Read events + write output,14.673848,99.97,run_20260714_043638_save
+2,8,5,Other (overhead),0.000841,0.01,run_20260714_043638_save
+2,8,5,Total,14.67864,100.0,run_20260714_043638_save
+4,16,1,Read global definitions,0.003699,0.01,run_20260714_043638_save
+4,16,1,Build group/location map,8.3e-05,0.0,run_20260714_043638_save
+4,16,1,Distribute groups,0.00124,0.0,run_20260714_043638_save
+4,16,1,Read events + write output,27.223623,99.98,run_20260714_043638_save
+4,16,1,Other (overhead),0.001414,0.01,run_20260714_043638_save
+4,16,1,Total,27.228819,100.0,run_20260714_043638_save
+4,16,2,Read global definitions,0.008702,0.03,run_20260714_043638_save
+4,16,2,Build group/location map,8.4e-05,0.0,run_20260714_043638_save
+4,16,2,Distribute groups,0.001546,0.01,run_20260714_043638_save
+4,16,2,Read events + write output,27.240836,99.96,run_20260714_043638_save
+4,16,2,Other (overhead),0.001741,0.01,run_20260714_043638_save
+4,16,2,Total,27.251363,100.0,run_20260714_043638_save
+4,16,3,Read global definitions,0.003771,0.01,run_20260714_043638_save
+4,16,3,Build group/location map,8.8e-05,0.0,run_20260714_043638_save
+4,16,3,Distribute groups,0.001242,0.0,run_20260714_043638_save
+4,16,3,Read events + write output,27.081962,99.98,run_20260714_043638_save
+4,16,3,Other (overhead),0.001405,0.01,run_20260714_043638_save
+4,16,3,Total,27.087226,100.0,run_20260714_043638_save
+4,16,4,Read global definitions,0.003777,0.01,run_20260714_043638_save
+4,16,4,Build group/location map,8.6e-05,0.0,run_20260714_043638_save
+4,16,4,Distribute groups,0.000761,0.0,run_20260714_043638_save
+4,16,4,Read events + write output,27.065153,99.98,run_20260714_043638_save
+4,16,4,Other (overhead),0.000932,0.0,run_20260714_043638_save
+4,16,4,Total,27.069948,100.0,run_20260714_043638_save
+4,16,5,Read global definitions,0.004259,0.02,run_20260714_043638_save
+4,16,5,Build group/location map,0.000139,0.0,run_20260714_043638_save
+4,16,5,Distribute groups,0.001429,0.01,run_20260714_043638_save
+4,16,5,Read events + write output,26.57602,99.98,run_20260714_043638_save
+4,16,5,Other (overhead),0.001645,0.01,run_20260714_043638_save
+4,16,5,Total,26.582063,100.0,run_20260714_043638_save
+4,1,1,Read global definitions,0.031657,0.09,run_20260714_043638_save
+4,1,1,Build group/location map,0.000101,0.0,run_20260714_043638_save
+4,1,1,Distribute groups,0.00011,0.0,run_20260714_043638_save
+4,1,1,Read events + write output,33.841783,99.91,run_20260714_043638_save
+4,1,1,Other (overhead),0.000295,0.0,run_20260714_043638_save
+4,1,1,Total,33.873836,100.0,run_20260714_043638_save
+4,1,2,Read global definitions,0.003604,0.01,run_20260714_043638_save
+4,1,2,Build group/location map,8.3e-05,0.0,run_20260714_043638_save
+4,1,2,Distribute groups,6.5e-05,0.0,run_20260714_043638_save
+4,1,2,Read events + write output,32.767812,99.99,run_20260714_043638_save
+4,1,2,Other (overhead),0.000226,0.0,run_20260714_043638_save
+4,1,2,Total,32.771725,100.0,run_20260714_043638_save
+4,1,3,Read global definitions,0.003576,0.01,run_20260714_043638_save
+4,1,3,Build group/location map,8.4e-05,0.0,run_20260714_043638_save
+4,1,3,Distribute groups,6.7e-05,0.0,run_20260714_043638_save
+4,1,3,Read events + write output,33.817941,99.99,run_20260714_043638_save
+4,1,3,Other (overhead),0.000235,0.0,run_20260714_043638_save
+4,1,3,Total,33.821836,100.0,run_20260714_043638_save
+4,1,4,Read global definitions,0.003663,0.01,run_20260714_043638_save
+4,1,4,Build group/location map,8.6e-05,0.0,run_20260714_043638_save
+4,1,4,Distribute groups,6.8e-05,0.0,run_20260714_043638_save
+4,1,4,Read events + write output,31.934383,99.99,run_20260714_043638_save
+4,1,4,Other (overhead),0.000237,0.0,run_20260714_043638_save
+4,1,4,Total,31.938369,100.0,run_20260714_043638_save
+4,1,5,Read global definitions,0.003851,0.01,run_20260714_043638_save
+4,1,5,Build group/location map,8.8e-05,0.0,run_20260714_043638_save
+4,1,5,Distribute groups,6.8e-05,0.0,run_20260714_043638_save
+4,1,5,Read events + write output,33.217846,99.99,run_20260714_043638_save
+4,1,5,Other (overhead),0.000239,0.0,run_20260714_043638_save
+4,1,5,Total,33.222024,100.0,run_20260714_043638_save
+4,2,1,Read global definitions,0.003869,0.01,run_20260714_043638_save
+4,2,1,Build group/location map,8.7e-05,0.0,run_20260714_043638_save
+4,2,1,Distribute groups,0.000484,0.0,run_20260714_043638_save
+4,2,1,Read events + write output,29.270842,99.98,run_20260714_043638_save
+4,2,1,Other (overhead),0.000652,0.0,run_20260714_043638_save
+4,2,1,Total,29.27545,100.0,run_20260714_043638_save
+4,2,2,Read global definitions,0.003872,0.01,run_20260714_043638_save
+4,2,2,Build group/location map,8.6e-05,0.0,run_20260714_043638_save
+4,2,2,Distribute groups,0.000509,0.0,run_20260714_043638_save
+4,2,2,Read events + write output,30.420172,99.98,run_20260714_043638_save
+4,2,2,Other (overhead),0.000682,0.0,run_20260714_043638_save
+4,2,2,Total,30.424812,100.0,run_20260714_043638_save
+4,2,3,Read global definitions,0.00392,0.01,run_20260714_043638_save
+4,2,3,Build group/location map,9.2e-05,0.0,run_20260714_043638_save
+4,2,3,Distribute groups,0.000472,0.0,run_20260714_043638_save
+4,2,3,Read events + write output,27.160841,99.98,run_20260714_043638_save
+4,2,3,Other (overhead),0.000662,0.0,run_20260714_043638_save
+4,2,3,Total,27.165515,100.0,run_20260714_043638_save
+4,2,4,Read global definitions,0.003939,0.01,run_20260714_043638_save
+4,2,4,Build group/location map,9.6e-05,0.0,run_20260714_043638_save
+4,2,4,Distribute groups,0.000504,0.0,run_20260714_043638_save
+4,2,4,Read events + write output,28.787529,99.98,run_20260714_043638_save
+4,2,4,Other (overhead),0.000699,0.0,run_20260714_043638_save
+4,2,4,Total,28.792263,100.0,run_20260714_043638_save
+4,2,5,Read global definitions,0.0045,0.01,run_20260714_043638_save
+4,2,5,Build group/location map,0.000148,0.0,run_20260714_043638_save
+4,2,5,Distribute groups,0.00054,0.0,run_20260714_043638_save
+4,2,5,Read events + write output,30.065754,99.98,run_20260714_043638_save
+4,2,5,Other (overhead),0.000723,0.0,run_20260714_043638_save
+4,2,5,Total,30.071125,100.0,run_20260714_043638_save
+4,4,1,Read global definitions,0.005548,0.02,run_20260714_043638_save
+4,4,1,Build group/location map,8.9e-05,0.0,run_20260714_043638_save
+4,4,1,Distribute groups,0.00072,0.0,run_20260714_043638_save
+4,4,1,Read events + write output,33.229592,99.98,run_20260714_043638_save
+4,4,1,Other (overhead),0.000895,0.0,run_20260714_043638_save
+4,4,1,Total,33.236124,100.0,run_20260714_043638_save
+4,4,2,Read global definitions,0.003847,0.01,run_20260714_043638_save
+4,4,2,Build group/location map,8.6e-05,0.0,run_20260714_043638_save
+4,4,2,Distribute groups,0.000556,0.0,run_20260714_043638_save
+4,4,2,Read events + write output,31.63051,99.99,run_20260714_043638_save
+4,4,2,Other (overhead),0.000722,0.0,run_20260714_043638_save
+4,4,2,Total,31.635165,100.0,run_20260714_043638_save
+4,4,3,Read global definitions,0.004113,0.01,run_20260714_043638_save
+4,4,3,Build group/location map,8.7e-05,0.0,run_20260714_043638_save
+4,4,3,Distribute groups,0.000562,0.0,run_20260714_043638_save
+4,4,3,Read events + write output,33.759286,99.99,run_20260714_043638_save
+4,4,3,Other (overhead),0.000758,0.0,run_20260714_043638_save
+4,4,3,Total,33.764244,100.0,run_20260714_043638_save
+4,4,4,Read global definitions,0.003831,0.01,run_20260714_043638_save
+4,4,4,Build group/location map,0.000101,0.0,run_20260714_043638_save
+4,4,4,Distribute groups,0.00063,0.0,run_20260714_043638_save
+4,4,4,Read events + write output,33.820312,99.99,run_20260714_043638_save
+4,4,4,Other (overhead),0.000804,0.0,run_20260714_043638_save
+4,4,4,Total,33.825048,100.0,run_20260714_043638_save
+4,4,5,Read global definitions,0.004078,0.01,run_20260714_043638_save
+4,4,5,Build group/location map,8.4e-05,0.0,run_20260714_043638_save
+4,4,5,Distribute groups,0.00056,0.0,run_20260714_043638_save
+4,4,5,Read events + write output,34.090799,99.99,run_20260714_043638_save
+4,4,5,Other (overhead),0.000733,0.0,run_20260714_043638_save
+4,4,5,Total,34.095694,100.0,run_20260714_043638_save
+4,8,1,Read global definitions,0.0037,0.01,run_20260714_043638_save
+4,8,1,Build group/location map,8.5e-05,0.0,run_20260714_043638_save
+4,8,1,Distribute groups,0.000679,0.0,run_20260714_043638_save
+4,8,1,Read events + write output,28.618626,99.98,run_20260714_043638_save
+4,8,1,Other (overhead),0.000866,0.0,run_20260714_043638_save
+4,8,1,Total,28.623277,100.0,run_20260714_043638_save
+4,8,2,Read global definitions,0.003786,0.01,run_20260714_043638_save
+4,8,2,Build group/location map,8.4e-05,0.0,run_20260714_043638_save
+4,8,2,Distribute groups,0.000639,0.0,run_20260714_043638_save
+4,8,2,Read events + write output,28.878051,99.98,run_20260714_043638_save
+4,8,2,Other (overhead),0.000807,0.0,run_20260714_043638_save
+4,8,2,Total,28.882728,100.0,run_20260714_043638_save
+4,8,3,Read global definitions,0.003671,0.01,run_20260714_043638_save
+4,8,3,Build group/location map,9.7e-05,0.0,run_20260714_043638_save
+4,8,3,Distribute groups,0.001342,0.0,run_20260714_043638_save
+4,8,3,Read events + write output,29.465681,99.98,run_20260714_043638_save
+4,8,3,Other (overhead),0.001547,0.01,run_20260714_043638_save
+4,8,3,Total,29.470996,100.0,run_20260714_043638_save
+4,8,4,Read global definitions,0.003768,0.01,run_20260714_043638_save
+4,8,4,Build group/location map,9e-05,0.0,run_20260714_043638_save
+4,8,4,Distribute groups,0.000644,0.0,run_20260714_043638_save
+4,8,4,Read events + write output,27.587304,99.98,run_20260714_043638_save
+4,8,4,Other (overhead),0.000846,0.0,run_20260714_043638_save
+4,8,4,Total,27.592008,100.0,run_20260714_043638_save
+4,8,5,Read global definitions,0.003848,0.01,run_20260714_043638_save
+4,8,5,Build group/location map,8.3e-05,0.0,run_20260714_043638_save
+4,8,5,Distribute groups,0.000658,0.0,run_20260714_043638_save
+4,8,5,Read events + write output,28.357921,99.98,run_20260714_043638_save
+4,8,5,Other (overhead),0.00083,0.0,run_20260714_043638_save
+4,8,5,Total,28.362682,100.0,run_20260714_043638_save
+8,13,1,Read global definitions,0.00977,0.02,run_20260714_043638_save
+8,13,1,Build group/location map,0.000181,0.0,run_20260714_043638_save
+8,13,1,Distribute groups,0.028148,0.07,run_20260714_043638_save
+8,13,1,Read events + write output,41.983835,99.91,run_20260714_043638_save
+8,13,1,Other (overhead),0.028345,0.07,run_20260714_043638_save
+8,13,1,Total,42.022131,100.0,run_20260714_043638_save
+8,13,2,Read global definitions,0.004054,0.01,run_20260714_043638_save
+8,13,2,Build group/location map,0.000171,0.0,run_20260714_043638_save
+8,13,2,Distribute groups,0.001428,0.0,run_20260714_043638_save
+8,13,2,Read events + write output,40.137617,99.99,run_20260714_043638_save
+8,13,2,Other (overhead),0.001602,0.0,run_20260714_043638_save
+8,13,2,Total,40.143444,100.0,run_20260714_043638_save
+8,13,3,Read global definitions,0.004093,0.01,run_20260714_043638_save
+8,13,3,Build group/location map,0.000176,0.0,run_20260714_043638_save
+8,13,3,Distribute groups,0.001406,0.0,run_20260714_043638_save
+8,13,3,Read events + write output,42.361424,99.99,run_20260714_043638_save
+8,13,3,Other (overhead),0.001584,0.0,run_20260714_043638_save
+8,13,3,Total,42.367277,100.0,run_20260714_043638_save
+8,13,4,Read global definitions,0.003848,0.01,run_20260714_043638_save
+8,13,4,Build group/location map,0.000173,0.0,run_20260714_043638_save
+8,13,4,Distribute groups,0.001582,0.0,run_20260714_043638_save
+8,13,4,Read events + write output,42.872299,99.99,run_20260714_043638_save
+8,13,4,Other (overhead),0.001784,0.0,run_20260714_043638_save
+8,13,4,Total,42.878104,100.0,run_20260714_043638_save
+8,13,5,Read global definitions,0.00579,0.01,run_20260714_043638_save
+8,13,5,Build group/location map,0.000182,0.0,run_20260714_043638_save
+8,13,5,Distribute groups,0.00155,0.0,run_20260714_043638_save
+8,13,5,Read events + write output,41.348457,99.98,run_20260714_043638_save
+8,13,5,Other (overhead),0.00174,0.0,run_20260714_043638_save
+8,13,5,Total,41.356169,100.0,run_20260714_043638_save
+8,16,1,Read global definitions,0.003846,0.01,run_20260714_043638_save
+8,16,1,Build group/location map,0.000177,0.0,run_20260714_043638_save
+8,16,1,Distribute groups,0.001431,0.0,run_20260714_043638_save
+8,16,1,Read events + write output,40.676304,99.99,run_20260714_043638_save
+8,16,1,Other (overhead),0.001605,0.0,run_20260714_043638_save
+8,16,1,Total,40.681932,100.0,run_20260714_043638_save
+8,16,2,Read global definitions,0.004018,0.01,run_20260714_043638_save
+8,16,2,Build group/location map,0.000173,0.0,run_20260714_043638_save
+8,16,2,Distribute groups,0.001265,0.0,run_20260714_043638_save
+8,16,2,Read events + write output,39.427406,99.99,run_20260714_043638_save
+8,16,2,Other (overhead),0.00144,0.0,run_20260714_043638_save
+8,16,2,Total,39.433037,100.0,run_20260714_043638_save
+8,16,3,Read global definitions,0.004123,0.01,run_20260714_043638_save
+8,16,3,Build group/location map,0.00017,0.0,run_20260714_043638_save
+8,16,3,Distribute groups,0.000981,0.0,run_20260714_043638_save
+8,16,3,Read events + write output,41.584569,99.99,run_20260714_043638_save
+8,16,3,Other (overhead),0.001196,0.0,run_20260714_043638_save
+8,16,3,Total,41.590058,100.0,run_20260714_043638_save
+8,16,4,Read global definitions,0.003837,0.01,run_20260714_043638_save
+8,16,4,Build group/location map,0.000173,0.0,run_20260714_043638_save
+8,16,4,Distribute groups,0.00141,0.0,run_20260714_043638_save
+8,16,4,Read events + write output,40.72781,99.99,run_20260714_043638_save
+8,16,4,Other (overhead),0.00159,0.0,run_20260714_043638_save
+8,16,4,Total,40.73341,100.0,run_20260714_043638_save
+8,16,5,Read global definitions,0.004176,0.01,run_20260714_043638_save
+8,16,5,Build group/location map,0.000186,0.0,run_20260714_043638_save
+8,16,5,Distribute groups,0.001541,0.0,run_20260714_043638_save
+8,16,5,Read events + write output,40.629375,99.99,run_20260714_043638_save
+8,16,5,Other (overhead),0.001722,0.0,run_20260714_043638_save
+8,16,5,Total,40.635459,100.0,run_20260714_043638_save
+8,1,1,Read global definitions,0.027661,0.03,run_20260714_043638_save
+8,1,1,Build group/location map,0.000173,0.0,run_20260714_043638_save
+8,1,1,Distribute groups,0.000132,0.0,run_20260714_043638_save
+8,1,1,Read events + write output,82.196681,99.97,run_20260714_043638_save
+8,1,1,Other (overhead),0.000319,0.0,run_20260714_043638_save
+8,1,1,Total,82.224834,100.0,run_20260714_043638_save
+8,1,2,Read global definitions,0.003869,0.0,run_20260714_043638_save
+8,1,2,Build group/location map,0.000199,0.0,run_20260714_043638_save
+8,1,2,Distribute groups,0.000126,0.0,run_20260714_043638_save
+8,1,2,Read events + write output,84.544299,99.99,run_20260714_043638_save
+8,1,2,Other (overhead),0.000287,0.0,run_20260714_043638_save
+8,1,2,Total,84.548654,100.0,run_20260714_043638_save
+8,1,3,Read global definitions,0.003808,0.0,run_20260714_043638_save
+8,1,3,Build group/location map,0.000172,0.0,run_20260714_043638_save
+8,1,3,Distribute groups,9.1e-05,0.0,run_20260714_043638_save
+8,1,3,Read events + write output,86.595923,100.0,run_20260714_043638_save
+8,1,3,Other (overhead),0.000252,0.0,run_20260714_043638_save
+8,1,3,Total,86.600155,100.0,run_20260714_043638_save
+8,1,4,Read global definitions,0.004114,0.0,run_20260714_043638_save
+8,1,4,Build group/location map,0.000172,0.0,run_20260714_043638_save
+8,1,4,Distribute groups,9e-05,0.0,run_20260714_043638_save
+8,1,4,Read events + write output,82.87419,99.99,run_20260714_043638_save
+8,1,4,Other (overhead),0.000265,0.0,run_20260714_043638_save
+8,1,4,Total,82.878741,100.0,run_20260714_043638_save
+8,1,5,Read global definitions,0.004196,0.01,run_20260714_043638_save
+8,1,5,Build group/location map,0.000189,0.0,run_20260714_043638_save
+8,1,5,Distribute groups,0.000131,0.0,run_20260714_043638_save
+8,1,5,Read events + write output,83.514586,99.99,run_20260714_043638_save
+8,1,5,Other (overhead),0.00028,0.0,run_20260714_043638_save
+8,1,5,Total,83.519251,100.0,run_20260714_043638_save
+8,23,1,Read global definitions,0.003967,0.01,run_20260714_043638_save
+8,23,1,Build group/location map,0.000205,0.0,run_20260714_043638_save
+8,23,1,Distribute groups,0.002114,0.01,run_20260714_043638_save
+8,23,1,Read events + write output,40.715346,99.98,run_20260714_043638_save
+8,23,1,Other (overhead),0.002298,0.01,run_20260714_043638_save
+8,23,1,Total,40.721816,100.0,run_20260714_043638_save
+8,23,2,Read global definitions,0.004108,0.01,run_20260714_043638_save
+8,23,2,Build group/location map,0.000181,0.0,run_20260714_043638_save
+8,23,2,Distribute groups,0.00166,0.0,run_20260714_043638_save
+8,23,2,Read events + write output,39.758627,99.98,run_20260714_043638_save
+8,23,2,Other (overhead),0.001853,0.0,run_20260714_043638_save
+8,23,2,Total,39.764769,100.0,run_20260714_043638_save
+8,23,3,Read global definitions,0.00366,0.01,run_20260714_043638_save
+8,23,3,Build group/location map,0.000177,0.0,run_20260714_043638_save
+8,23,3,Distribute groups,0.001487,0.0,run_20260714_043638_save
+8,23,3,Read events + write output,38.888173,99.99,run_20260714_043638_save
+8,23,3,Other (overhead),0.001653,0.0,run_20260714_043638_save
+8,23,3,Total,38.893663,100.0,run_20260714_043638_save
+8,23,4,Read global definitions,0.004166,0.01,run_20260714_043638_save
+8,23,4,Build group/location map,0.000175,0.0,run_20260714_043638_save
+8,23,4,Distribute groups,0.001666,0.0,run_20260714_043638_save
+8,23,4,Read events + write output,39.772172,99.98,run_20260714_043638_save
+8,23,4,Other (overhead),0.001853,0.0,run_20260714_043638_save
+8,23,4,Total,39.778366,100.0,run_20260714_043638_save
+8,23,5,Read global definitions,0.004378,0.01,run_20260714_043638_save
+8,23,5,Build group/location map,0.000183,0.0,run_20260714_043638_save
+8,23,5,Distribute groups,0.001004,0.0,run_20260714_043638_save
+8,23,5,Read events + write output,39.237811,99.99,run_20260714_043638_save
+8,23,5,Other (overhead),0.001175,0.0,run_20260714_043638_save
+8,23,5,Total,39.243547,100.0,run_20260714_043638_save
+8,2,1,Read global definitions,0.009815,0.01,run_20260714_043638_save
+8,2,1,Build group/location map,0.000184,0.0,run_20260714_043638_save
+8,2,1,Distribute groups,0.000697,0.0,run_20260714_043638_save
+8,2,1,Read events + write output,66.374682,99.98,run_20260714_043638_save
+8,2,1,Other (overhead),0.000908,0.0,run_20260714_043638_save
+8,2,1,Total,66.385589,100.0,run_20260714_043638_save
+8,2,2,Read global definitions,0.004189,0.01,run_20260714_043638_save
+8,2,2,Build group/location map,0.000173,0.0,run_20260714_043638_save
+8,2,2,Distribute groups,0.000519,0.0,run_20260714_043638_save
+8,2,2,Read events + write output,67.254065,99.99,run_20260714_043638_save
+8,2,2,Other (overhead),0.000687,0.0,run_20260714_043638_save
+8,2,2,Total,67.259114,100.0,run_20260714_043638_save
+8,2,3,Read global definitions,0.003958,0.01,run_20260714_043638_save
+8,2,3,Build group/location map,0.000174,0.0,run_20260714_043638_save
+8,2,3,Distribute groups,0.000526,0.0,run_20260714_043638_save
+8,2,3,Read events + write output,65.540342,99.99,run_20260714_043638_save
+8,2,3,Other (overhead),0.000697,0.0,run_20260714_043638_save
+8,2,3,Total,65.545171,100.0,run_20260714_043638_save
+8,2,4,Read global definitions,0.003919,0.01,run_20260714_043638_save
+8,2,4,Build group/location map,0.000176,0.0,run_20260714_043638_save
+8,2,4,Distribute groups,0.000493,0.0,run_20260714_043638_save
+8,2,4,Read events + write output,75.40971,99.99,run_20260714_043638_save
+8,2,4,Other (overhead),0.000668,0.0,run_20260714_043638_save
+8,2,4,Total,75.414473,100.0,run_20260714_043638_save
+8,2,5,Read global definitions,0.004194,0.01,run_20260714_043638_save
+8,2,5,Build group/location map,0.000171,0.0,run_20260714_043638_save
+8,2,5,Distribute groups,0.000531,0.0,run_20260714_043638_save
+8,2,5,Read events + write output,74.289306,99.99,run_20260714_043638_save
+8,2,5,Other (overhead),0.000712,0.0,run_20260714_043638_save
+8,2,5,Total,74.294383,100.0,run_20260714_043638_save
+8,32,1,Read global definitions,0.005724,0.01,run_20260714_043638_save
+8,32,1,Build group/location map,0.000295,0.0,run_20260714_043638_save
+8,32,1,Distribute groups,0.001998,0.01,run_20260714_043638_save
+8,32,1,Read events + write output,38.561432,99.98,run_20260714_043638_save
+8,32,1,Other (overhead),0.002186,0.01,run_20260714_043638_save
+8,32,1,Total,38.569637,100.0,run_20260714_043638_save
+8,32,2,Read global definitions,0.003644,0.01,run_20260714_043638_save
+8,32,2,Build group/location map,0.00017,0.0,run_20260714_043638_save
+8,32,2,Distribute groups,0.001104,0.0,run_20260714_043638_save
+8,32,2,Read events + write output,38.020976,99.99,run_20260714_043638_save
+8,32,2,Other (overhead),0.001296,0.0,run_20260714_043638_save
+8,32,2,Total,38.026086,100.0,run_20260714_043638_save
+8,32,3,Read global definitions,0.003916,0.01,run_20260714_043638_save
+8,32,3,Build group/location map,0.000173,0.0,run_20260714_043638_save
+8,32,3,Distribute groups,0.001235,0.0,run_20260714_043638_save
+8,32,3,Read events + write output,37.990442,99.99,run_20260714_043638_save
+8,32,3,Other (overhead),0.001406,0.0,run_20260714_043638_save
+8,32,3,Total,37.995937,100.0,run_20260714_043638_save
+8,32,4,Read global definitions,0.003704,0.01,run_20260714_043638_save
+8,32,4,Build group/location map,0.000198,0.0,run_20260714_043638_save
+8,32,4,Distribute groups,0.010162,0.03,run_20260714_043638_save
+8,32,4,Read events + write output,39.006623,99.96,run_20260714_043638_save
+8,32,4,Other (overhead),0.010338,0.03,run_20260714_043638_save
+8,32,4,Total,39.020863,100.0,run_20260714_043638_save
+8,32,5,Read global definitions,0.004068,0.01,run_20260714_043638_save
+8,32,5,Build group/location map,0.000178,0.0,run_20260714_043638_save
+8,32,5,Distribute groups,0.001666,0.0,run_20260714_043638_save
+8,32,5,Read events + write output,39.166935,99.98,run_20260714_043638_save
+8,32,5,Other (overhead),0.001849,0.0,run_20260714_043638_save
+8,32,5,Total,39.17303,100.0,run_20260714_043638_save
+8,4,1,Read global definitions,0.003851,0.01,run_20260714_043638_save
+8,4,1,Build group/location map,0.000175,0.0,run_20260714_043638_save
+8,4,1,Distribute groups,0.000564,0.0,run_20260714_043638_save
+8,4,1,Read events + write output,47.425699,99.99,run_20260714_043638_save
+8,4,1,Other (overhead),0.000736,0.0,run_20260714_043638_save
+8,4,1,Total,47.430461,100.0,run_20260714_043638_save
+8,4,2,Read global definitions,0.004105,0.01,run_20260714_043638_save
+8,4,2,Build group/location map,0.000174,0.0,run_20260714_043638_save
+8,4,2,Distribute groups,0.000593,0.0,run_20260714_043638_save
+8,4,2,Read events + write output,49.381833,99.99,run_20260714_043638_save
+8,4,2,Other (overhead),0.000772,0.0,run_20260714_043638_save
+8,4,2,Total,49.386884,100.0,run_20260714_043638_save
+8,4,3,Read global definitions,0.004707,0.01,run_20260714_043638_save
+8,4,3,Build group/location map,0.000296,0.0,run_20260714_043638_save
+8,4,3,Distribute groups,0.001202,0.0,run_20260714_043638_save
+8,4,3,Read events + write output,53.732198,99.99,run_20260714_043638_save
+8,4,3,Other (overhead),0.001414,0.0,run_20260714_043638_save
+8,4,3,Total,53.738615,100.0,run_20260714_043638_save
+8,4,4,Read global definitions,0.004205,0.01,run_20260714_043638_save
+8,4,4,Build group/location map,0.000182,0.0,run_20260714_043638_save
+8,4,4,Distribute groups,0.001054,0.0,run_20260714_043638_save
+8,4,4,Read events + write output,49.360106,99.99,run_20260714_043638_save
+8,4,4,Other (overhead),0.001239,0.0,run_20260714_043638_save
+8,4,4,Total,49.365732,100.0,run_20260714_043638_save
+8,4,5,Read global definitions,0.003848,0.01,run_20260714_043638_save
+8,4,5,Build group/location map,0.000172,0.0,run_20260714_043638_save
+8,4,5,Distribute groups,0.000572,0.0,run_20260714_043638_save
+8,4,5,Read events + write output,55.239614,99.99,run_20260714_043638_save
+8,4,5,Other (overhead),0.000756,0.0,run_20260714_043638_save
+8,4,5,Total,55.24439,100.0,run_20260714_043638_save
+8,7,1,Read global definitions,0.009478,0.02,run_20260714_043638_save
+8,7,1,Build group/location map,0.000181,0.0,run_20260714_043638_save
+8,7,1,Distribute groups,0.00142,0.0,run_20260714_043638_save
+8,7,1,Read events + write output,50.049107,99.98,run_20260714_043638_save
+8,7,1,Other (overhead),0.001631,0.0,run_20260714_043638_save
+8,7,1,Total,50.060397,100.0,run_20260714_043638_save
+8,7,2,Read global definitions,0.003916,0.01,run_20260714_043638_save
+8,7,2,Build group/location map,0.000181,0.0,run_20260714_043638_save
+8,7,2,Distribute groups,0.001643,0.0,run_20260714_043638_save
+8,7,2,Read events + write output,48.910158,99.99,run_20260714_043638_save
+8,7,2,Other (overhead),0.001819,0.0,run_20260714_043638_save
+8,7,2,Total,48.916074,100.0,run_20260714_043638_save
+8,7,3,Read global definitions,0.003757,0.01,run_20260714_043638_save
+8,7,3,Build group/location map,0.000179,0.0,run_20260714_043638_save
+8,7,3,Distribute groups,0.000641,0.0,run_20260714_043638_save
+8,7,3,Read events + write output,48.826599,99.99,run_20260714_043638_save
+8,7,3,Other (overhead),0.000822,0.0,run_20260714_043638_save
+8,7,3,Total,48.831357,100.0,run_20260714_043638_save
+8,7,4,Read global definitions,0.003636,0.01,run_20260714_043638_save
+8,7,4,Build group/location map,0.000174,0.0,run_20260714_043638_save
+8,7,4,Distribute groups,0.000623,0.0,run_20260714_043638_save
+8,7,4,Read events + write output,47.963836,99.99,run_20260714_043638_save
+8,7,4,Other (overhead),0.000796,0.0,run_20260714_043638_save
+8,7,4,Total,47.968442,100.0,run_20260714_043638_save
+8,7,5,Read global definitions,0.004179,0.01,run_20260714_043638_save
+8,7,5,Build group/location map,0.000186,0.0,run_20260714_043638_save
+8,7,5,Distribute groups,0.001131,0.0,run_20260714_043638_save
+8,7,5,Read events + write output,49.291893,99.99,run_20260714_043638_save
+8,7,5,Other (overhead),0.001302,0.0,run_20260714_043638_save
+8,7,5,Total,49.29756,100.0,run_20260714_043638_save
+8,8,1,Read global definitions,0.004151,0.01,run_20260714_043638_save
+8,8,1,Build group/location map,0.000171,0.0,run_20260714_043638_save
+8,8,1,Distribute groups,0.001275,0.0,run_20260714_043638_save
+8,8,1,Read events + write output,47.584341,99.99,run_20260714_043638_save
+8,8,1,Other (overhead),0.001456,0.0,run_20260714_043638_save
+8,8,1,Total,47.590119,100.0,run_20260714_043638_save
+8,8,2,Read global definitions,0.003738,0.01,run_20260714_043638_save
+8,8,2,Build group/location map,0.000172,0.0,run_20260714_043638_save
+8,8,2,Distribute groups,0.001306,0.0,run_20260714_043638_save
+8,8,2,Read events + write output,47.165888,99.99,run_20260714_043638_save
+8,8,2,Other (overhead),0.001492,0.0,run_20260714_043638_save
+8,8,2,Total,47.17129,100.0,run_20260714_043638_save
+8,8,3,Read global definitions,0.003982,0.01,run_20260714_043638_save
+8,8,3,Build group/location map,0.000199,0.0,run_20260714_043638_save
+8,8,3,Distribute groups,0.001255,0.0,run_20260714_043638_save
+8,8,3,Read events + write output,49.49025,99.99,run_20260714_043638_save
+8,8,3,Other (overhead),0.001426,0.0,run_20260714_043638_save
+8,8,3,Total,49.495857,100.0,run_20260714_043638_save
+8,8,4,Read global definitions,0.003836,0.01,run_20260714_043638_save
+8,8,4,Build group/location map,0.000171,0.0,run_20260714_043638_save
+8,8,4,Distribute groups,0.000682,0.0,run_20260714_043638_save
+8,8,4,Read events + write output,48.215087,99.99,run_20260714_043638_save
+8,8,4,Other (overhead),0.000846,0.0,run_20260714_043638_save
+8,8,4,Total,48.21994,100.0,run_20260714_043638_save
+8,8,5,Read global definitions,0.00388,0.01,run_20260714_043638_save
+8,8,5,Build group/location map,0.000182,0.0,run_20260714_043638_save
+8,8,5,Distribute groups,0.001226,0.0,run_20260714_043638_save
+8,8,5,Read events + write output,47.538636,99.99,run_20260714_043638_save
+8,8,5,Other (overhead),0.001402,0.0,run_20260714_043638_save
+8,8,5,Total,47.5441,100.0,run_20260714_043638_save
