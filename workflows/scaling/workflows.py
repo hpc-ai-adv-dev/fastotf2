@@ -121,6 +121,100 @@ def cd(dir):
     log(f'> cd {dir}')
     os.chdir(dir)
 
+
+# ---------------------------------------------------------------------------
+# Shared e4s-cl install & profile management (used by BOTH scaling notebooks).
+#
+# DESIGN (so the converter-scaling and ampere-workflows notebooks never step on
+# each other while sharing ONE e4s-cl install):
+#   1. e4s-cl is a SHARED, one-time install (rezaii's e4s-cl-setup repo -> its .venv).
+#      Notebooks NEVER recreate it -- setup_all.sh's first step recreates the venv and can
+#      silently change the Python version, wiping installed packages. ensure_e4s_cl() only
+#      ASSERTS it is present and, if not, tells you how to bootstrap it once by hand.
+#   2. Each notebook OWNS one named profile and configures ONLY that profile, addressed BY
+#      NAME via `e4s-cl profile edit <name> ...`, so it never disturbs the other notebook's
+#      profile or the global 'selected' profile. Profiles persist in ~/.local/e4s_cl/user.json,
+#      created once and reused -> stable across runs.
+#   3. The mutable 'selected' profile is NOT relied on for correctness by the converter: it
+#      pins `e4s-cl launch --profile <name>` so its batch jobs are immune to whatever is
+#      selected when they later run. The arkouda notebook uses rezaii's launch_arkouda.sh,
+#      which uses the *selected* profile, so it selects its profile right before launching --
+#      harmless because the converter never depends on the selection.
+# ---------------------------------------------------------------------------
+def ensure_e4s_cl():
+    """Assert e4s-cl is on PATH; NEVER install/recreate it here.
+
+    Raises RuntimeError with the one-time manual bootstrap steps if missing, rather than
+    doing anything that could recreate/clobber the shared venv.
+    """
+    import shutil
+    if shutil.which("e4s-cl") is None:
+        raise RuntimeError(
+            "e4s-cl not found on PATH. Set up the SHARED e4s-cl venv ONCE, by hand, then run "
+            "the notebook from that venv's kernel:\n"
+            "    cd e4s-cl-setup && ./setup_all.sh\n"
+            "  (answer 'N' to 'Recreate it?' if a .venv already exists so your Python version "
+            "is preserved).\n"
+            "Notebooks never run setup_all themselves, so they cannot change your venv."
+        )
+
+
+def e4s_profile_exists(name):
+    """True if an e4s-cl profile called *name* already exists (parsed from `profile list`)."""
+    out = subprocess.run("e4s-cl profile list", shell=True,
+                         stdout=subprocess.PIPE, stderr=subprocess.DEVNULL).stdout.decode()
+    return re.search(rf"(^|\s|\|)\s*{re.escape(name)}\s*(\s|\||$)", out) is not None
+
+
+def e4s_profile_has_libraries(name):
+    """True if profile *name* has at least one bound library (`profile show` parsing).
+
+    Use this -- NOT "was the profile just created" -- to decide whether host-library setup
+    (e.g. `setup/04_setup_libraries.sh`) still needs to run. A profile can exist with NO
+    libraries bound (e.g. someone ran `profile create` by hand, or an earlier partial run),
+    so "newly created" is not a reliable signal; checking the actual bound state is.
+    """
+    out = subprocess.run(f"e4s-cl profile show {name}", shell=True,
+                         stdout=subprocess.PIPE, stderr=subprocess.DEVNULL).stdout.decode()
+    m = re.search(r"Bound libraries:\s*\n(.*?)\n\s*\n", out, re.DOTALL)
+    body = m.group(1).strip() if m else ""
+    return bool(body) and body != "None"
+
+
+def ensure_e4s_profile(name, *, backend="apptainer", image=None, add_files=(), source=None,
+                       add_libraries=()):
+    """Create (if missing) and idempotently configure a NAMED e4s-cl profile.
+
+    Everything is addressed BY NAME (`e4s-cl profile edit <name> ...`), so this never changes
+    which profile is globally 'selected' and never touches any other notebook's profile. Safe
+    to call every run -- existing profiles are reused. Returns True if the profile was newly
+    created by THIS call.
+
+    NOTE: "newly created" is NOT the same as "needs host-library setup" -- a profile can
+    already exist (e.g. created by hand while debugging) with zero bound libraries. Callers
+    that also need libfabric/CXI/PMI2/SLURM bindings (e.g. via `setup/04_setup_libraries.sh`)
+    should gate that step on `e4s_profile_has_libraries(name)`, not on this return value.
+    """
+    ensure_e4s_cl()
+    created = not e4s_profile_exists(name)
+    if created:
+        run_cmd(f"e4s-cl profile create {name}")
+    edits = []
+    if backend:
+        edits.append(f"--backend {backend}")
+    if image:
+        edits.append(f"--image {image}")
+    if source:
+        edits.append(f"--source {source}")
+    if add_files:
+        edits.append("--add-files " + " ".join(str(f) for f in add_files))
+    if add_libraries:
+        edits.append("--add-libraries " + " ".join(str(l) for l in add_libraries))
+    for e in edits:
+        run_cmd(f"e4s-cl profile edit {name} {e}")
+    return created
+
+
 def download_custom_container(container_uri, force=False, method="podman"):
     """Fetch container_uri as a local .sif file.
 
