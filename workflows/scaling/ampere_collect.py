@@ -67,8 +67,10 @@ def classify_failure(text):
     log say WHAT broke without the 30-line srun dump (the full dump goes to a .fail.log)."""
     t = text or ""
     if "watchdog" in t.lower():
-        return ("analysis trial hung past the per-trial timeout -- the server was killed to "
-                "unblock the sweep (try more nodes for this trace or a larger TRIAL_TIMEOUT).")
+        return ("analysis trial exceeded the per-trial timeout -- the server was killed to "
+                "unblock the sweep. ampere's attribute step is COMM-BOUND and anti-scales, so try "
+                "FEWER nodes (the fewest that hold the trace in memory), not more, or raise "
+                "TRIAL_TIMEOUT.")
     if "fi_mr_reg" in t or "cxip_regattr" in t or "cxil_map" in t:
         return ("CXI fabric memory-registration failed -- the Chapel heap is too large to "
                 "register on multi-node. Lower ARKOUDA_HEAP (e.g. 128g -> 96g -> 64g).")
