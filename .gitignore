@@ -11,3 +11,16 @@ fastotf2-out/
 workflows/scaling/out/
 **/__pycache__/
 workflows/scaling/local_secrets.py
+
+# analysis-data/ IS tracked (small, curated re-run data -- see workflows/scaling/analysis-data/
+# README.md), but defensively ignore anything bulky/sensitive that should never land there even
+# by accident (out/ above already blocks the source of these entirely; this is belt-and-suspenders
+# in case someone copies the wrong thing straight into analysis-data/).
+workflows/scaling/analysis-data/**/pq/
+workflows/scaling/analysis-data/**/*.sif
+workflows/scaling/analysis-data/**/*_logs/
+workflows/scaling/analysis-data/**/slurm_logs/
+workflows/scaling/analysis-data/**/run_logs/
+workflows/scaling/analysis-data/**/*.pid
+workflows/scaling/analysis-data/**/*.fail.log
+workflows/scaling/analysis-data/**/scratch/
