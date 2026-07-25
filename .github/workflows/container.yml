@@ -147,11 +147,11 @@ jobs:
             $(printf '${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@sha256:%s ' *)
 
   # -----------------------------------------------------------
-  # OFI (libfabric/CXI) variants for HPC fabrics.
-  # Single-platform (linux/amd64) builds that differ from the
+  # OFI (libfabric/CXI) image for Frontier.
+  # This single-platform (linux/amd64) build differs from the
   # default image only by the Chapel base image. The libfabric/CXI
-  # Chapel bases target x86_64 HPC systems, so there is no arm64
-  # variant to merge — tags are pushed directly.
+  # Chapel base targets x86_64 HPC systems, so there is no arm64
+  # variant to merge; tags are pushed directly.
   # -----------------------------------------------------------
   build-ofi:
     runs-on: ubuntu-latest
@@ -164,11 +164,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # Frontier (libfabric 1.22.0)
+          # Frontier (libfabric 2.3.1)
           - image_suffix: fastotf2-converter-frontier
-            base_image: docker.io/arezaiihpe/chapel-2.9.0-libfabric-1.22.0-cxi-pic:latest
-          # HPC systems with libfabric 2.3.1
-          - image_suffix: fastotf2-converter-libfabric2.3.1
             base_image: docker.io/arezaiihpe/chapel-2.9.0-libfabric-2.3.1-cxi-pic:latest
 
     steps:
