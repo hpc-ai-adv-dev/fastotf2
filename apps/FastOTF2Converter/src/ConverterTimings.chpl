@@ -121,12 +121,17 @@ module ConverterTimings {
   // setTaskTimings — populate the report with collected per-task data
   // -------------------------------------------------------------------------
 
-  proc ref TimingReport.setTaskTimings(const ref timings: [] TaskTiming) {
-    localeTimingData[here.id] = new LocaleTiming();
-    ref locData = localeTimingData[here.id];
+  proc ref TimingReport.setTaskTimings(localeId: int,
+                                       const ref timings: [] TaskTiming) {
+    localeTimingData[localeId] = new LocaleTiming();
+    ref locData = localeTimingData[localeId];
     locData.numTasks = timings.size;
     locData.taskTimingDom = {0..<timings.size};
     locData.taskTimings = timings;
+  }
+
+  proc ref TimingReport.setTaskTimings(const ref timings: [] TaskTiming) {
+    this.setTaskTimings(here.id, timings);
   }
 
   // -------------------------------------------------------------------------
