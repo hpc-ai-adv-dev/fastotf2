@@ -1,6 +1,6 @@
 [brick]
 authors = ["Shreyas Khandekar"]
-chplVersion = "2.9.0..2.9.0"
+chplVersion = "2.9.0"
 compopts = ["-M../../src"]
 copyrightYear = "2026"
 license = "Apache-2.0"
@@ -10,7 +10,7 @@ type = "application"
 version = "0.1.0"
 
 [dependencies]
-Parquet = { git = "https://github.com/chapel-lang/Parquet" }
+Parquet = "0.1.2"
 # Waiting on https://github.com/chapel-lang/chapel/issues/28745 so we can depend on the local FastOTF2 mason library
 # Till then we hack it using the -M../../src option in compopts
 # FastOTF2 = { path = "../../" }

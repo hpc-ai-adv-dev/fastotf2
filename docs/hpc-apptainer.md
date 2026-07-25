@@ -6,13 +6,12 @@ This guide covers pulling and running the FastOTF2Converter container on HPC clu
 
 For multi-node execution on HPC systems with libfabric/CXI network fabrics (e.g.,
 HPE Slingshot), use an **OFI image** whose libfabric version matches the host.
-These are built with libfabric-enabled Chapel base images and published to GHCR
-by CI:
+It is built with a libfabric-enabled Chapel base image and published to GHCR by
+CI:
 
 | Host | libfabric | Image |
 |------|-----------|-------|
-| Frontier | 1.22.0 | `fastotf2-converter-frontier` |
-| HPC system with libfabric 2.3.1 | 2.3.1 | `fastotf2-converter-libfabric2.3.1` |
+| Frontier | 2.3.1 | `fastotf2-converter-frontier` |
 | Single-node / portable | n/a | `fastotf2-converter` (default, no fabric deps) |
 
 Check the host's libfabric version to pick the matching image:
@@ -26,16 +25,10 @@ pkg-config --modversion libfabric
 ## Quick Start: Direct Pull from GHCR
 
 If the HPC login or compute nodes can reach `ghcr.io`, pull the image that
-matches your host. For example, on Frontier (libfabric 1.22.0):
+matches your host. For example, on Frontier (libfabric 2.3.1):
 
 ```bash
 apptainer pull fastotf2-converter.sif docker://ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter-frontier:latest
-```
-
-On a host with libfabric 2.3.1:
-
-```bash
-apptainer pull fastotf2-converter.sif docker://ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter-libfabric2.3.1:latest
 ```
 
 This creates `fastotf2-converter.sif` ready to use.
@@ -72,9 +65,7 @@ apptainer shell --bind $(pwd):/workspace/fastotf2 --pwd /workspace/fastotf2 fast
 ## Offline / Air-Gapped HPC Systems
 
 If the HPC system cannot reach the internet, export the image on a connected
-machine and transfer it. Substitute the image that matches your host
-(`fastotf2-converter-frontier` or `fastotf2-converter-libfabric2.3.1`); the
-examples below use the Frontier image.
+machine and transfer it. The examples below use the Frontier image.
 
 1. Save the image as an OCI archive on your desktop:
 
@@ -130,38 +121,28 @@ Then export that tagged image instead.
 
 ## Building the OFI Image for HPC Fabric Support (Optional)
 
-CI publishes the OFI images (`fastotf2-converter-frontier` and
-`fastotf2-converter-libfabric2.3.1`) to GHCR, so most users can simply pull them
-as shown above. Building from source is only needed if you are working on a fork
-or need to customize the image.
+CI publishes the OFI image (`fastotf2-converter-frontier`) to GHCR, so most
+users can simply pull it as shown above. Building from source is only needed if
+you are working on a fork or need to customize the image.
 
 The default container image uses the standard Chapel runtime. For multi-node
 execution on HPC systems with libfabric/CXI network fabrics (e.g., HPE
-Slingshot), the OFI variants are built with the appropriate libfabric-enabled
+Slingshot), the OFI image is built with the appropriate libfabric-enabled
 Chapel base image.
 
-Build a variant by passing `--build-arg` to select the libfabric-enabled Chapel
-base, and tag it with the matching published name:
+Build it by passing `--build-arg` to select the libfabric-enabled Chapel base,
+and tag it with the published name:
 
 ```bash
-# Frontier (libfabric 1.22.0)
+# Frontier (libfabric 2.3.1)
 podman build \
-  --build-arg CHAPEL_BASE_IMAGE=docker.io/arezaiihpe/chapel-2.9.0-libfabric-1.22.0-cxi-pic:latest \
+  --build-arg CHAPEL_BASE_IMAGE=docker.io/arezaiihpe/chapel-2.9.0-libfabric-2.3.1-cxi-pic:latest \
   -f container/Containerfile \
   -t ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter-frontier:latest \
   .
 ```
 
-```bash
-# HPC systems with libfabric 2.3.1
-podman build \
-  --build-arg CHAPEL_BASE_IMAGE=docker.io/arezaiihpe/chapel-2.9.0-libfabric-2.3.1-cxi-pic:latest \
-  -f container/Containerfile \
-  -t ghcr.io/hpc-ai-adv-dev/fastotf2/fastotf2-converter-libfabric2.3.1:latest \
-  .
-```
-
-Then export and convert to SIF as described in the [Offline / Air-Gapped](#offline--air-gapped-hpc-systems) section, using the matching image name.
+Then export and convert to SIF as described in the [Offline / Air-Gapped](#offline--air-gapped-hpc-systems) section.
 
 ## Multi-Locale (Multi-Node) Support
 
