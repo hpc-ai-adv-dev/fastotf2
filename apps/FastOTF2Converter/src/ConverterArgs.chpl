@@ -79,7 +79,7 @@ module ConverterArgs {
       defaultValue=defaultStrategy,
       numArgs=1,
       help="Partition strategy: serial, loc_block, "
-           + "locgroup_block, locgroup_dist_block "
+         + "locgroup_block, locgroup_dist_block, locgroup_dist_block_coforalls"
     );
 
     var excludeMPIArg = parser.addFlag(

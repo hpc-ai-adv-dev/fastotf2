@@ -8,6 +8,7 @@ module FastOTF2Converter {
   use Strategy_LocBlock;
   use Strategy_LocGroupBlock;
   use Strategy_LocGroupDistBlock;
+  use Strategy_LocGroupDistBlockCoforalls;
   use CTypes;
   use MemDiagnostics;
   private use MemTracking;
@@ -57,6 +58,8 @@ module FastOTF2Converter {
         halt("Strategy locgroup_dynamic not yet implemented");
       when "locgroup_dist_block" do
         Strategy_LocGroupDistBlock.run(conf);
+      when "locgroup_dist_block_coforalls" do
+        Strategy_LocGroupDistBlockCoforalls.run(conf);
       when "locgroup_blockdist_dynamic" do
         halt("Strategy locgroup_blockdist_dynamic not yet implemented");
       when "locgroup_dist_balanced" do
@@ -64,7 +67,7 @@ module FastOTF2Converter {
       otherwise
         halt("Unknown strategy: ", conf.strategy,
              ". Use one of: serial, loc_block, loc_dynamic, locgroup_block, ",
-             "locgroup_dynamic, locgroup_dist_block, ",
+             "locgroup_dynamic, locgroup_dist_block, locgroup_dist_block_coforalls, ",
              "locgroup_blockdist_dynamic, locgroup_dist_balanced");
     }
 
