@@ -74,7 +74,8 @@ module Strategy_LocGroupDistBlock {
       if enableTimers then taskSw.start();
 
       var evtCtx = new EvtCallbackContext(evtArgs, defCtx);
-      const readResult = readEventsForLocations(conf.trace, myLocs, evtCtx);
+      const localTraceName = conf.trace;
+      const readResult = readEventsForLocations(localTraceName, myLocs, evtCtx);
       totalEventsRead += readResult.eventsRead;
       const totalCallbackTime = evtCtx.totalCallbackTime();
 
