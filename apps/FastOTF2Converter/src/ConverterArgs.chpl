@@ -24,6 +24,7 @@ module ConverterArgs {
     var excludeMPI: bool;
     var excludeHIP: bool;
     var sortCallgraph: bool;
+    var parallelismReport: bool;
     var timings: bool;
     var timingsCSV: string;
   }
@@ -103,6 +104,14 @@ module ConverterArgs {
       help="Sort callgraph intervals by start time before writing output"
     );
 
+    var parallelismReportArg = parser.addFlag(
+      name="parallelismReport",
+      opts=["--parallelism-report"],
+      defaultValue=false,
+      numArgs=0,
+      help="Print locgroup_dist_block parallelism and scaling before event conversion"
+    );
+
     var timingsArg = parser.addFlag(
       name="timings",
       defaultValue=false,
@@ -135,6 +144,7 @@ module ConverterArgs {
     conf.excludeMPI = excludeMPIArg.valueAsBool();
     conf.excludeHIP = excludeHIPArg.valueAsBool();
     conf.sortCallgraph = sortCallgraphArg.valueAsBool();
+    conf.parallelismReport = parallelismReportArg.valueAsBool();
     conf.timings = timingsArg.valueAsBool();
     conf.timingsCSV = timingsCSVArg.value();
 
