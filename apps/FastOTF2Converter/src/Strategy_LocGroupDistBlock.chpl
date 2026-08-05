@@ -13,6 +13,7 @@ module Strategy_LocGroupDistBlock {
   use ConverterDefReaders;
   use ConverterEvtReaders;
   use ConverterGroupMap;
+  use ConverterParallelism;
   use ConverterWriters;
   use ConverterTimings;
   use FastOTF2;
@@ -45,6 +46,10 @@ module Strategy_LocGroupDistBlock {
     // Block-distribute group indices across locales
     const groupDom = blockDist.createDomain(0..<totalGroups);
     const totalReaders = min(totalGroups, numLocales * here.maxTaskPar);
+    if conf.parallelismReport then
+      printLocationGroupParallelism(conf, defCtx, evtArgs,
+                                    defResult.numberOfLocations,
+                                    groupLocationMap, totalReaders);
     const readerDom = blockDist.createDomain(0..<totalReaders);
     var totalEventsRead: c_uint64 = 0;
     var taskTimings: [readerDom] TaskTiming;

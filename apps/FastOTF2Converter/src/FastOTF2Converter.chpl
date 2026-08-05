@@ -37,6 +37,10 @@ module FastOTF2Converter {
       halt("--log=DEBUG/TRACE requires enableVerboseLogging=true. "
            + "Recompile with: mason build -- --set enableVerboseLogging=true");
 
+    if conf.parallelismReport && conf.strategy != "locgroup_dist_block" then
+      halt("--parallelism-report currently requires "
+           + "--strategy=locgroup_dist_block");
+
     // Capture baseline RSS per locale (before work)
     var baselineKiB: [0..#numLocales] int;
     if memTrack {
