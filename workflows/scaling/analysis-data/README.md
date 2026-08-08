@@ -14,17 +14,18 @@ Restart the kernel, go to the notebook's §5, set `ANALYZE_RUN`, and run the gra
 collection, traces, or Parquet needed.
 
 - converter (`converter-scaling-new.ipynb`): `ANALYZE_RUN = "analysis-data/<system>/converter/<run>"`.
-  §5 reads the aggregated `conversion_timings.csv` / `conversion_phases.csv`; `df_tasks` is empty,
-  so the per-task graph skips itself.
+  §5 reads the aggregated `conversion_timings.csv` / `conversion_phases.csv`, plus
+  `conversion_tasks.csv` (per-task rows for the summary configs) for the task-imbalance graph.
 - ampere (`ampere-workflows-new.ipynb`): `ANALYZE_RUN = "analysis-data/<system>/ampere/<run>"`.
   §5 reads `end_to_end_results.csv`.
 - bench: in the fastotf2-bench repo, `ANALYZE_RUN = "<system>/bench/<run>"`.
 
 ## What's kept and dropped
 
-Kept: the aggregated timing CSVs, `plan.json`, `trace_sizes.json` / `parquet_sizes.json`, and
-`plots/`. Dropped: `pq/` Parquet, `*.sif`, `scratch/`, `slurm_logs/`, `run_logs/` (they carry
-hostnames and `--account`/`--mail-user`), per-task `tasks_*.csv`, manifests, `*.pid`, `job_times/`.
+Kept: the aggregated timing CSVs, per-task rows for the summary configs (`conversion_tasks.csv`),
+`plan.json`, `trace_sizes.json` / `parquet_sizes.json`, and `plots/`. Dropped: `pq/` Parquet,
+`*.sif`, `scratch/`, `slurm_logs/`, `run_logs/` (they carry hostnames and `--account`/`--mail-user`),
+per-task rows for every other config, manifests, `*.pid`, `job_times/`.
 
 ## other-ex converter merge
 
