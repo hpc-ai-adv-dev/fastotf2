@@ -111,7 +111,7 @@ def build_workflow_merged(runs, workflow):
 
 # --------------------------------------------------------------------------- workflow accounting
 def plot_workflow_accounting(traced_nodes, workflow_merged, ctx):
-    """Stacked stage medians for one trace with the end-to-end median and a P5-P95 whisker.
+    """Stacked stage means for one trace with the end-to-end mean and a min-max whisker.
     None if there is no workflow data for this trace."""
     if workflow_merged.empty:
         return None
@@ -126,33 +126,33 @@ def plot_workflow_accounting(traced_nodes, workflow_merged, ctx):
         col = WORKFLOW_COMPONENT_COLUMNS[stage]
         if col not in rows:
             continue
-        med = rows.groupby("nl")[col].median() / ctx.SEC_PER_MIN
+        mean = rows.groupby("nl")[col].mean() / ctx.SEC_PER_MIN
         for n in nodes:
-            recs.append({"nl": str(n), "stage": stage, "minutes": float(med.get(n, 0.0))})
+            recs.append({"nl": str(n), "stage": stage, "minutes": float(mean.get(n, 0.0))})
     comp = pd.DataFrame(recs)
     stages_present = [s for s in WORKFLOW_STAGE_ORDER if s in set(comp["stage"])]
     comp["stage"] = pd.Categorical(comp["stage"],
                                    categories=list(reversed(stages_present)), ordered=True)
     comp["nl"] = pd.Categorical(comp["nl"], categories=node_cats, ordered=True)
 
-    tq = (rows.groupby("nl")["end_to_end_seconds"].quantile([0.05, 0.50, 0.95])
-          .unstack().reindex(nodes))
-    td = pd.DataFrame({"nl": node_cats, "med": tq[0.50].to_numpy() / ctx.SEC_PER_MIN,
-                       "lo": tq[0.05].to_numpy() / ctx.SEC_PER_MIN,
-                       "hi": tq[0.95].to_numpy() / ctx.SEC_PER_MIN})
+    grp = rows.groupby("nl")["end_to_end_seconds"]
+    td = pd.DataFrame({"nl": node_cats,
+                       "mean": grp.mean().reindex(nodes).to_numpy() / ctx.SEC_PER_MIN,
+                       "lo": grp.min().reindex(nodes).to_numpy() / ctx.SEC_PER_MIN,
+                       "hi": grp.max().reindex(nodes).to_numpy() / ctx.SEC_PER_MIN})
     td["nl"] = pd.Categorical(td["nl"], categories=node_cats, ordered=True)
 
     return (ggplot(comp, aes("nl", "minutes", fill="stage"))
             + geom_col(position=position_stack(reverse=True), width=0.72)
             + geom_errorbar(td, aes("nl", ymin="lo", ymax="hi"), inherit_aes=False,
                             width=0.12, size=0.6)
-            + geom_point(td, aes("nl", "med"), inherit_aes=False, color="black", size=2.4)
+            + geom_point(td, aes("nl", "mean"), inherit_aes=False, color="black", size=2.4)
             + scale_fill_manual(values=WORKFLOW_STAGE_COLORS, breaks=stages_present)
             + guides(fill=guide_legend(nrow=2))
             + expand_limits(y=float(td["hi"].max()) * 1.08)
             + labs(title=f"End-to-End Workflow (NVMe stage-out): {ctx.size_label(traced_nodes)} Trace",
-                   subtitle="point = end-to-end median, whisker = P5-P95",
-                   x="Number of Nodes", y="Median Time (minutes)", fill="Stage")
+                   subtitle="point = end-to-end mean, whisker = min-max",
+                   x="Number of Nodes", y="Mean Time (minutes)", fill="Stage")
             + ctx.theme_pub(9, 5.5))
 
 
@@ -204,8 +204,8 @@ def plot_historical_internal_comparison(matched, ctx):
         print("Historical internal-time comparison: no completed matched configurations yet.")
         return None
     summary = (matched.groupby(["traced_nodes", "nl", "storage_path"])["totalTime"]
-               .agg(med="median", lo="min", hi="max").reset_index())
-    summary["minutes"] = summary["med"] / ctx.SEC_PER_MIN
+               .agg(mean="mean", lo="min", hi="max").reset_index())
+    summary["minutes"] = summary["mean"] / ctx.SEC_PER_MIN
     summary["lo_min"] = summary["lo"] / ctx.SEC_PER_MIN
     summary["hi_min"] = summary["hi"] / ctx.SEC_PER_MIN
     summary["trace"] = ctx.trace_cat(summary["traced_nodes"])
@@ -217,7 +217,7 @@ def plot_historical_internal_comparison(matched, ctx):
             + scale_color_manual(values=STORAGE_COLORS)
             + scale_fill_manual(values=STORAGE_COLORS)
             + labs(title="Historical Storage Comparison: Internal Conversion Time",
-                   x="Number of Nodes", y="Median Internal Time (minutes)",
+                   x="Number of Nodes", y="Mean Internal Time (minutes)",
                    color="Storage Path", fill="Storage Path")
             + ctx.theme_pub(10, 5.5))
 
@@ -235,18 +235,18 @@ def build_break_even_data(historical_runs, current_workflow, selected_traces):
         return pd.DataFrame()
 
     historical_summary = (historical.merge(keys, on=["traced_nodes", "nl"])
-                          .groupby(["traced_nodes", "nl"])["totalTime"].median()
+                          .groupby(["traced_nodes", "nl"])["totalTime"].mean()
                           .rename("seconds").reset_index())
     historical_summary["series"] = "Shared filesystem (historical)"
 
     current_matched = current.merge(keys, on=["traced_nodes", "nl"])
     internal = (current_matched.groupby(["traced_nodes", "nl"])["internal_conversion_seconds"]
-                .median().rename("seconds").reset_index())
+                .mean().rename("seconds").reset_index())
     internal["series"] = "NVMe internal"
     with_stageout = current_matched.assign(
         internal_plus_stageout=current_matched["internal_conversion_seconds"]
         + current_matched["stageout_seconds"]
-    ).groupby(["traced_nodes", "nl"])["internal_plus_stageout"].median().rename(
+    ).groupby(["traced_nodes", "nl"])["internal_plus_stageout"].mean().rename(
         "seconds").reset_index()
     with_stageout["series"] = "NVMe internal + stage-out"
     return pd.concat([historical_summary, internal, with_stageout], ignore_index=True)
@@ -265,7 +265,7 @@ def plot_break_even(data, ctx):
             + ctx.node_axis(data["nl"]) + expand_limits(y=0)
             + scale_color_manual(values=STORAGE_COLORS)
             + labs(title="Historical Storage Break-Even Diagnostic",
-                   x="Number of Nodes", y="Median Time (minutes)", color="Timing Scope")
+                   x="Number of Nodes", y="Mean Time (minutes)", color="Timing Scope")
             + ctx.theme_pub(10, 5.5))
 
 
@@ -275,10 +275,10 @@ def plot_stageout_fraction(current_workflow, selected_traces, ctx, trace_colors)
         print("Stage-out fraction: no completed selected workflow rows yet.")
         return None
     summary = (selected.groupby(["traced_nodes", "nl"])["stageout_fraction"]
-               .agg(med="median", lo="min", hi="max").reset_index())
-    summary[["med", "lo", "hi"]] *= 100.0
+               .agg(mean="mean", lo="min", hi="max").reset_index())
+    summary[["mean", "lo", "hi"]] *= 100.0
     summary["trace"] = ctx.trace_cat(summary["traced_nodes"])
-    return (ggplot(summary, aes("nl", "med", color="trace", fill="trace"))
+    return (ggplot(summary, aes("nl", "mean", color="trace", fill="trace"))
             + geom_ribbon(aes(ymin="lo", ymax="hi"), alpha=0.12, color=None)
             + geom_line() + geom_point(size=2.2)
             + facet_wrap("trace", scales="free_y")
