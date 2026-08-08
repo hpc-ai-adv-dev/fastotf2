@@ -1,26 +1,13 @@
 #!/usr/bin/env python3
-"""Build B's SYNTHETIC merged converter run for analysis-data/.
+"""Merge two partial converter runs into one analysis-data run.
 
-WHY: neither converter run is complete on its own. The two runs come from different notebook
-versions:
-  * NEW  run_20260717_203803_save : traces {16,32,128,384}, 5 trials/config. NO small traces.
-  * OLD  run_20260714_043638_save : has the small traces {2,4,8} (and others), 10 trials/config.
+The small traces come from --old-run (capped to --trial-cap), the rest from --new-run; both share
+the same run_/phases_ CSV schema. Writes conversion_timings.csv and conversion_phases.csv plus
+trace_sizes.json and plan.json.
 
-So we fabricate ONE clean run for the analysis half: small traces {2,4,8} come from the OLD run
-(capped to trials 1-5 to match), everything else from the NEW run (already 5 trials). Both runs
-share the SAME run_/phases_ CSV schema (verified), so the concat is apples-to-apples.
-
-We AGGREGATE the tiny per-trial CSVs into two small tidy CSVs (dropping the bulky per-task
-tasks_*.csv, which only feeds one optional breakdown graph):
-  * conversion_timings.csv  -- one row per (traced_nodes, nl, trial): run_*.csv columns.
-  * conversion_phases.csv   -- one row per (traced_nodes, nl, trial, phase): phases_*.csv columns.
-
-The converter notebook's §5 `load_timings()` has a shim that reads these when present (and then
-`df_tasks` is empty, so the per-task graph auto-skips).
-
-Re-runnable on any machine: just point the paths below at that machine's two runs and set the
-output system label (e.g. "frontier").
+    python build_converter_merged.py --new-run out/<new> --old-run out/<old> --system other-ex
 """
+import argparse
 import json
 import re
 import sys
@@ -28,21 +15,23 @@ from pathlib import Path
 
 import pandas as pd
 
-# ---- Configure the merge (edit these when replicating on another system) ----
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from sanitize import sanitize_json
+
 SCALING_DIR = Path(__file__).resolve().parents[2]          # .../workflows/scaling
-NEW_RUN = SCALING_DIR / "out" / "run_20260717_203803_save"  # larger traces, 5 trials
-OLD_RUN = SCALING_DIR / "out" / "run_20260714_043638_save"  # source of small traces (10 trials)
-SMALL_FROM_OLD = {2, 4, 8}        # traces taken from OLD (missing in NEW)
-TRIAL_CAP = 5                     # cap OLD's 10 trials to match NEW's 5
-SYSTEM = "other-ex"               # analysis-data/<SYSTEM>/converter/...
-OUT = SCALING_DIR / "analysis-data" / SYSTEM / "converter" / "run_converter_merged"
+
+# Defaults reproduce the original other-ex merge; override on the CLI for another system.
+_DEF_NEW_RUN = "out/run_20260717_203803_save"   # larger traces, 5 trials
+_DEF_OLD_RUN = "out/run_20260714_043638_save"   # source of small traces (10 trials)
+_DEF_SMALL_FROM_OLD = "2,4,8"                    # traces taken from OLD (missing in NEW)
+_DEF_TRIAL_CAP = 5                              # cap OLD's 10 trials to match NEW's 5
 
 _TAG = re.compile(r"size(\d+)_nl(\d+)_trial(\d+)$")
 
 
-def _collect(run_dir, keep_size):
+def _collect(run_dir, keep_size, trial_cap):
     """Return (run_rows, phase_rows) lists for configs whose traced_nodes passes keep_size(t),
-    with trial <= TRIAL_CAP. Tags every row with traced_nodes/nl/trial/timestamp/source_run."""
+    with trial <= trial_cap. Tags every row with traced_nodes/nl/trial/timestamp/source_run."""
     run_rows, phase_rows = [], []
     tdir = Path(run_dir) / "timings"
     for d in sorted(tdir.iterdir()):
@@ -50,7 +39,7 @@ def _collect(run_dir, keep_size):
         if not m:
             continue
         t, nl, trial = int(m[1]), int(m[2]), int(m[3])
-        if not keep_size(t) or trial > TRIAL_CAP:
+        if not keep_size(t) or trial > trial_cap:
             continue
         for run_csv in d.glob("run_*.csv"):
             df = pd.read_csv(run_csv)
@@ -65,14 +54,43 @@ def _collect(run_dir, keep_size):
     return run_rows, phase_rows
 
 
+def _resolve(p):
+    p = Path(p)
+    return p if p.is_absolute() else (SCALING_DIR / p)
+
+
 def main():
+    ap = argparse.ArgumentParser(
+        description="Build the converter (B) SYNTHETIC merged analysis-data run from TWO runs.")
+    ap.add_argument("--new-run", default=_DEF_NEW_RUN,
+                    help="run with the larger traces (absolute, or relative to workflows/scaling)")
+    ap.add_argument("--old-run", default=_DEF_OLD_RUN,
+                    help="run supplying the small traces (absolute, or relative to workflows/scaling)")
+    ap.add_argument("--small-from-old", default=_DEF_SMALL_FROM_OLD,
+                    help="comma-separated traced_nodes taken from --old-run (default 2,4,8)")
+    ap.add_argument("--trial-cap", type=int, default=_DEF_TRIAL_CAP,
+                    help="cap trials from both runs to this many (default 5)")
+    ap.add_argument("--system", default="other-ex",
+                    help="system label for analysis-data/<system>/converter/ (default other-ex)")
+    args = ap.parse_args()
+
+    NEW_RUN = _resolve(args.new_run)
+    OLD_RUN = _resolve(args.old_run)
+    SMALL_FROM_OLD = {int(x) for x in args.small_from_old.split(",") if x.strip()}
+    TRIAL_CAP = args.trial_cap
+    SYSTEM = args.system
+    # Unified layout: analysis-data/<system>/<analysis>/<run>/ (this notebook's analysis = converter).
+    OUT = SCALING_DIR / "analysis-data" / SYSTEM / "converter" / "run_converter_merged"
+
     for r in (NEW_RUN, OLD_RUN):
         if not (r / "timings").is_dir():
             sys.exit(f"ERROR: no timings/ under {r}")
 
     # NEW: everything it has (all its traces are non-small). OLD: only the small traces.
-    new_runs, new_ph = _collect(NEW_RUN, keep_size=lambda t: t not in SMALL_FROM_OLD)
-    old_runs, old_ph = _collect(OLD_RUN, keep_size=lambda t: t in SMALL_FROM_OLD)
+    new_runs, new_ph = _collect(NEW_RUN, keep_size=lambda t: t not in SMALL_FROM_OLD,
+                                trial_cap=TRIAL_CAP)
+    old_runs, old_ph = _collect(OLD_RUN, keep_size=lambda t: t in SMALL_FROM_OLD,
+                                trial_cap=TRIAL_CAP)
 
     runs = pd.concat(new_runs + old_runs, ignore_index=True)
     phases = pd.concat(new_ph + old_ph, ignore_index=True)
@@ -102,9 +120,10 @@ def main():
             sizes.update({str(k): v for k, v in json.loads(j.read_text()).items()})
     (OUT / "trace_sizes.json").write_text(json.dumps(sizes, indent=2, sort_keys=True))
 
-    # Minimal merged plan.json (§5 only uses node_counts for x-axis tick labels).
+    # Minimal merged plan.json (§5 only uses node_counts for x-axis tick labels). Routed through
+    # the shared sanitizer for defence-in-depth (it holds only neutral numbers/labels today).
     node_counts = sorted(int(n) for n in runs["nl"].unique())
-    (OUT / "plan.json").write_text(json.dumps({
+    (OUT / "plan.json").write_text(json.dumps(sanitize_json({
         "synthetic": True,
         "note": "Merged analysis-only run; see SOURCES.md.",
         "system": SYSTEM,
@@ -112,7 +131,7 @@ def main():
         "num_trials": TRIAL_CAP,
         "traces_from_old_run": sorted(SMALL_FROM_OLD),
         "old_run": OLD_RUN.name, "new_run": NEW_RUN.name,
-    }, indent=2))
+    }), indent=2))
 
     # Provenance
     per_trace = (runs.groupby("traced_nodes")

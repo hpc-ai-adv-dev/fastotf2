@@ -1,44 +1,37 @@
 #!/usr/bin/env python3
-"""Build A's (ampere-workflows-new.ipynb) analysis-data: the small, clean, git-safe subset
-needed to re-run §5 (results analysis) on another machine.
+"""Build the ampere analysis-data from one complete run.
 
-A's §5 is fully self-contained from `end_to_end_results.csv` -- nothing else is needed (no
-traces, no Parquet, no B/C conversion runs). This script assumes that CSV was already produced
-(here, via a headless replay of §4 against a run whose collector had died -- see SOURCES.md);
-it just copies the small, non-sensitive artifacts into analysis-data/.
+Copies end_to_end_results.csv, a sanitized plan.json, and plots/. The results CSV must already
+exist (produced by the notebook's §4 combine).
 
-Re-run on another system by editing SRC_RUN / SYSTEM below (e.g. SYSTEM="frontier").
+    python build_ampere_analysis_data.py --src-run out/run_YYYYMMDD_HHMMSS_save --system frontier
 """
+import argparse
 import json
-import re
 import shutil
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from sanitize import sanitize_json
+
 REPO = Path(__file__).resolve().parents[2]        # workflows/scaling/
-SRC_RUN = REPO / "out" / "run_20260721_013322_save"
-SYSTEM = "other-ex"
-OUT = REPO / "analysis-data" / SYSTEM / "ampere" / SRC_RUN.name
-
-# Same sanitizer as the bench tool -- ampere's plan.json currently carries no account/mail
-# (SLURM_ACCOUNT is None on this system), but route it through anyway for defense-in-depth
-# (e.g. if this is ever replicated on Frontier where SLURM_ACCOUNT is set).
-_SENS_KEY = re.compile(r"(account|mail|secret|token|password|passwd)", re.I)
-_SENS_VAL = re.compile(r"(--?(account|mail[-_]?user|uid)\b|[\w.+-]+@[\w.-]+)", re.I)
-REDACT = "<redacted>"
-
-
-def sanitize_json(obj):
-    if isinstance(obj, dict):
-        return {k: (REDACT if _SENS_KEY.search(k) else sanitize_json(v)) for k, v in obj.items()}
-    if isinstance(obj, list):
-        return [sanitize_json(x) for x in obj]
-    if isinstance(obj, str) and _SENS_VAL.search(obj):
-        return REDACT
-    return obj
 
 
 def main():
+    ap = argparse.ArgumentParser(
+        description="Build the ampere (A) analysis-data subset from one complete run.")
+    ap.add_argument("--src-run", type=Path, required=True,
+                    help="source run folder under out/ (absolute, or relative to workflows/scaling)")
+    ap.add_argument("--system", required=True,
+                    help="system label for analysis-data/<system>/ampere/ (e.g. other-ex, frontier)")
+    args = ap.parse_args()
+
+    SRC_RUN = args.src_run if args.src_run.is_absolute() else (REPO / args.src_run)
+    SYSTEM = args.system
+    # Unified layout: analysis-data/<system>/<analysis>/<run>/ (this notebook's analysis = ampere).
+    OUT = REPO / "analysis-data" / SYSTEM / "ampere" / SRC_RUN.name
+
     if not (SRC_RUN / "end_to_end_results.csv").exists():
         sys.exit(f"ERROR: {SRC_RUN}/end_to_end_results.csv missing -- run §4 combine first.")
     OUT.mkdir(parents=True, exist_ok=True)

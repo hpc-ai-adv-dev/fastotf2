@@ -401,6 +401,7 @@ def watch_queue_widget(interval=2.0):
         def _wrap(inner):
             return (f"<div style='font-family:ui-monospace,SFMono-Regular,Menlo,monospace;"
                     f"font-size:12px;background:{BG};color:{FG};padding:10px;border-radius:6px;"
+                    f"width:100%;min-width:1100px;box-sizing:border-box;"
                     f"max-height:480px;overflow:auto'>{inner}</div>")
 
         if err is not None:
@@ -419,7 +420,7 @@ def watch_queue_widget(interval=2.0):
                 body += f"<tr>{tds}</tr>"
             dot = f"<span style='color:{tcolor}'>&#9679;</span> "
             return (f"<div style='margin:10px 0 3px;font-weight:bold;color:{tcolor}'>{dot}{title}</div>"
-                    f"<table style='border-collapse:collapse'><tr>{th}</tr>{body}</table>")
+                    f"<table style='border-collapse:collapse;min-width:100%'><tr>{th}</tr>{body}</table>")
 
         run = [r for r in rows if r["st"] == "RUNNING"]
         pend = [r for r in rows if r["st"] == "PENDING"]
@@ -431,7 +432,7 @@ def watch_queue_widget(interval=2.0):
         for r in run:
             es, ls = _dur_to_s(r["elapsed"]), _dur_to_s(r["tlimit"])
             left = _fmt_s(ls - es) if (es is not None and ls is not None) else "?"
-            run_rows.append([r["jid"], r["name"][:28], r["nodes"], r["elapsed"], r["tlimit"], left])
+            run_rows.append([r["jid"], r["name"], r["nodes"], r["elapsed"], r["tlimit"], left])
 
         # WAITING: highest priority first (that's the order they'll actually start).
         pend.sort(key=lambda r: -int(r["prio"]) if r["prio"].isdigit() else 0)
@@ -440,11 +441,11 @@ def watch_queue_widget(interval=2.0):
             t = _ts(r["start"])
             when = t.strftime("%m-%d %H:%M") if t else "unknown"
             countdown = _fmt_s((t - now).total_seconds()) if t else "—"
-            wait_rows.append([r["jid"], r["name"][:28], r["nodes"], r["prio"],
+            wait_rows.append([r["jid"], r["name"], r["nodes"], r["prio"],
                               when, countdown, r["reason"]])
 
         other.sort(key=lambda r: r["st"])
-        other_rows = [[r["jid"], r["name"][:28], r["st"], r["nodes"], r["reason"]] for r in other]
+        other_rows = [[r["jid"], r["name"], r["st"], r["nodes"], r["reason"]] for r in other]
 
         run_nodes = sum(int(r["nodes"]) for r in run if r["nodes"].isdigit())
         pend_starts = [t for t in (_ts(r["start"]) for r in pend) if t]
@@ -512,17 +513,19 @@ def watch_queue_widget(interval=2.0):
     controls = HBox(
         [btn_start, btn_stop, btn_refresh, dd_interval, Box(layout=Layout(flex='1 1 auto')),
          cb_just_me, btn_force_kill],
-        layout=Layout(display='flex', flex_flow='row', align_items='center', gap='8px'))
-    out = widgets.HTML(value="<div style='font-family:monospace'>Idle — press Start</div>")
+        layout=Layout(display='flex', flex_flow='row', align_items='center', gap='8px',
+                      width='100%'))
+    out = widgets.HTML(value="<div style='font-family:monospace'>Idle — press Start</div>",
+                       layout=Layout(width='100%', overflow_x='auto'))
     display(controls, out)
 
 def wait_until_my_jobs_finished():
     wait = True
     while wait:
-        #check queue length
-        result = subprocess.run(f'squeue --me | wc -l', shell=True, capture_output=True, text=True)
+        # check queue length
+        result = subprocess.run('squeue --me | wc -l', shell=True, capture_output=True, text=True)
         queue_length = int(result.stdout.strip())
-        if queue_length == 1: # there's always the header line
+        if queue_length == 1:  # there's always the header line
             wait = False
         else:
             time.sleep(5)

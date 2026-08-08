@@ -1,29 +1,13 @@
 #!/usr/bin/env python3
-"""Build B's analysis-data from a SINGLE, self-complete converter run.
+"""Build the converter analysis-data from one complete run.
 
-Sibling of build_converter_merged.py. That tool exists only because the `other-ex` data was
-split across two incomplete notebook versions and had to be fabricated into one clean run.
-When a system produces ONE run that already covers every trace it cares about (e.g. the
-Frontier STRONG sweep), no merge is needed -- this is the "plain aggregation of one run" the
-README mentions.
+Aggregates the per-trial run_/phases_ CSVs into conversion_timings.csv and conversion_phases.csv,
+and copies trace_sizes.json, parquet_sizes.json, plan.json, and plots/. The per-task tasks_*.csv
+and everything under slurm_logs/, run_logs/, pq/ are left out.
 
-It AGGREGATES the tiny per-trial CSVs into two small tidy CSVs (dropping the bulky per-task
-tasks_*.csv, which only feeds one optional breakdown graph):
-  * conversion_timings.csv  -- one row per (traced_nodes, nl, trial): run_*.csv columns.
-  * conversion_phases.csv   -- one row per (traced_nodes, nl, trial, phase): phases_*.csv columns.
-
-and copies the small, non-sensitive caches/figures the analysis half needs:
-  * trace_sizes.json / parquet_sizes.json  (so the du -sb size step is skipped)
-  * plan.json                              (§5 uses node_counts for x-axis tick labels)
-  * plots/                                 (pre-rendered PNGs)
-
-The converter notebook's §5 `load_timings()` has a shim that reads the aggregated CSVs when
-present (and then `df_tasks` is empty, so the per-task graph auto-skips). Nothing here carries
-account/mail/user data -- the run/phase CSVs hold only timings + a world-shared trace path,
-and plan/size JSONs are pure numbers. (slurm_logs/, run_logs/, pq/, etc. are never copied.)
-
-Re-runnable on any machine: point SRC_RUN at that machine's run and set SYSTEM.
+    python build_converter_single.py --src-run out/run_YYYYMMDD_HHMMSS --system frontier
 """
+import argparse
 import json
 import re
 import shutil
@@ -32,11 +16,10 @@ from pathlib import Path
 
 import pandas as pd
 
-# ---- Configure (edit these when replicating on another system) ----
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from sanitize import sanitize_json
+
 SCALING_DIR = Path(__file__).resolve().parents[2]                 # .../workflows/scaling
-SRC_RUN = SCALING_DIR / "out" / "run_20260717_215056"             # the single, self-complete run
-SYSTEM = "frontier"                                               # analysis-data/<SYSTEM>/converter/...
-OUT = SCALING_DIR / "analysis-data" / SYSTEM / "converter" / SRC_RUN.name
 
 _TAG = re.compile(r"size(\d+)_nl(\d+)_trial(\d+)$")
 
@@ -65,6 +48,19 @@ def _collect(run_dir):
 
 
 def main():
+    ap = argparse.ArgumentParser(
+        description="Build the converter (B) analysis-data subset from ONE complete run.")
+    ap.add_argument("--src-run", type=Path, required=True,
+                    help="source run folder under out/ (absolute, or relative to workflows/scaling)")
+    ap.add_argument("--system", required=True,
+                    help="system label for analysis-data/<system>/converter/ (e.g. other-ex, frontier)")
+    args = ap.parse_args()
+
+    SRC_RUN = args.src_run if args.src_run.is_absolute() else (SCALING_DIR / args.src_run)
+    SYSTEM = args.system
+    # Unified layout: analysis-data/<system>/<analysis>/<run>/ (this notebook's analysis = converter).
+    OUT = SCALING_DIR / "analysis-data" / SYSTEM / "converter" / SRC_RUN.name
+
     if not (SRC_RUN / "timings").is_dir():
         sys.exit(f"ERROR: no timings/ under {SRC_RUN}")
 
@@ -87,12 +83,20 @@ def main():
         tdir_out / "conversion_phases.csv", index=False)
 
     # Small, non-sensitive caches/figures the analysis half reads (all pure numbers / PNGs).
-    for name in ("trace_sizes.json", "parquet_sizes.json", "plan.json"):
+    for name in ("trace_sizes.json", "parquet_sizes.json"):
         src = SRC_RUN / name
         if src.exists():
             shutil.copy2(src, OUT / name)
         else:
             print(f"WARNING: {name} missing in {SRC_RUN}")
+    # plan.json is the provenance matrix -- sanitize it (defence-in-depth; it holds only numbers/
+    # neutral labels today, but the shared sanitizer makes every tool safe by default).
+    plan_src = SRC_RUN / "plan.json"
+    if plan_src.exists():
+        (OUT / "plan.json").write_text(
+            json.dumps(sanitize_json(json.loads(plan_src.read_text())), indent=2) + "\n")
+    else:
+        print(f"WARNING: plan.json missing in {SRC_RUN}")
     if (SRC_RUN / "plots").is_dir():
         shutil.copytree(SRC_RUN / "plots", OUT / "plots", dirs_exist_ok=True)
 

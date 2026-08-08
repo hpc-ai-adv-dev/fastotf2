@@ -1,0 +1,8 @@
+# Packages for the analysis/graphing half. Minimum versions, not exact pins.
+# matplotlib is here because plotnine renders through it.
+pandas>=2.2
+numpy>=1.26
+plotnine>=0.13
+matplotlib>=3.8
+ipykernel>=6.29
+ipywidgets>=8.1

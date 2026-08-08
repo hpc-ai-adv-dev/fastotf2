@@ -1,8 +1,10 @@
 # Workflow notebook best practices
 
 Distilled, reusable conventions for the HPC "collect timings on Slurm, then graph them"
-notebooks in this repo (`converter-scaling-new.ipynb`, `ampere-workflows-new.ipynb`, …).
-Copy these patterns when building the next one.
+notebooks in this repo (`converter-scaling-new.ipynb`, `ampere-workflows-new.ipynb`) and the
+sibling `fastotf2-bench` repo (`fastotf2-benchmark.ipynb`). Copy these patterns when building the
+next one; the three notebooks are meant to stay aligned, so a change to one of these conventions
+should land in all of them.
 
 ---
 
@@ -114,16 +116,37 @@ Copy these patterns when building the next one.
 
 ## 11. Graphing (plotnine)
 
-- Save every figure to `plots/` (`dpi=150`) *and* display it, so runs are self-documenting.
+- **plotnine ONLY — never matplotlib in notebook code.** Every figure in every notebook is built
+  with plotnine (`from plotnine import *`). Do **not** `import matplotlib.pyplot as plt`, build
+  `fig, axes = plt.subplots(...)`, or set `mpl.rcParams` in a notebook. matplotlib is still
+  installed (plotnine renders through it) but it is a hidden backend, not an authoring API — a
+  composite/inset figure that "needs" matplotlib is built in plotnine instead (annotate rects +
+  `geom_text` in data coordinates, faceting, `patchworklib`/stacked `ggplot`s), exactly like the
+  bench notebook's inset Python-baseline table.
+- **One shared typography block, by named constant, in every notebook's analysis-config cell:**
+  ```python
+  PAPER_FONT_SIZE       = 14   # base_size for theme_bw / axis + tick text
+  PAPER_SMALL_FONT_SIZE = 12   # floor for any explicitly-sized text element
+  VALUE_LABEL_FONT_SIZE = 10   # geom_text data labels on bars/points
+  PAPER_DPI             = 200  # publication PNGs (150 for quick checks)
+  ```
+  Wrap `theme_bw`/`element_text` so `base_size` defaults to `PAPER_FONT_SIZE` and no text is ever
+  set below `PAPER_SMALL_FONT_SIZE`, then define ONE `theme_pub(w, h)` and reuse it in every
+  figure. Never hard-code a font size inline — use `VALUE_LABEL_FONT_SIZE` for value labels so the
+  two notebooks match.
+- Save every figure to `plots/` (`dpi=PAPER_DPI`) *and* display it, so runs are self-documenting.
 - Label axes with units; add a subtitle capturing the fixed parameters (metric, strategy).
 - Guard graphs that need ≥ N groups (e.g. a strong-scaling line needs ≥ 2 node counts) with a
   clear "add more points" message instead of erroring on a sample run.
-- **Define ONE shared theme + palette** in the analysis-config cell and reuse it in every figure
-  so the set looks like one coherent publication set — e.g. `theme_pub(w,h)` = `theme_bw(base_size=14)`
-  + top legend, bold title/axis-titles, no minor grid, styled facet strip. Fix a colour-blind-safe
-  Brewer "Dark2" mapping **by name** so a given series is the same colour in every figure
-  (`scale_*_manual(values=…)`, not auto colours): e.g. arkouda `#1B9E77`, pandas `#D95F02`; stages
-  conversion `#7570B3`, analysis `#1B9E77`.
+- **Fix a colour-blind-safe Brewer "Dark2" mapping so a series is the same colour in every
+  figure.** Use `scale_*_brewer(type="qual", palette="Dark2")` when the categorical order already
+  matches, or map **by name** (`scale_*_manual(values=…)`) for cross-figure stability — e.g.
+  arkouda `#1B9E77`, pandas `#D95F02`; conversion stage `#7570B3`, analysis stage `#1B9E77`. Keep a
+  single `DARK2 = [...]` list in the config cell and index it by name; never rely on auto colours.
+- **De-overlap data labels WITHOUT `adjustText`** (it is intentionally not a dependency). Give each
+  series a fixed small offset (a per-series `{series: dx}`/`{series: dy}` dict) and draw a thin grey
+  **leader line** (`geom_segment` to the label position) so enlarged labels repel *both* each other
+  *and* the plotted line/point they annotate and stay readable even where sub-minute values cluster.
 - **Value axis linear from 0** (`expand_limits(y=0)`), avoid a log value axis; put the
   wide-ranging categorical (trace size) on x as an *ordered* categorical so a 0.7 GiB…1.5 TiB span
   stays readable without a log scale. (Node count for strong scaling is the one place a `log2`
@@ -254,3 +277,66 @@ kernel. Run collection as a **detached** process and make it robust:
 - **Diagnose "is it stuck?" with the log mtime**, not vibes: compare `date` to the collector
   log's last-write time. A frozen mtime = genuinely hung; a moving one (or advancing tqdm) = just
   slow (big-trace reads/attributes legitimately take many minutes).
+
+## 16. Pin the analysis env by MINIMUM version, not exact `==`
+
+- Ship a `requirements-analysis.txt` for the graphing half (§4/§5), and keep it **identical**
+  across the aligned notebooks/repos — they graph with the same plotnine-only stack, so their
+  environments must not diverge.
+- Use `>=` **minimum** floors, not exact `==` pins. The analysis code uses stable, long-standing
+  APIs, so exact pins needlessly fight whatever recent versions a machine already has (and force
+  pointless churn). Bump a floor only when you actually rely on a newer API.
+- List `matplotlib` (plotnine's rendering backend) but **not** `adjustText` — label de-overlap is
+  done with explicit per-series offsets + leader lines (see §11), so it isn't a dependency.
+- Data *collection* uses the shared `e4s-cl-setup` venv, not this file; `requirements-analysis.txt`
+  is only for the standalone analysis/graphing half.
+
+## 17. One unified save-and-analyse contract across notebooks
+
+The collect/analyse split (§4) and the git-tracked `analysis-data/` subset must look the **same**
+in every notebook so a reader learns the scheme once. "Less difference the better."
+
+- **Folder layout is always `analysis-data/<system>/<analysis>/<run>/`.** `<system>` is a neutral
+  label (`other-ex`, `frontier`); `<analysis>` names the notebook's analysis (`converter`,
+  `ampere`, `bench`); `<run>` is the timestamped run tag. A repo with one analysis still uses its
+  `<analysis>/` level so the shape matches repos that have several.
+- **One build tool per analysis, same CLI:** `python analysis-data/tools/build_<analysis>_*.py
+  --src-run out/<run> --system <system>` (argparse, not edit-the-constants-at-the-top). It copies
+  the small non-sensitive subset into the `<system>/<analysis>/<run>/` artifact and writes a
+  `SOURCES.md`.
+- **Always sanitize provenance through the shared `sanitize_json()`** (redacts account/mail/user/
+  token/secret keys and `--account=`/`--mail-user=`/email-looking values anywhere in the JSON),
+  even for tools whose data "has no secrets today" — it costs nothing and makes every tool safe by
+  default when run on a system where the account/mail *are* set (e.g. Frontier).
+- **The saved artifact is the SAME SHAPE as the raw run**, so analysis needs no "raw vs saved"
+  switch. Keep one auto-resolving `ANALYZE_RUN`:
+  - `None` → the run created in this kernel session;
+  - a **tag** or **path** → resolve by trying it directly, then under `out/<tag>`, then under
+    `analysis-data/**/<tag>`.
+  Detect saved-vs-raw by *file presence* (e.g. a canonical `run_status.csv`/`SOURCES.md` in the
+  artifact) rather than an explicit mode flag, and report accordingly.
+- **Keep** (small, needed, non-sensitive): the aggregated/merged timing CSVs, a provenance JSON
+  (its *name* may differ per notebook — `plan.json` vs `config.json` — and its keys inherently
+  differ because the analyses differ, but its *role* is identical), the `trace_sizes.json` /
+  `parquet_sizes.json` caches (so the `du -sb` size step is skipped), and rendered `plots/`.
+- **Drop** (bulky and/or sensitive and/or unused by analysis): Parquet/`pq/`, `*.sif`, `scratch/`,
+  `slurm_logs/`, `run_logs/`, `*_logs/`, `*.pid`, manifests. Defensively `.gitignore` these under
+  `analysis-data/**` too (belt-and-suspenders on top of ignoring `out/`).
+
+## 18. Isolate optional / non-preferred configurations so the default path stays clean
+
+A workflow accumulates opt-in variants (a different storage tier, an alternate launcher). Keep the
+**preferred/default** path front-and-centre and the variant out of the way, so the notebook reads
+as one clean story and the variant can be collapsed away.
+
+- Put the variant's helper code in a **supporting `.py` module** next to the notebook (e.g.
+  `nvme_staging.py`), not inline — the default cells import nothing from it and stay short.
+- Gather the variant's own cells together (config toggle, its extra collection/analysis cells) so
+  they can be **collapsed or skipped as a block**; don't interleave them with the default config.
+- Guard with a single top-level flag (default **off**) and **fail fast** if it's set on a system
+  that doesn't support it — name the machine constraint explicitly.
+- Document the trade-off in-place: *why* it's not the default (e.g. "NVMe stage-out is **slower**
+  than writing straight to Lustre, and is **Frontier-only**"), so nobody promotes it by accident.
+- The saved `analysis-data/` runs represent the **default** path; a variant that "wasn't good
+  enough" simply isn't present in them, and the analysis half must degrade gracefully (its panels/
+  sections announce "unavailable") rather than error when the variant's columns are absent.
