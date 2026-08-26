@@ -20,7 +20,6 @@ module Strategy_LocGroupDistBlock {
   use List;
   use Map;
   use BlockDist;
-  use RangeChunk;
 
   proc run(conf: ConverterConfig) throws {
     var sw: stopwatch;
@@ -42,33 +41,30 @@ module Strategy_LocGroupDistBlock {
     logInfo("Using locgroup_dist_block strategy with ", numLocales,
             " locales for ", totalGroups, " output groups");
 
-    // Block-distribute group indices across locales
-    const groupDom = blockDist.createDomain(0..<totalGroups);
-    const totalReaders = min(totalGroups, numLocales * here.maxTaskPar);
-    const readerDom = blockDist.createDomain(0..<totalReaders);
+    // Block-distribute complete output groups across locales. The array's
+    // parallel iterator runs each group on the locale that owns it.
+    const groupDistArray = blockDist.createArray(
+      groupNames.domain, string, groupNames
+    );
     var totalEventsRead: c_uint64 = 0;
-    var taskTimings: [readerDom] TaskTiming;
+    var taskTimings: [groupDistArray.domain] TaskTiming;
 
     const groupDistributionTime = if enableTimers then sw.elapsed() else 0.0;
     if enableTimers then sw.clear();
 
     logInfo("Writing ", conf.outputFormat: string, " files to directory: ",
-            conf.outputDir, " as each reader completes (no merge needed)");
+            conf.outputDir, " as each group completes (no merge needed)");
 
-    forall readerIdx in readerDom
+    // Each iteration opens one OTF2 reader for all locations in one group.
+    // BlockDist limits concurrency to the available tasks on each locale; when
+    // there are more groups than tasks, a task processes multiple groups.
+    forall (groupName, groupIdx) in zip(groupDistArray, groupDistArray.domain)
       with (+ reduce totalEventsRead, ref taskTimings) {
-      const localReaderDom = readerDom.localSubdomain();
-      const localGroupDom = groupDom.localSubdomain();
-      const readerId = readerIdx - localReaderDom.low;
-      const numberOfReaders = localReaderDom.size;
-      const groupRange = chunk(localGroupDom.dim(0), numberOfReaders, readerId);
-
-      const myGroupNames: [0..<groupRange.size] string =
-        for gIdx in groupRange do groupNames[gIdx];
+      const myGroupNames: [0..0] string = [groupName];
       const myLocs = locationsForOutputGroups(myGroupNames, groupLocationMap);
 
-      logTrace("Locale ", here.id, " reader ", readerId, " assigned ",
-               groupRange.size, " groups with ", myLocs.size, " locations");
+      logTrace("Locale ", here.id, " processing output group '", groupName,
+               "' with ", myLocs.size, " locations");
 
       var taskSw: stopwatch;
       if enableTimers then taskSw.start();
@@ -79,7 +75,7 @@ module Strategy_LocGroupDistBlock {
       totalEventsRead += readResult.eventsRead;
       const totalCallbackTime = evtCtx.totalCallbackTime();
 
-      logDebug("Task ", readerId, " on locale ", here.id,
+      logDebug("Group ", groupIdx, " on locale ", here.id,
                ": readTime=", readResult.readTime,
                " metricTime=", evtCtx.metricCallbackTime,
                " enterTime=", evtCtx.enterCallbackTime,
@@ -90,15 +86,15 @@ module Strategy_LocGroupDistBlock {
                           then (100.0 * totalCallbackTime / readResult.readTime)
                           else 0.0, "%");
 
-      // Write immediately -- each reader owns complete groups.
+      // Write immediately -- each iteration owns one complete group.
       const writeResult = if !noopCallbacks
         then writeOutputForContext(evtCtx, conf.outputFormat, conf.outputDir, conf.sortCallgraph)
         else new WriteResult();
 
       const taskTotalTime = if enableTimers then taskSw.elapsed() else 0.0;
 
-      taskTimings[readerIdx] = new TaskTiming(
-        taskId=readerId,
+      taskTimings[groupIdx] = new TaskTiming(
+        taskId=groupIdx,
         localeId=here.id,
         locations=myLocs.size,
         eventsRead=readResult.eventsRead,
